@@ -71,13 +71,15 @@ function importStrava(text){
 }
 
 /* ================= import Excel : heures travaillées ================= */
-function importHours(rows){
+function importHours(rows,opt){
+  opt=opt||{};
   const sv=v=>v==null?'':String(v).trim();
   let hi=-1;
-  for(let i=0;i<Math.min(12,rows.length);i++){if((rows[i]||[]).some(c=>/^(date|jour)/i.test(sv(c)))){hi=i;break;}}
+  for(let i=0;i<Math.min(20,rows.length);i++){if((rows[i]||[]).some(c=>/^date\b/i.test(sv(c)))){hi=i;break;}}
+  if(hi<0)for(let i=0;i<Math.min(20,rows.length);i++){if((rows[i]||[]).some(c=>/^(jour|day)s?$/i.test(sv(c)))){hi=i;break;}}
   const h=hi>=0?rows[hi].map(x=>sv(x).toLowerCase()):[];
   const find=(re,not)=>h.findIndex((x,i)=>re.test(x)&&!(not||[]).includes(i));
-  const iD=hi>=0?find(/date|jour/):0;
+  const iD=hi>=0?(h.findIndex(x=>/^date\b/.test(x))>=0?h.findIndex(x=>/^date\b/.test(x)):find(/date|jour/)):0;
   const iLo=hi>=0?find(/(d[ée]but|d[ée]part|sortie).*(pause|d[ée]j|midi)|(pause|d[ée]j|midi).*(d[ée]but|d[ée]part|sortie)/):-1;
   const iLi=hi>=0?find(/(fin|retour|reprise).*(pause|d[ée]j|midi)|(pause|d[ée]j|midi).*(fin|retour|reprise)/):-1;
   const pz=[iLo,iLi];
@@ -88,7 +90,7 @@ function importHours(rows){
   const iDur=hi>=0?find(/heure|dur[ée]e|total|hours|travaill|temps/,used.concat([iIn,iOut])):-1;
   const pDate=v=>{
     if(v instanceof Date&&!isNaN(v))return dkey(v);
-    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
+    if(typeof v==='number'&&v>20000&&v<80000){if(opt.d1904)v+=1462;const d=new Date(Math.round((v-25569)*86400000));return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
     const s=sv(v);let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return m[1]+'-'+pad(+m[2])+'-'+pad(+m[3]);
     m=s.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
     if(m){let y=+m[3];if(y<100)y+=2000;const d=+m[1],mo=+m[2];if(mo<1||mo>12||d<1||d>31)return null;return y+'-'+pad(mo)+'-'+pad(d);}
@@ -105,12 +107,15 @@ function importHours(rows){
     const t=pTime(v);if(!isNaN(t))return t;
     const n=num(sv(v));if(isNaN(n)||n<=0)return 0;return pause?Math.round(n):Math.round(n<=24?n*60:n);};
   const hm=m=>pad(Math.floor(m/60))+':'+pad(m%60);
-  let added=0,dup=0,bad=0,tot=0;const batch={};
+  let added=0,dup=0,bad=0,tot=0,off=0;const batch={};
   rows.slice(hi+1).forEach(r=>{
     if(!r||!r.length)return;
-    const k=pDate(r[iD]);if(!k){if(r.some(c=>sv(c)!==''))bad++;return;}
+    const k=pDate(r[iD]);if(!k){if(r.some(c=>(typeof c==='number'&&c>0&&c<1)||/^\d{1,2}\s*[:h]\s*\d{2}$/.test(sv(c))))bad++;return;}
     let rec=null;
+    if(iIn>=0&&/^x$/i.test(sv(r[iIn]))){off++;return;}
     const a=iIn>=0?pTime(r[iIn]):NaN,b=iOut>=0?pTime(r[iOut]):NaN;
+    if(!isNaN(a)&&isNaN(b)&&k===todayK()){const lo=iLo>=0?pTime(r[iLo]):NaN,li=iLi>=0?pTime(r[iLi]):NaN;rec={in:hm(a)};if(!isNaN(lo))rec.lo=hm(lo);if(!isNaN(li))rec.li=hm(li);batch[k]=rec;return;}
+    if(isNaN(a)&&isNaN(b)&&(iDur<0||!(pDur(r[iDur],false)>0)))return;
     if(!isNaN(a)&&!isNaN(b)&&b>a){
       rec={in:hm(a),out:hm(b)};
       const lo=iLo>=0?pTime(r[iLo]):NaN,li=iLi>=0?pTime(r[iLi]):NaN;
@@ -132,7 +137,7 @@ function importHours(rows){
     const rec=batch[k];delete rec.syn;
     S.work.days[k]=rec;added++;tot+=workMin(rec,false);
   });
-  return {added,dup,bad,tot,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
+  return {added,dup,bad,tot,off,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
 }
 
 /* ================= fichiers locaux (fiches de paie) ================= */
