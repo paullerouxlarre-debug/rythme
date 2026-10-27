@@ -15,7 +15,7 @@ function weekDots(){
 }
 
 /* ---- Jeu ---- */
-V.game=function(){announceBadges();return `<h1 class="page">Jeu</h1>${scene()}<div id="gbody">${gameBody()}</div>`;};
+V.game=function(){announceBadges();return `<h1 class="page">Progrès</h1>${scene()}<div id="gbody">${gameBody()}</div>`;};
 
 /* ---- Ma journée ---- */
 V.today=function(){
@@ -32,7 +32,7 @@ V.today=function(){
   const r3=ctx.work?{p:wmn/wtg,c1:'#64D2FF',c2:'#0A84FF',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#64D2FF',c2:'#0A84FF',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#FF375F',c2:'#FF9F0A',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#FFD60A',c2:'#FF9F0A',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
   return `<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
-    <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">🔥 ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
+    <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">Série ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
     <div class="mini3 rleg">${RG.map(r=>`<div><small><i style="background:linear-gradient(135deg,${r.c1},${r.c2})"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div></div>
 
   <div class="section-head" style="margin-top:8px"><h2 class="section-title">Planning</h2><a class="section-sub" href="#" data-act="gopl" data-id="${td}">Voir le mois</a></div>

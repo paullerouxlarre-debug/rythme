@@ -32,7 +32,7 @@ function sheetInner(){
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
   <div class="sublabel">Sur ton iPhone</div>
-  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'✅ Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
+  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
 
   <div class="sublabel">Sauvegarde</div>
   <div class="card"><p class="note" style="margin:0 0 10px">Tes données vivent dans ce navigateur. Enregistre une copie pour les garder ou les passer sur un autre appareil.</p>
@@ -62,7 +62,7 @@ function renderConfirm(){
   const t=all?(s2?'Vraiment tout effacer ?':'Tout effacer ?'):'Remettre « '+esc(act.name)+' » à zéro ?';
   const d=all?(s2?'Dernière confirmation. Il n\'y aura aucun moyen de revenir en arrière.':n+' profil'+(n>1?'s':'')+', '+nw+' séance'+(nw>1?'s':'')+', tes placements, revenus, heures, fiches de paie et ta progression dans le jeu seront supprimés.'):nw+' séance'+(nw>1?'s':'')+', placements, revenus, heures et progression du jeu de ce profil seront supprimés. Les autres profils ne bougent pas.';
   let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}
-  m.innerHTML=`<div class="cfbox" role="alertdialog" aria-modal="true" aria-labelledby="cft"><div class="cfi">${s2?'⚠️':'🗑️'}</div><h3 id="cft">${t}</h3><p>${d}</p>
+  m.innerHTML=`<div class="cfbox" role="alertdialog" aria-modal="true" aria-labelledby="cft"><div class="cfi">${IC(s2?'warn':'trash',26)}</div><h3 id="cft">${t}</h3><p>${d}</p>
     <button class="btn btn-ghost" style="width:100%" data-act="backup">Enregistrer une copie d'abord</button>
     <div class="cfrow"><button class="btn" data-act="cfno">Annuler</button><button class="btn cfdel" data-act="cfyes">${all?(s2?'Oui, tout effacer':'Effacer'):'Remettre à zéro'}</button></div></div>`;
   const box=m.querySelector('.cfbox');box.classList.remove('shake');void box.offsetWidth;if(s2)box.classList.add('shake');
@@ -216,10 +216,10 @@ document.addEventListener('click',e=>{
     if(!g.skins.includes(i)){if(g.pts<s.cost){toast('Il te faut '+s.cost+' étoiles');return;}g.pts-=s.cost;g.skins.push(i);}
     g.skin=i;saveSoon();refreshGame();return;}
   if(a==='claim'){const before=glevel().stage,n=claim(id);if(n){const after=glevel().stage;burst(e.clientX,e.clientY,26);toast('+'+n+' étoile'+(n>1?'s':''));
-      if(after>before){setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('Rythmo évolue : '+STAGES[after-1].n);},500);}
+      if(after>before){setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('Nouveau rang : '+STAGES[after-1].n);},500);}
       refreshGame();}return;}
   if(a==='claimall'){const before=glevel().stage;let n=0;objectives().concat(goalMiles()).filter(o=>o.done&&!o.claimed).forEach(o=>{n+=claim(o.id);});
-    if(n){const after=glevel().stage;burst(e.clientX,e.clientY,40);toast('+'+n+' étoiles');if(after>before)setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('Rythmo évolue : '+STAGES[after-1].n);},600);refreshGame();}return;}
+    if(n){const after=glevel().stage;burst(e.clientX,e.clientY,40);toast('+'+n+' étoiles');if(after>before)setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('Nouveau rang : '+STAGES[after-1].n);},600);refreshGame();}return;}
   if(a==='logw'){const w=num(val('gw-now'));if(!(w>20&&w<400))return;S.wlog=S.wlog||[];const l=S.wlog[S.wlog.length-1];if(l&&l.d===td)l.kg=w;else S.wlog.push({d:td,kg:w});if(S.profile)S.profile.weight=w;save();toast('Poids enregistré');refreshGame();return;}
   if(a==='chest'){const r=openChest();if(!r)return;
     const ci=$('.chimg');if(ci){ci.classList.add('pop');}
@@ -337,7 +337,7 @@ document.addEventListener('click',e=>{
       if(t==='bodyboard'){w.spot=d.spot;w.swell=d.swell;}
     }
     w.min=min;const prs=t==='muscu'?prCheck(w.exs):[];S.workouts.push(w);
-    if(prs.length){const n=Math.min(prs.length,3)*3;G().pts+=n;G().life+=n;setTimeout(()=>{toast('🏆 Record · '+prs[0].name+' '+prs[0].kg+' kg × '+prs[0].reps+(prs.length>1?' (+'+(prs.length-1)+')':'')+' · +'+n+' ★');burst(innerWidth/2,innerHeight/3,34);},900);}
+    if(prs.length){const n=Math.min(prs.length,3)*3;G().pts+=n;G().life+=n;setTimeout(()=>{toast('Record · '+prs[0].name+' '+prs[0].kg+' kg × '+prs[0].reps+(prs.length>1?' (+'+(prs.length-1)+')':'')+' · +'+n+' ★');burst(innerWidth/2,innerHeight/3,34);},900);}
     evPlanned(w.date).filter(ev=>!ev.sport||ev.sport===t).forEach(ev=>{ev.done=ev.done||{};ev.done[w.date]=true;});
     ui.draft=null;ui.msg='';ui.sp='over';ui.open.tn=false;save();burst(e.clientX,e.clientY,26);toast('Séance enregistrée');render();scrollTop();return;}
   if(a==='delw'){S.workouts=S.workouts.filter(w=>w.id!==id);save();render();return;}

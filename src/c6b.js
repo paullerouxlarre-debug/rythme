@@ -6,7 +6,7 @@ function visInit(){
   addEventListener('resize',placePill);
   setInterval(restTick,500);
   addEventListener('scroll',onScroll,{passive:true});swipeInit();scrubInit();
-  if(moodNow()==='sleepy'&&G().wb!==todayK()){G().wb=todayK();saveSoon();setTimeout(()=>toast('😴 Rythmo t\'attendait ! 10 min de sport le réveillent'),2600);}
+  if(moodNow()==='sleepy'&&G().wb!==todayK()){G().wb=todayK();saveSoon();setTimeout(()=>toast('Content de te revoir · 10 min suffisent pour relancer'),2600);}
   setTimeout(placePill,300);
 }
 function placePill(){
@@ -21,7 +21,7 @@ function decorate(){
   onScroll();
 }
 /* --- titre compact façon iOS --- */
-const TABT={game:'Jeu',today:'Ma journée',plan:'Planning',sport:'Muscle',food:'Nutrition',money:'Tendance'};
+const TABT={game:'Progrès',today:'Ma journée',plan:'Planning',sport:'Muscle',food:'Nutrition',money:'Tendance'};
 function onScroll(){
   const c=$('#ctitle');if(!c)return;
   const h=document.querySelector('#main h1.page'),lim=h?h.getBoundingClientRect().bottom<44:scrollY>150;
@@ -76,8 +76,8 @@ function restTick(){
   let el=$('#rest');
   if(!ui.rest){if(el)el.remove();return;}
   const left=Math.ceil((ui.rest.end-Date.now())/1000);
-  if(left<=0){const t=ui.rest.tot;ui.rest=null;if(el)el.remove();toast('⏱️ Repos fini, on y retourne !');burst(innerWidth/2,innerHeight*0.6,22);try{navigator.vibrate&&navigator.vibrate([180,90,180]);}catch(e){}return;}
-  if(!el){el=document.createElement('div');el.id='rest';el.className='restp';el.innerHTML='<i class="rbar"></i><span>⏱️ Repos</span><b></b><button data-act="restx" aria-label="Arrêter le repos">×</button>';document.body.appendChild(el);}
+  if(left<=0){const t=ui.rest.tot;ui.rest=null;if(el)el.remove();toast('Repos terminé');burst(innerWidth/2,innerHeight*0.6,22);try{navigator.vibrate&&navigator.vibrate([180,90,180]);}catch(e){}return;}
+  if(!el){el=document.createElement('div');el.id='rest';el.className='restp';el.innerHTML='<i class="rbar"></i><span>Repos</span><b></b><button data-act="restx" aria-label="Arrêter le repos">×</button>';document.body.appendChild(el);}
   el.querySelector('b').textContent=Math.floor(left/60)+':'+pad(left%60);
   el.querySelector('.rbar').style.width=Math.max(0,Math.min(100,(1-left/ui.rest.tot)*100))+'%';
 }
