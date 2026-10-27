@@ -31,7 +31,7 @@ V.today=function(){
   const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#64D2FF',c2:'#0A84FF',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#64D2FF',c2:'#0A84FF',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#FF375F',c2:'#FF9F0A',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#FFD60A',c2:'#FF9F0A',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
-  return `<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
+  return `${dueBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
     <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">Série ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
     <div class="mini3 rleg">${RG.map(r=>`<div><small><i style="background:linear-gradient(135deg,${r.c1},${r.c2})"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div></div>
 
@@ -113,6 +113,12 @@ function planMonth(){
 
 
 /* ---- Boulot (dans Ma journée) : pointage modifiable ---- */
+function dueBanner(){
+  const p=punchDue();if(!p)return '';
+  const t=p.st==='late'?'Tu n\'as pas pointé '+p.label:p.st==='soon'?'Bientôt : pointer '+p.label:'C\'est l\'heure de pointer '+p.label;
+  const s=p.st==='late'?'Prévu entre '+hm2(p.w[0])+' et '+hm2(p.w[1])+' · l\'heure reste modifiable':'Créneau habituel '+hm2(p.w[0])+'–'+hm2(p.w[1]);
+  return `<div class="pdue ${p.st}"><div class="pdi">${IC('clock',20)}</div><div class="pdt"><b>${t}</b><small>${s}</small></div><button class="pdb" data-act="punch">Pointer <span id="pdnow">${hhmm()}</span></button></div>`;
+}
 function workCard(){
   const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
@@ -120,7 +126,7 @@ function workCard(){
   <div class="card punch">
     <div class="bignum" id="wlive">${fmtH(workMin(rec,true))}</div>
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
-    <button class="pbtn ${ns?'':'done'}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
+    <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}

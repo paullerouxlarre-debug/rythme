@@ -156,7 +156,8 @@ function dayCtx(k){
   const planMin=sum(sp.map(e=>e.dur||0)),doneMin=sum(wOn(k).map(w=>w.min));
   const min=Math.max(planMin,doneMin);
   const wr=S.work.days[k];
-  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in);
+  const dw=new Date(k+'T12:00').getDay();
+  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'));
   const trip=ev.some(e=>e.kind==='Voyage');
   const relax=ev.some(e=>e.kind==='Détente');
   const kc=sum(sp.map(e=>(MET[e.sport||'course']||6)*weight()*((e.dur||0)/60)));
@@ -232,4 +233,20 @@ function workMin(rec,live){
 }
 const workDay=k=>workMin(S.work.days[k],k===todayK());
 const workWeek=ws=>sum([0,1,2,3,4,5,6].map(i=>workDay(addD(ws,i))));
+
+/* créneaux de pointage habituels (lun-ven) */
+const PWIN={in:[420,480],lo:[720,750],li:[780,810],out:[1005,1065]};
+const PDUE={in:'ton arrivée',lo:'ta pause déjeuner',li:'ton retour de pause',out:'ton départ'};
+function punchDue(){
+  const d=new Date(),wd=d.getDay();if(wd<1||wd>5)return null;
+  const rec=S.work.days[todayK()]||{},ns=nextStep(rec);if(!ns)return null;
+  const k=ns[0],w=PWIN[k],now=d.getHours()*60+d.getMinutes();
+  const order=['in','lo','li','out'],nx=order[order.indexOf(k)+1],end=nx?PWIN[nx][0]-15:20*60;
+  let st=null;
+  if(now>=w[0]-15&&now<w[0])st='soon';else if(now>=w[0]&&now<=w[1])st='now';else if(now>w[1]&&now<end)st='late';
+  if(!st)return null;
+  if(k!=='in'&&!rec.in)return null;
+  return {k,st,w,label:PDUE[k],key:k+st};
+}
+const hm2=m=>Math.floor(m/60)+':'+pad(m%60);
 function nextStep(rec){rec=rec||{};return PSTEPS.find(s=>!rec[s[0]]);}

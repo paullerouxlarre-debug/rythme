@@ -18,6 +18,7 @@ function decorate(){
   document.querySelectorAll('#main .hero2:not(.hb-done)').forEach(h=>{h.classList.add('hb-done');h.insertAdjacentHTML('afterbegin','<span class="hsh"></span>');});
   const n=objectives().filter(o=>o.done&&!o.claimed).length+(chestInfo().can?1:0),t=document.querySelector('.tab[data-id=game]');
   if(t){let b=t.querySelector('.tbdg');if(n>0){if(!b){b=document.createElement('i');b.className='tbdg';t.appendChild(b);}if(b.textContent!==String(n)){b.textContent=n;b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');}}else if(b)b.remove();}
+  const tt=document.querySelector('.tab[data-id=today]');if(tt)tt.classList.toggle('due',!!punchDue());
   onScroll();
 }
 /* --- titre compact façon iOS --- */

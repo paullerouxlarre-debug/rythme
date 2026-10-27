@@ -823,6 +823,21 @@
   .lg-pulse path{ stroke:var(--tc); }
   .bcard{ background:radial-gradient(80% 60% at 100% 0%,color-mix(in srgb,var(--tc) 22%,transparent),transparent 65%),linear-gradient(165deg,var(--gph),var(--gph2))!important; border:1px solid var(--hair); box-shadow:none!important; border-radius:22px; }
   .bseg{ background:rgba(255,255,255,.07); } .bseg button.on{ background:#F4F4F5; }
+  .pdue{ display:flex; align-items:center; gap:12px; padding:12px 12px 12px 14px; margin:0 0 12px; border-radius:18px; background:var(--surface); border:1px solid color-mix(in srgb,var(--tc) 45%,var(--sep)); box-shadow:0 10px 30px -18px color-mix(in srgb,var(--tc) 60%,transparent); animation:rise .5s cubic-bezier(.2,.8,.2,1) both; }
+  .pdue.late{ border-color:color-mix(in srgb,#D98A2B 55%,var(--sep)); }
+  .pdue.soon{ border-color:var(--sep); box-shadow:none; }
+  .pdi{ width:40px; height:40px; border-radius:12px; flex:none; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb,var(--tc) 14%,transparent); color:var(--tc); position:relative; }
+  .pdue.late .pdi{ background:color-mix(in srgb,#D98A2B 14%,transparent); color:#C27A1F; }
+  .pdue.now .pdi::after{ content:""; position:absolute; inset:-3px; border-radius:14px; border:1.5px solid var(--tc); animation:pring 2s ease-out infinite; }
+  @keyframes pring{ from{ opacity:.7; transform:scale(.92); } to{ opacity:0; transform:scale(1.25); } }
+  .pdt{ flex:1; min-width:0; } .pdt b{ display:block; font-size:14.5px; font-weight:650; letter-spacing:-.01em; line-height:1.25; } .pdt small{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+  .pdb{ flex:none; border:none; border-radius:12px; padding:10px 12px; background:var(--text); color:var(--bg); font-weight:650; font-size:13.5px; font-variant-numeric:tabular-nums; }
+  .pdb span{ opacity:.6; margin-left:2px; font-weight:600; }
+  .pdb:active{ transform:scale(.96); }
+  .pbtn.due{ box-shadow:0 0 0 6px color-mix(in srgb,var(--tc) 18%,transparent),0 18px 40px -18px color-mix(in srgb,var(--tc) 70%,transparent)!important; }
+  .pbtn.due::before{ opacity:.45!important; animation:ripple 2s ease-out infinite!important; }
+  .tab.due::after{ content:""; position:absolute; top:3px; left:calc(50% + 9px); width:8px; height:8px; border-radius:50%; background:var(--tc,#2E9E76); box-shadow:0 0 0 2px var(--bg); }
+  .tab[data-id=today].due::after{ background:#2E9E76; }
 </style>
 </head>
 <body>
@@ -931,7 +946,7 @@ if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
 useProfile();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R));}catch(e){}};
-const ui={tab:'game',gt:'adv',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
+const ui={tab:'today',gt:'adv',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
 
 function applyPrefs(){
   const r=document.documentElement,p=R.prefs;
@@ -1218,7 +1233,8 @@ function dayCtx(k){
   const planMin=sum(sp.map(e=>e.dur||0)),doneMin=sum(wOn(k).map(w=>w.min));
   const min=Math.max(planMin,doneMin);
   const wr=S.work.days[k];
-  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in);
+  const dw=new Date(k+'T12:00').getDay();
+  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'));
   const trip=ev.some(e=>e.kind==='Voyage');
   const relax=ev.some(e=>e.kind==='Détente');
   const kc=sum(sp.map(e=>(MET[e.sport||'course']||6)*weight()*((e.dur||0)/60)));
@@ -1294,6 +1310,22 @@ function workMin(rec,live){
 }
 const workDay=k=>workMin(S.work.days[k],k===todayK());
 const workWeek=ws=>sum([0,1,2,3,4,5,6].map(i=>workDay(addD(ws,i))));
+
+/* créneaux de pointage habituels (lun-ven) */
+const PWIN={in:[420,480],lo:[720,750],li:[780,810],out:[1005,1065]};
+const PDUE={in:'ton arrivée',lo:'ta pause déjeuner',li:'ton retour de pause',out:'ton départ'};
+function punchDue(){
+  const d=new Date(),wd=d.getDay();if(wd<1||wd>5)return null;
+  const rec=S.work.days[todayK()]||{},ns=nextStep(rec);if(!ns)return null;
+  const k=ns[0],w=PWIN[k],now=d.getHours()*60+d.getMinutes();
+  const order=['in','lo','li','out'],nx=order[order.indexOf(k)+1],end=nx?PWIN[nx][0]-15:20*60;
+  let st=null;
+  if(now>=w[0]-15&&now<w[0])st='soon';else if(now>=w[0]&&now<=w[1])st='now';else if(now>w[1]&&now<end)st='late';
+  if(!st)return null;
+  if(k!=='in'&&!rec.in)return null;
+  return {k,st,w,label:PDUE[k],key:k+st};
+}
+const hm2=m=>Math.floor(m/60)+':'+pad(m%60);
 function nextStep(rec){rec=rec||{};return PSTEPS.find(s=>!rec[s[0]]);}
 
 /* ================= effets ================= */
@@ -1637,7 +1669,10 @@ function gameBody(){
   return `<div class="seg gseg" style="margin:14px 0">${GT.map(([k,l])=>`<button class="${t===k?'on':''}" data-act="gt" data-id="${k}">${l}${k==='quest'&&pend?`<i class="bdg">${pend}</i>`:''}</button>`).join('')}</div>
   ${t==='adv'?adventureTab():t==='quest'?questsTab():t==='shop'?shopTab():succTab()}`;
 }
+let _pdk='';
 function gLive(){
+  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();}
+  const pn=$('#pdnow');if(pn)pn.textContent=hhmm();
   const g=G(),p=$('#gpts');
   if(p)p.textContent=fmtN(g.pts);
   const wl=$('#wlive');if(wl){const r=S.work.days[todayK()];wl.textContent=fmtH(workMin(r,true));}
@@ -1728,7 +1763,7 @@ V.today=function(){
   const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#64D2FF',c2:'#0A84FF',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#64D2FF',c2:'#0A84FF',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#FF375F',c2:'#FF9F0A',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#FFD60A',c2:'#FF9F0A',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
-  return `<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
+  return `${dueBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
     <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">Série ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
     <div class="mini3 rleg">${RG.map(r=>`<div><small><i style="background:linear-gradient(135deg,${r.c1},${r.c2})"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div></div>
 
@@ -1810,6 +1845,12 @@ function planMonth(){
 
 
 /* ---- Boulot (dans Ma journée) : pointage modifiable ---- */
+function dueBanner(){
+  const p=punchDue();if(!p)return '';
+  const t=p.st==='late'?'Tu n\'as pas pointé '+p.label:p.st==='soon'?'Bientôt : pointer '+p.label:'C\'est l\'heure de pointer '+p.label;
+  const s=p.st==='late'?'Prévu entre '+hm2(p.w[0])+' et '+hm2(p.w[1])+' · l\'heure reste modifiable':'Créneau habituel '+hm2(p.w[0])+'–'+hm2(p.w[1]);
+  return `<div class="pdue ${p.st}"><div class="pdi">${IC('clock',20)}</div><div class="pdt"><b>${t}</b><small>${s}</small></div><button class="pdb" data-act="punch">Pointer <span id="pdnow">${hhmm()}</span></button></div>`;
+}
 function workCard(){
   const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
@@ -1817,7 +1858,7 @@ function workCard(){
   <div class="card punch">
     <div class="bignum" id="wlive">${fmtH(workMin(rec,true))}</div>
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
-    <button class="pbtn ${ns?'':'done'}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
+    <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}
@@ -2450,6 +2491,7 @@ function decorate(){
   document.querySelectorAll('#main .hero2:not(.hb-done)').forEach(h=>{h.classList.add('hb-done');h.insertAdjacentHTML('afterbegin','<span class="hsh"></span>');});
   const n=objectives().filter(o=>o.done&&!o.claimed).length+(chestInfo().can?1:0),t=document.querySelector('.tab[data-id=game]');
   if(t){let b=t.querySelector('.tbdg');if(n>0){if(!b){b=document.createElement('i');b.className='tbdg';t.appendChild(b);}if(b.textContent!==String(n)){b.textContent=n;b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');}}else if(b)b.remove();}
+  const tt=document.querySelector('.tab[data-id=today]');if(tt)tt.classList.toggle('due',!!punchDue());
   onScroll();
 }
 /* --- titre compact façon iOS --- */

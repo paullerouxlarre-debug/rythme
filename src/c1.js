@@ -82,7 +82,7 @@ if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
 useProfile();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R));}catch(e){}};
-const ui={tab:'game',gt:'adv',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
+const ui={tab:'today',gt:'adv',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
 
 function applyPrefs(){
   const r=document.documentElement,p=R.prefs;

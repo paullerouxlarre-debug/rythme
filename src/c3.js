@@ -340,7 +340,10 @@ function gameBody(){
   return `<div class="seg gseg" style="margin:14px 0">${GT.map(([k,l])=>`<button class="${t===k?'on':''}" data-act="gt" data-id="${k}">${l}${k==='quest'&&pend?`<i class="bdg">${pend}</i>`:''}</button>`).join('')}</div>
   ${t==='adv'?adventureTab():t==='quest'?questsTab():t==='shop'?shopTab():succTab()}`;
 }
+let _pdk='';
 function gLive(){
+  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();}
+  const pn=$('#pdnow');if(pn)pn.textContent=hhmm();
   const g=G(),p=$('#gpts');
   if(p)p.textContent=fmtN(g.pts);
   const wl=$('#wlive');if(wl){const r=S.work.days[todayK()];wl.textContent=fmtH(workMin(r,true));}
