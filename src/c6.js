@@ -3,6 +3,7 @@
 V.sport=function(){
   const seg=`<div class="seg">${[['over','Aperçu'],['add','Séance']].map(([k,l])=>`<button class="${ui.sp===k?'on':''}" data-act="sp" data-id="${k}">${l}</button>`).join('')}</div>`;
   if(ui.sp!=='over'&&ui.sp!=='add')ui.sp='over';
+  if(ui.tl==='max')return SP.max();
   if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
   const calcBtn=`<button class="toolrow" style="margin:0 0 12px" data-act="tl" data-id="calc"><span class="tico" style="background:linear-gradient(135deg,#FF9500,#FF2D55)"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M6 21l3-6 3 2 2-5-3-2-3 1M12 17l1 4M16 11l3 2"/></svg></span><span style="flex:1;min-width:0;text-align:left"><b>Calculateur de course</b><small>Allure, temps, distance, passages</small></span><span class="chev">›</span></button>`;
   return `<h1 class="page">Muscle</h1>${seg}${calcBtn}${SP[ui.sp]()}`;
@@ -96,14 +97,15 @@ SP.over=function(){
   return `<div class="hero2"><div style="display:flex;align-items:center;gap:16px"><div class="rw" style="width:96px;height:96px;flex:none">${ring(goal?wsess.length/goal:0,'#fff',96,11,'rgba(255,255,255,.28)')}<div class="rc" style="flex-direction:column;font-size:26px;font-weight:800">${wsess.length}<small style="font-size:11px;font-weight:600;opacity:.85">/ ${goal}</small></div></div>
     <div style="flex:1;min-width:0"><div class="sm">Cette semaine</div><div style="font-size:22px;font-weight:800;line-height:1.15;margin:2px 0">${wsess.length>=goal?'Objectif atteint':'Encore '+(goal-wsess.length)+' séance'+(goal-wsess.length>1?'s':'')}</div><div class="sm">${streak()} jour${streak()>1?'s':''} d'affilée</div></div></div>
     <div class="mini3"><div><small>Effort</small><b>${cu(wmin,'h')}</b></div><div><small>Course</small><b>${cu(wkm,'km')}</b></div><div><small>Volume</small><b>${cu(sum(wsess.map(volOf))/1000,'t')}</b></div></div></div>
-  ${per}
+  ${mxCard()}
+  <div style="height:14px"></div>${per}
   ${bodyCard(gs)}
   <div class="kpis"><div><small>Séances</small><b>${ws.length}</b></div><div><small>Effort</small><b>${fmtH(mins)}</b></div><div><small>Volume</small><b>${fmtN(vol/1000,1)} t</b></div><div><small>Course</small><b>${fmtN(km,0)} km</b></div></div>
   <div class="section-head"><h2 class="section-title">Semaine après semaine</h2><span class="section-sub">minutes</span></div>
   <div class="card">${stackBars(stack)}<div class="chips" style="margin-top:6px">${Object.entries(SPORTS).map(([k,v])=>`<span class="lg"><span class="dot" style="background:${v.col}"></span>${v.name}</span>`).join('')}</div></div>
   <div class="section-head"><h2 class="section-title">Régularité</h2><span class="section-sub">12 semaines</span></div>
   <div class="card"><div class="heatw">${cells.join('')}</div></div>
-  ${rec.length?`<div class="section-head"><h2 class="section-title">Records</h2></div><div class="tiles">${rec.map(([a,b,c,col])=>`<div class="tile" style="border-top:4px solid ${col}"><span>${esc(a)}</span><b style="font-size:19px;color:${col}">${esc(b)}</b><span>${esc(c)}</span></div>`).join('')}</div>`:''}
+
   <div class="section-head"><h2 class="section-title">Journal</h2><button class="iconbtn" data-act="gosport" aria-label="Ajouter une séance">+</button></div>
   <div class="row-list">${jr.map(w=>`<div class="row"><div style="display:flex;gap:10px;align-items:stretch;min-width:0"><div class="evbar" style="background:${SPORTS[w.type].col}"></div><div style="min-width:0"><div class="row-title">${SPORTS[w.type].name}${w.src==='strava'?'<span class="src">Strava</span>':''}</div><div class="row-sub">${dShort(w.date)} · ${w.min} min${w.dist?' · '+fmtN(w.dist,1)+' km · '+pace(w):''}${w.type==='muscu'?' · '+setsOf(w)+' séries':''}</div></div></div><button class="row-del" data-act="delw" data-id="${w.id}" aria-label="Supprimer la séance">×</button></div>`).join('')||'<div class="empty">Aucune séance. Va dans Séance pour enregistrer la première.</div>'}</div>
   ${all.length>5?`<button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="toggle" data-id="jall">${ui.open.jall?'Réduire':'Tout voir ('+all.length+')'}</button>`:''}`;

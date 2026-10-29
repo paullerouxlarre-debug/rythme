@@ -58,6 +58,7 @@ function migrate(d){
     if(gg.dT>0){o.game.myg.push({id:'d0',type:'km',target:gg.dT,start:gg.dFrom||dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:d:'+f])cl['og:d0:'+f]=1;});}}
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
   o.work=Object.assign({days:{},target:35},o.work||{});
+  o.maxes=o.maxes||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
   if(!o.proj.monthly&&o.dca)o.proj.monthly=o.dca;
   if(!o.dca&&o.proj&&o.proj.monthly)o.dca=o.proj.monthly;

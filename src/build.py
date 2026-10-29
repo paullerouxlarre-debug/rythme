@@ -7,7 +7,7 @@ Usage : python3 src/build.py   (depuis la racine du dépôt)
 import os, re, time, subprocess, tempfile
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 S = os.path.join(R, 'src')
-parts = ['b0.html','c1.js','c2.js','c3.js','c4.js','c5.js','c6.js','c6b.js','c7.js']
+parts = ['b0.html','c1.js','c2.js','c3.js','c4.js','c5.js','c6.js','c6b.js','c6c.js','c7.js']
 html = ''.join(open(os.path.join(S,p), encoding='utf-8').read() for p in parts) + '\n</script>\n</body>\n</html>\n'
 # vérification de syntaxe du script (si node est installé)
 js = html[html.rindex('<script>')+8:html.rindex('</script>')]

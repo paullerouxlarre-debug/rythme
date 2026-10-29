@@ -829,11 +829,55 @@
   .pbtn.due::before{ opacity:.45!important; animation:ripple 2s ease-out infinite!important; }
   .tab.due::after{ content:""; position:absolute; top:3px; left:calc(50% + 9px); width:8px; height:8px; border-radius:50%; background:var(--tc,#2E9E76); box-shadow:0 0 0 2px var(--bg); }
   .tab[data-id=today].due::after{ background:#2E9E76; }
+  /* ===== Mes max ===== */
+  .mxc{ width:100%; text-align:left; color:var(--text); display:block; padding:16px; font:inherit; cursor:pointer; }
+  .mxc:active{ transform:scale(.985); }
+  .mxsum{ display:flex; align-items:center; gap:14px; }
+  .mxsum b{ display:block; font-size:19px; font-weight:650; letter-spacing:-.02em; }
+  .mxsum small{ display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .mxring{ position:relative; width:74px; height:74px; flex:none; }
+  .mxring span{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:650; font-size:20px; letter-spacing:-.02em; }
+  .mxgo{ display:block; margin-top:12px; font-size:13px; font-weight:600; color:var(--tc); }
+  .mxpans{ display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none; scroll-snap-type:x mandatory; }
+  .mxpans::-webkit-scrollbar{ display:none; }
+  .mxpan{ flex:none; width:150px; text-align:left; border:1px solid var(--sep); background:var(--surface); color:var(--text); border-radius:14px; padding:10px 12px; scroll-snap-align:start; font:inherit; transition:background .2s,border-color .2s; }
+  .mxpan b{ display:block; font-size:13.5px; font-weight:650; letter-spacing:-.01em; } .mxpan small{ display:block; font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.3; }
+  .mxpan.on{ background:var(--text); color:var(--bg); border-color:transparent; } .mxpan.on small{ color:color-mix(in srgb,var(--bg) 70%,transparent); }
+  .mxlist{ display:grid; gap:10px; }
+  .mxrow{ padding:14px; }
+  .mxh{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .mxh b{ font-size:15.5px; font-weight:650; letter-spacing:-.01em; }
+  .mxe{ font-size:12px; color:var(--muted); }
+  .mxin{ display:flex; align-items:center; gap:6px; margin-top:10px; }
+  .mxin input{ width:86px; min-width:0; border:1px solid var(--sep); background:var(--surface-2); color:var(--text); border-radius:10px; padding:9px 10px; font-size:16px; font-weight:600; text-align:center; font-variant-numeric:tabular-nums; }
+  .mxin input.mxr{ width:52px; } .mxin input.mxt{ width:150px; text-align:left; }
+  .mxin input:focus{ outline:none; border-color:var(--tc); }
+  .mxs{ width:34px; height:34px; border-radius:10px; border:1px solid var(--sep); background:var(--surface); color:var(--text); font-size:18px; line-height:1; flex:none; }
+  .mxs:active{ transform:scale(.92); }
+  .mxx{ color:var(--muted); font-size:14px; } .mxu{ color:var(--muted); font-size:12.5px; }
+  .mxsug{ display:inline-block; margin-top:8px; border:none; background:color-mix(in srgb,var(--tc) 12%,transparent); color:var(--tc); font-weight:600; font-size:12.5px; border-radius:8px; padding:6px 10px; }
+  .mxbar{ position:relative; height:8px; border-radius:5px; margin:14px 0 8px; background:linear-gradient(90deg,var(--surface-3),color-mix(in srgb,var(--tc) 35%,var(--surface-3))); }
+  .mxbar i{ position:absolute; left:0; top:0; bottom:0; width:var(--x); border-radius:5px; background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 55%,transparent),var(--tc)); animation:mxgrow 1s cubic-bezier(.2,.8,.2,1) both; }
+  .mxbar b{ position:absolute; top:50%; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:var(--surface); border:2.5px solid var(--tc); box-shadow:0 2px 6px rgba(0,0,0,.15); animation:mxdot 1s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes mxgrow{ from{ width:0; } } @keyframes mxdot{ from{ left:0; opacity:0; } }
+  .mxres{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .mxres b{ font-size:16px; font-weight:650; letter-spacing:-.02em; }
+  .mxtier{ font-size:11.5px; font-weight:650; letter-spacing:.05em; text-transform:uppercase; color:var(--tc); background:color-mix(in srgb,var(--tc) 12%,transparent); border-radius:7px; padding:3px 8px; }
+  .mxall{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .mxall span{ font-size:11.5px; color:var(--muted); background:var(--surface-2); border-radius:7px; padding:3px 7px; font-variant-numeric:tabular-nums; }
+  .mxall span.on{ color:var(--text); font-weight:650; }
+  .mxna{ font-size:12.5px; color:var(--muted); margin-top:10px; }
+  #splash .splogo{ width:120px; height:120px; overflow:visible; }
+  #splash .splogo path{ fill:none; stroke-linecap:round; stroke-linejoin:round; filter:none; }
+  #splash .spr{ stroke:#EDEDF0; stroke-width:50; stroke-dasharray:900; stroke-dashoffset:900; animation:spdraw .9s cubic-bezier(.4,0,.2,1) .05s forwards; }
+  #splash .spl2{ stroke:url(#spp); stroke-width:52; stroke-dasharray:1400; stroke-dashoffset:1400; animation:spdraw 1s cubic-bezier(.4,0,.2,1) .25s forwards; filter:drop-shadow(0 0 18px rgba(63,208,176,.6)); }
+  @keyframes spdraw{ to{ stroke-dashoffset:0; } }
+  #splash{ background:radial-gradient(55% 40% at 50% 46%,rgba(63,191,149,.25),transparent 70%),linear-gradient(180deg,#1B1C21,#09090B)!important; }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div><div id="ctitle" class="ctitle" data-act="totop"><span></span></div>
-<div id="splash" aria-hidden="true"><div class="spl"><svg viewBox="0 0 120 50"><path d="M2 28h30l10-22 16 42 14-32 8 12h38"/></svg><b>Rythme</b></div></div>
+<div id="splash" aria-hidden="true"><div class="spl"><svg class="splogo" viewBox="0 0 1024 1024"><defs><linearGradient id="spp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7CF0C3"/><stop offset=".5" stop-color="#3FD0B0"/><stop offset="1" stop-color="#5EA8FF"/></linearGradient></defs><path class="spr" d="M 268 434 A 268 268 0 0 1 756 434"/><path class="spr" d="M 756 590 A 268 268 0 0 1 268 590"/><path class="spl2" d="M 150 512 H 392 L 446 392 L 528 652 L 590 452 L 624 512 H 874"/></svg><b>Rythme</b></div></div>
 <div class="app">
   <div class="topbar">
     <p class="greeting" id="greeting"></p>

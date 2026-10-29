@@ -210,6 +210,11 @@ document.addEventListener('click',e=>{
       else{ui.msg=r.added+' sortie'+(r.added>1?'s':'')+' importée'+(r.added>1?'s':'')+(r.dup?', '+r.dup+' déjà présente'+(r.dup>1?'s':''):'')+(r.skip?', '+r.skip+' ignorée'+(r.skip>1?'s':'')+' (autre sport ou trop courte)':'')+(r.bad?', '+r.bad+' avec une date illisible':'')+'.';save();}
       renderSheet();render();}).catch(()=>{ui.msg='Lecture du fichier impossible.';renderSheet();});return;}
 
+  if(a==='mxpan'){ui.mxp=id;render();return;}
+  if(a==='mxstep'){const[k,d]=id.split(':'),e=MXL.find(x=>x.k===k);S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});
+    if(e.u==='kg'){const v=Math.max((num(m.kg)||0)+(+d),0);m.kg=String(v).replace('.',',');if(!m.reps)m.reps='1';}else{m.reps=Math.max((+m.reps||0)+(+d),0);}
+    m.date=td;saveSoon();render();return;}
+  if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -371,6 +376,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}
   if(t.dataset.evi){S.proj.init=Math.max(num(t.value)||0,0);evUpdate(false);saveSoon();return;}

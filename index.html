@@ -838,11 +838,55 @@
   .pbtn.due::before{ opacity:.45!important; animation:ripple 2s ease-out infinite!important; }
   .tab.due::after{ content:""; position:absolute; top:3px; left:calc(50% + 9px); width:8px; height:8px; border-radius:50%; background:var(--tc,#2E9E76); box-shadow:0 0 0 2px var(--bg); }
   .tab[data-id=today].due::after{ background:#2E9E76; }
+  /* ===== Mes max ===== */
+  .mxc{ width:100%; text-align:left; color:var(--text); display:block; padding:16px; font:inherit; cursor:pointer; }
+  .mxc:active{ transform:scale(.985); }
+  .mxsum{ display:flex; align-items:center; gap:14px; }
+  .mxsum b{ display:block; font-size:19px; font-weight:650; letter-spacing:-.02em; }
+  .mxsum small{ display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .mxring{ position:relative; width:74px; height:74px; flex:none; }
+  .mxring span{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:650; font-size:20px; letter-spacing:-.02em; }
+  .mxgo{ display:block; margin-top:12px; font-size:13px; font-weight:600; color:var(--tc); }
+  .mxpans{ display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none; scroll-snap-type:x mandatory; }
+  .mxpans::-webkit-scrollbar{ display:none; }
+  .mxpan{ flex:none; width:150px; text-align:left; border:1px solid var(--sep); background:var(--surface); color:var(--text); border-radius:14px; padding:10px 12px; scroll-snap-align:start; font:inherit; transition:background .2s,border-color .2s; }
+  .mxpan b{ display:block; font-size:13.5px; font-weight:650; letter-spacing:-.01em; } .mxpan small{ display:block; font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.3; }
+  .mxpan.on{ background:var(--text); color:var(--bg); border-color:transparent; } .mxpan.on small{ color:color-mix(in srgb,var(--bg) 70%,transparent); }
+  .mxlist{ display:grid; gap:10px; }
+  .mxrow{ padding:14px; }
+  .mxh{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .mxh b{ font-size:15.5px; font-weight:650; letter-spacing:-.01em; }
+  .mxe{ font-size:12px; color:var(--muted); }
+  .mxin{ display:flex; align-items:center; gap:6px; margin-top:10px; }
+  .mxin input{ width:86px; min-width:0; border:1px solid var(--sep); background:var(--surface-2); color:var(--text); border-radius:10px; padding:9px 10px; font-size:16px; font-weight:600; text-align:center; font-variant-numeric:tabular-nums; }
+  .mxin input.mxr{ width:52px; } .mxin input.mxt{ width:150px; text-align:left; }
+  .mxin input:focus{ outline:none; border-color:var(--tc); }
+  .mxs{ width:34px; height:34px; border-radius:10px; border:1px solid var(--sep); background:var(--surface); color:var(--text); font-size:18px; line-height:1; flex:none; }
+  .mxs:active{ transform:scale(.92); }
+  .mxx{ color:var(--muted); font-size:14px; } .mxu{ color:var(--muted); font-size:12.5px; }
+  .mxsug{ display:inline-block; margin-top:8px; border:none; background:color-mix(in srgb,var(--tc) 12%,transparent); color:var(--tc); font-weight:600; font-size:12.5px; border-radius:8px; padding:6px 10px; }
+  .mxbar{ position:relative; height:8px; border-radius:5px; margin:14px 0 8px; background:linear-gradient(90deg,var(--surface-3),color-mix(in srgb,var(--tc) 35%,var(--surface-3))); }
+  .mxbar i{ position:absolute; left:0; top:0; bottom:0; width:var(--x); border-radius:5px; background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 55%,transparent),var(--tc)); animation:mxgrow 1s cubic-bezier(.2,.8,.2,1) both; }
+  .mxbar b{ position:absolute; top:50%; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:var(--surface); border:2.5px solid var(--tc); box-shadow:0 2px 6px rgba(0,0,0,.15); animation:mxdot 1s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes mxgrow{ from{ width:0; } } @keyframes mxdot{ from{ left:0; opacity:0; } }
+  .mxres{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .mxres b{ font-size:16px; font-weight:650; letter-spacing:-.02em; }
+  .mxtier{ font-size:11.5px; font-weight:650; letter-spacing:.05em; text-transform:uppercase; color:var(--tc); background:color-mix(in srgb,var(--tc) 12%,transparent); border-radius:7px; padding:3px 8px; }
+  .mxall{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .mxall span{ font-size:11.5px; color:var(--muted); background:var(--surface-2); border-radius:7px; padding:3px 7px; font-variant-numeric:tabular-nums; }
+  .mxall span.on{ color:var(--text); font-weight:650; }
+  .mxna{ font-size:12.5px; color:var(--muted); margin-top:10px; }
+  #splash .splogo{ width:120px; height:120px; overflow:visible; }
+  #splash .splogo path{ fill:none; stroke-linecap:round; stroke-linejoin:round; filter:none; }
+  #splash .spr{ stroke:#EDEDF0; stroke-width:50; stroke-dasharray:900; stroke-dashoffset:900; animation:spdraw .9s cubic-bezier(.4,0,.2,1) .05s forwards; }
+  #splash .spl2{ stroke:url(#spp); stroke-width:52; stroke-dasharray:1400; stroke-dashoffset:1400; animation:spdraw 1s cubic-bezier(.4,0,.2,1) .25s forwards; filter:drop-shadow(0 0 18px rgba(63,208,176,.6)); }
+  @keyframes spdraw{ to{ stroke-dashoffset:0; } }
+  #splash{ background:radial-gradient(55% 40% at 50% 46%,rgba(63,191,149,.25),transparent 70%),linear-gradient(180deg,#1B1C21,#09090B)!important; }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div><div id="ctitle" class="ctitle" data-act="totop"><span></span></div>
-<div id="splash" aria-hidden="true"><div class="spl"><svg viewBox="0 0 120 50"><path d="M2 28h30l10-22 16 42 14-32 8 12h38"/></svg><b>Rythme</b></div></div>
+<div id="splash" aria-hidden="true"><div class="spl"><svg class="splogo" viewBox="0 0 1024 1024"><defs><linearGradient id="spp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7CF0C3"/><stop offset=".5" stop-color="#3FD0B0"/><stop offset="1" stop-color="#5EA8FF"/></linearGradient></defs><path class="spr" d="M 268 434 A 268 268 0 0 1 756 434"/><path class="spr" d="M 756 590 A 268 268 0 0 1 268 590"/><path class="spl2" d="M 150 512 H 392 L 446 392 L 528 652 L 590 452 L 624 512 H 874"/></svg><b>Rythme</b></div></div>
 <div class="app">
   <div class="topbar">
     <p class="greeting" id="greeting"></p>
@@ -922,6 +966,7 @@ function migrate(d){
     if(gg.dT>0){o.game.myg.push({id:'d0',type:'km',target:gg.dT,start:gg.dFrom||dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:d:'+f])cl['og:d0:'+f]=1;});}}
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
   o.work=Object.assign({days:{},target:35},o.work||{});
+  o.maxes=o.maxes||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
   if(!o.proj.monthly&&o.dca)o.proj.monthly=o.dca;
   if(!o.dca&&o.proj&&o.proj.monthly)o.dca=o.proj.monthly;
@@ -2229,6 +2274,7 @@ function simUpdate(){
 V.sport=function(){
   const seg=`<div class="seg">${[['over','Aperçu'],['add','Séance']].map(([k,l])=>`<button class="${ui.sp===k?'on':''}" data-act="sp" data-id="${k}">${l}</button>`).join('')}</div>`;
   if(ui.sp!=='over'&&ui.sp!=='add')ui.sp='over';
+  if(ui.tl==='max')return SP.max();
   if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
   const calcBtn=`<button class="toolrow" style="margin:0 0 12px" data-act="tl" data-id="calc"><span class="tico" style="background:linear-gradient(135deg,#FF9500,#FF2D55)"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M6 21l3-6 3 2 2-5-3-2-3 1M12 17l1 4M16 11l3 2"/></svg></span><span style="flex:1;min-width:0;text-align:left"><b>Calculateur de course</b><small>Allure, temps, distance, passages</small></span><span class="chev">›</span></button>`;
   return `<h1 class="page">Muscle</h1>${seg}${calcBtn}${SP[ui.sp]()}`;
@@ -2322,14 +2368,15 @@ SP.over=function(){
   return `<div class="hero2"><div style="display:flex;align-items:center;gap:16px"><div class="rw" style="width:96px;height:96px;flex:none">${ring(goal?wsess.length/goal:0,'#fff',96,11,'rgba(255,255,255,.28)')}<div class="rc" style="flex-direction:column;font-size:26px;font-weight:800">${wsess.length}<small style="font-size:11px;font-weight:600;opacity:.85">/ ${goal}</small></div></div>
     <div style="flex:1;min-width:0"><div class="sm">Cette semaine</div><div style="font-size:22px;font-weight:800;line-height:1.15;margin:2px 0">${wsess.length>=goal?'Objectif atteint':'Encore '+(goal-wsess.length)+' séance'+(goal-wsess.length>1?'s':'')}</div><div class="sm">${streak()} jour${streak()>1?'s':''} d'affilée</div></div></div>
     <div class="mini3"><div><small>Effort</small><b>${cu(wmin,'h')}</b></div><div><small>Course</small><b>${cu(wkm,'km')}</b></div><div><small>Volume</small><b>${cu(sum(wsess.map(volOf))/1000,'t')}</b></div></div></div>
-  ${per}
+  ${mxCard()}
+  <div style="height:14px"></div>${per}
   ${bodyCard(gs)}
   <div class="kpis"><div><small>Séances</small><b>${ws.length}</b></div><div><small>Effort</small><b>${fmtH(mins)}</b></div><div><small>Volume</small><b>${fmtN(vol/1000,1)} t</b></div><div><small>Course</small><b>${fmtN(km,0)} km</b></div></div>
   <div class="section-head"><h2 class="section-title">Semaine après semaine</h2><span class="section-sub">minutes</span></div>
   <div class="card">${stackBars(stack)}<div class="chips" style="margin-top:6px">${Object.entries(SPORTS).map(([k,v])=>`<span class="lg"><span class="dot" style="background:${v.col}"></span>${v.name}</span>`).join('')}</div></div>
   <div class="section-head"><h2 class="section-title">Régularité</h2><span class="section-sub">12 semaines</span></div>
   <div class="card"><div class="heatw">${cells.join('')}</div></div>
-  ${rec.length?`<div class="section-head"><h2 class="section-title">Records</h2></div><div class="tiles">${rec.map(([a,b,c,col])=>`<div class="tile" style="border-top:4px solid ${col}"><span>${esc(a)}</span><b style="font-size:19px;color:${col}">${esc(b)}</b><span>${esc(c)}</span></div>`).join('')}</div>`:''}
+
   <div class="section-head"><h2 class="section-title">Journal</h2><button class="iconbtn" data-act="gosport" aria-label="Ajouter une séance">+</button></div>
   <div class="row-list">${jr.map(w=>`<div class="row"><div style="display:flex;gap:10px;align-items:stretch;min-width:0"><div class="evbar" style="background:${SPORTS[w.type].col}"></div><div style="min-width:0"><div class="row-title">${SPORTS[w.type].name}${w.src==='strava'?'<span class="src">Strava</span>':''}</div><div class="row-sub">${dShort(w.date)} · ${w.min} min${w.dist?' · '+fmtN(w.dist,1)+' km · '+pace(w):''}${w.type==='muscu'?' · '+setsOf(w)+' séries':''}</div></div></div><button class="row-del" data-act="delw" data-id="${w.id}" aria-label="Supprimer la séance">×</button></div>`).join('')||'<div class="empty">Aucune séance. Va dans Séance pour enregistrer la première.</div>'}</div>
   ${all.length>5?`<button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="toggle" data-id="jall">${ui.open.jall?'Réduire':'Tout voir ('+all.length+')'}</button>`:''}`;
@@ -2599,6 +2646,106 @@ async function shareCard(){
 }
 window._dbg={makeCard};
 
+/* ================= Mes max et niveau (comparaison à des populations) ================= */
+/* Modèle : distribution log-normale du ratio max/poids de corps (ou du temps en course).
+   Repères : standards Strength Level (pratiquants), standards « non entraînés » et part des hommes
+   qui développent leur poids de corps (population générale), records amateurs de force athlétique,
+   temps des finishers de courses 5/10 km. Ce sont des estimations. */
+const MXL=[
+  {k:'bench',n:'Développé couché',lib:'Développé couché',u:'kg',g:{m:.6,s:.33},l:{m:1.22,s:.285},c:{m:1.45,s:.2}},
+  {k:'squat',n:'Squat',lib:'Squat',u:'kg',g:{m:.85,s:.33},l:{m:1.66,s:.278},c:{m:2.05,s:.19}},
+  {k:'dead',n:'Soulevé de terre',lib:'Soulevé de terre',u:'kg',g:{m:1.0,s:.33},l:{m:1.94,s:.279},c:{m:2.45,s:.18}},
+  {k:'ohp',n:'Développé militaire',lib:'Développé militaire',u:'kg',g:{m:.4,s:.34},l:{m:.775,s:.318}},
+  {k:'row',n:'Rowing barre',lib:'Rowing barre',u:'kg',g:{m:.55,s:.34},l:{m:1.1,s:.308}},
+  {k:'pull',n:'Tractions',lib:'Tractions',u:'reps',g:{m:5,s:.75},l:{m:11,s:.5}},
+  {k:'run5',n:'5 km',u:'time',g:{m:33,s:.22},l:{m:26.5,s:.18},c:{m:20,s:.12}},
+  {k:'run10',n:'10 km',u:'time',g:{m:68,s:.22},l:{m:53.1,s:.17},c:{m:42,s:.12}}
+];
+const MXSEX={bench:.55,squat:.68,dead:.68,ohp:.6,row:.62,pull:.45,run5:1.12,run10:1.12};
+function ageBand(a){return a<30?[18,29]:a<40?[30,39]:a<50?[40,49]:a<60?[50,59]:[60,99];}
+function ageF(a,run){const f=run?[1,1.005,1.05,1.12,1.25]:[1,.98,.92,.84,.72];const i=a<30?0:a<40?1:a<50?2:a<60?3:4;return f[i];}
+function mxPanels(){
+  const p=S.profile||{},a=+p.age||30,b=ageBand(a),fem=p.sex==='f',W=fem?'femmes':'hommes';
+  return [{k:'age',n:(fem?'Femmes ':'Hommes ')+b[0]+(b[1]<99?'–'+b[1]:'+')+' ans',d:'Ton âge, sportifs ou non',src:'g',age:a},
+    {k:'all',n:'Tous les '+W,d:'Adultes, sportifs et non sportifs',src:'g',all:1},
+    {k:'gym',n:'Pratiquants',d:'Muscu en salle ou courses officielles',src:'l'},
+    {k:'comp',n:'Compétiteurs',d:'Force athlétique fédérée, coureurs de club',src:'c'}];
+}
+const ncdf=z=>{const t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;};
+function mxVal(e){const m=(S.maxes||{})[e.k];if(!m)return null;
+  if(e.u==='kg'){const kg=+m.kg,r=+m.reps||1;if(!(kg>0))return null;return r<=1?kg:kg*(1+Math.min(r,12)/30);}
+  if(e.u==='reps'){return +m.reps>=0&&m.reps!==''?+m.reps:null;}
+  const t=parseDur(m.t);return t>0?t:null;}
+function mxPct(e,pan){
+  const v=mxVal(e);if(v==null)return null;
+  const ref=e[pan.src];if(!ref)return null;
+  const p=S.profile||{},fem=p.sex==='f',bw=curWeight()||weight()||75,run=e.u==='time';
+  let m=ref.m,s=ref.s;
+  if(fem)m=run?m*MXSEX[e.k]:m*MXSEX[e.k];
+  if(pan.src==='g'){if(pan.all){m=run?m*1.06:m*.88;s=s+.03;}else m=run?m*ageF(pan.age,1):m*ageF(pan.age,0);}
+  let z;
+  if(run)z=(Math.log(m)-Math.log(v))/s;
+  else if(e.u==='reps')z=(Math.log(v+1)-Math.log(m))/s;
+  else z=(Math.log(v/bw)-Math.log(m))/s;
+  return Math.min(Math.max(ncdf(z),.001),.999);
+}
+const MXT=[[.2,'Débutant'],[.5,'Novice'],[.8,'Intermédiaire'],[.95,'Avancé'],[1.01,'Élite']];
+const mxTier=p=>MXT.find(t=>p<t[0])[1];
+const topTxt=p=>p>=.99?'Top 1 %':p>=.5?'Top '+Math.max(1,Math.round((1-p)*100))+' %':'Mieux que '+Math.round(p*100)+' %';
+function mxGlobal(){
+  const pans=mxPanels(),done=MXL.filter(e=>mxVal(e)!=null);if(!done.length)return null;
+  const avgP=k=>{const ps=done.map(e=>mxPct(e,pans.find(x=>x.k===k))).filter(x=>x!=null);return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null;};
+  return {n:done.length,age:avgP('age'),all:avgP('all'),gym:avgP('gym'),comp:avgP('comp'),pans};
+}
+function journalBest(e){
+  if(!e.lib)return null;let best=null;
+  S.workouts.forEach(w=>(w.exs||[]).forEach(x=>{if(x.name!==e.lib)return;x.sets.forEach(s=>{
+    if(e.u==='reps'){if(!best||s.reps>best.reps)best={reps:s.reps,kg:s.kg,date:w.date};return;}
+    if(s.kg>0){const v=s.reps<=1?s.kg:s.kg*(1+Math.min(s.reps,12)/30);if(!best||v>best.v)best={v,kg:s.kg,reps:s.reps,date:w.date};}});}));
+  return best;
+}
+function mxBar(p){const x=Math.round(p*1000)/10;return `<div class="mxbar"><i style="--x:${x}%"></i><b style="left:${x}%"></b></div>`;}
+function mxCard(){
+  const g=mxGlobal();
+  const body=g?`<div class="mxsum"><div class="mxring">${ring(g.age,'var(--tc)',74,8)}<span>${Math.round(g.age*100)}</span></div>
+      <div style="flex:1;min-width:0"><b>${mxTier(g.gym!=null?g.gym:g.age)}</b><small>${topTxt(g.age)} · ${esc(g.pans[0].n.toLowerCase())}</small><small>${topTxt(g.gym)} des pratiquants</small></div></div>`
+    :`<p class="note" style="margin:0">Renseigne tes max (développé couché, squat, tractions, 5 km…) pour savoir où tu te situes face à ta tranche d'âge, à tous les hommes et aux pratiquants.</p>`;
+  return `<div class="section-head"><h2 class="section-title">Mes max et niveau</h2><span class="section-sub">${g?g.n+' / '+MXL.length+' renseignés':''}</span></div>
+  <button class="card mxc" data-act="tl" data-id="max">${body}<span class="mxgo">${g?'Voir le détail':'Renseigner mes max'} ›</span></button>`;
+}
+SP.max=function(){
+  S.maxes=S.maxes||{};
+  const pans=mxPanels(),pk=ui.mxp||'age',pan=pans.find(x=>x.k===pk)||pans[0],g=mxGlobal(),bw=curWeight()||(S.profile&&S.profile.weight)||0;
+  const hero=`<div class="hero2"><div class="sm">Niveau parmi les pratiquants</div><div class="big" style="font-size:38px">${g?esc(mxTier(g.gym!=null?g.gym:g.age)):'À découvrir'}</div>
+    <div class="sm" style="text-transform:none;letter-spacing:0;opacity:.75;font-size:13px">${g?topTxt(g.age)+' des '+esc(pans[0].n.toLowerCase()):'Renseigne au moins un max ci-dessous'}</div>
+    <div class="mini3"><div><small>${esc(pans[1].n)}</small><b>${g&&g.all!=null?topTxt(g.all).replace('Mieux que ','> '):'—'}</b></div><div><small>Pratiquants</small><b>${g&&g.gym!=null?topTxt(g.gym).replace('Mieux que ','> '):'—'}</b></div><div><small>Poids</small><b>${bw?fmtN(bw,1)+' kg':'—'}</b></div></div></div>`;
+  const panSel=`<div class="mxpans">${pans.map(x=>`<button class="mxpan ${x.k===pk?'on':''}" data-act="mxpan" data-id="${x.k}"><b>${esc(x.n)}</b><small>${esc(x.d)}</small></button>`).join('')}</div>`;
+  const rows=MXL.map(e=>{
+    const m=S.maxes[e.k]||{},v=mxVal(e),p=v!=null?mxPct(e,pan):null,jb=journalBest(e);
+    const inp=e.u==='kg'?`<div class="mxin"><button class="mxs" data-act="mxstep" data-id="${e.k}:-2.5" aria-label="Moins">−</button><input data-mx="${e.k}:kg" inputmode="decimal" placeholder="kg" value="${esc(m.kg||'')}"><button class="mxs" data-act="mxstep" data-id="${e.k}:2.5" aria-label="Plus">+</button><span class="mxx">×</span><input class="mxr" data-mx="${e.k}:reps" inputmode="numeric" placeholder="1" value="${esc(m.reps||'')}"><span class="mxu">rép.</span></div>`
+      :e.u==='reps'?`<div class="mxin"><button class="mxs" data-act="mxstep" data-id="${e.k}:-1" aria-label="Moins">−</button><input data-mx="${e.k}:reps" inputmode="numeric" placeholder="0" value="${esc(m.reps==null?'':m.reps)}"><button class="mxs" data-act="mxstep" data-id="${e.k}:1" aria-label="Plus">+</button><span class="mxu">rép. d'affilée</span></div>`
+      :`<div class="mxin"><input class="mxt" data-mx="${e.k}:t" inputmode="numeric" placeholder="${e.k==='run5'?'2500 → 25:00':'5000 → 50:00'}" value="${esc(m.t||'')}"><span class="mxu">temps</span></div>`;
+    const sug=jb&&e.u==='kg'&&(!v||jb.v>v+.5)?`<button class="mxsug" data-act="mxuse" data-id="${e.k}">Journal : ${fmtN(jb.kg,1)} kg × ${jb.reps} · utiliser</button>`:jb&&e.u==='reps'&&(v==null||jb.reps>v)?`<button class="mxsug" data-act="mxuse" data-id="${e.k}">Journal : ${jb.reps} rép. · utiliser</button>`:'';
+    const ref=e.u==='kg'&&v?`<span class="mxe">${(+m.reps||1)>1?'1RM estimé '+fmtN(v,1)+' kg · ':''}${bw?fmtN(v/bw,2)+' × ton poids':''}</span>`:'';
+    const out=p==null?(v!=null&&!e[pan.src]?`<div class="mxna">Pas de repère fiable pour ce panel</div>`:''):`${mxBar(p)}<div class="mxres"><b>${topTxt(p)}</b>${(()=>{const gp=mxPct(e,pans.find(x=>x.k==='gym'));return gp==null?'':`<span class="mxtier" title="Niveau parmi les pratiquants">${mxTier(gp)} · ${e.u==='time'?'coureurs':'pratiquants'}</span>`;})()}</div>
+      <div class="mxall">${pans.map(x=>{const q=mxPct(e,x);return q==null?'':`<span class="${x.k===pk?'on':''}">${esc(x.k==='age'?'Âge':x.k==='all'?'Tous':x.k==='gym'?'Pratiquants':'Compét.')} ${q<.01?'<1':q>.99?'>99':Math.round(q*100)}</span>`;}).join('')}</div>`;
+    return `<div class="card mxrow"><div class="mxh"><b>${esc(e.n)}</b>${ref}</div>${inp}${sug}<div class="mxo" id="mxo-${e.k}">${out}</div></div>`;
+  }).join('');
+  return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Mes max</h1>${hero}
+  <div class="section-head" style="margin-top:20px"><h2 class="section-title">Comparer avec</h2></div>${panSel}
+  ${!bw?`<div class="card" style="margin-top:12px"><p class="note" style="margin:0">Ajoute ton poids dans Nutrition : la force se compare en fonction du poids de corps.</p></div>`:''}
+  <div class="section-head"><h2 class="section-title">Mes exercices</h2><span class="section-sub">les chiffres = % battus</span></div>
+  <div class="mxlist">${rows}</div>
+  <p class="note">Estimations à partir de repères publics : standards de force par poids de corps (Strength Level, StrengthLog), niveau attendu d'un adulte non entraîné, records amateurs de force athlétique, temps des finishers de 5 et 10 km par âge. Les max avec répétitions sont convertis en 1RM (formule d'Epley). À prendre comme un ordre de grandeur, pas comme un classement officiel.</p>`;
+};
+function mxRefresh(k){
+  const e=MXL.find(x=>x.k===k);if(!e)return;
+  /* re-rendu léger : on recalcule toute la page sans perdre le focus du champ en cours */
+  const a=document.activeElement,sel=a&&a.dataset&&a.dataset.mx,pos=a&&a.selectionStart;
+  render();
+  if(sel){const n=document.querySelector('[data-mx="'+sel+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(er){}}}
+}
+
 /* ================= réglages ================= */
 function sheetInner(){
   const act=R.profiles.find(p=>p.id===R.active),pf=R.prefs;
@@ -2810,6 +2957,11 @@ document.addEventListener('click',e=>{
       else{ui.msg=r.added+' sortie'+(r.added>1?'s':'')+' importée'+(r.added>1?'s':'')+(r.dup?', '+r.dup+' déjà présente'+(r.dup>1?'s':''):'')+(r.skip?', '+r.skip+' ignorée'+(r.skip>1?'s':'')+' (autre sport ou trop courte)':'')+(r.bad?', '+r.bad+' avec une date illisible':'')+'.';save();}
       renderSheet();render();}).catch(()=>{ui.msg='Lecture du fichier impossible.';renderSheet();});return;}
 
+  if(a==='mxpan'){ui.mxp=id;render();return;}
+  if(a==='mxstep'){const[k,d]=id.split(':'),e=MXL.find(x=>x.k===k);S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});
+    if(e.u==='kg'){const v=Math.max((num(m.kg)||0)+(+d),0);m.kg=String(v).replace('.',',');if(!m.reps)m.reps='1';}else{m.reps=Math.max((+m.reps||0)+(+d),0);}
+    m.date=td;saveSoon();render();return;}
+  if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -2971,6 +3123,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}
   if(t.dataset.evi){S.proj.init=Math.max(num(t.value)||0,0);evUpdate(false);saveSoon();return;}
