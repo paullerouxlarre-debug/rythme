@@ -6,7 +6,7 @@
 <title>Rythme</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
 <style>
   /* Direction : app iOS. Gris système, cartes blanches arrondies, grands titres, barre d'onglets translucide.
      La couleur d'accent est choisie dans les réglages (variable --accent posée par le script). */
@@ -873,11 +873,66 @@
   #splash .spl2{ stroke:url(#spp); stroke-width:52; stroke-dasharray:1400; stroke-dashoffset:1400; animation:spdraw 1s cubic-bezier(.4,0,.2,1) .25s forwards; filter:drop-shadow(0 0 18px rgba(63,208,176,.6)); }
   @keyframes spdraw{ to{ stroke-dashoffset:0; } }
   #splash{ background:radial-gradient(55% 40% at 50% 46%,rgba(63,191,149,.25),transparent 70%),linear-gradient(180deg,#1B1C21,#09090B)!important; }
+
+  /* =====================================================================
+     v22 : palette chaude inspirée de la DA de Claude — crème, terracotta,
+     encre chaude, gris pierre ; titres en serif.
+     ===================================================================== */
+  :root{
+    --bg:#F5F4EE; --surface:#FBFAF6; --surface-2:#F0EEE6; --surface-3:#E6E3D8;
+    --text:#1F1E1C; --muted:#75736C; --sep:rgba(31,30,28,.09); --border:rgba(31,30,28,.09);
+    --negative:#C2483A; --clay:#C96442; --gph:#2A2826; --gph2:#1D1C1A; --hair:rgba(255,248,235,.08);
+    --serif:"Source Serif 4","Iowan Old Style","Charter",Georgia,serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#262624; --surface:#2F2F2C; --surface-2:#373633; --surface-3:#43413D;
+      --text:#F4F2EA; --muted:#A8A49A; --sep:rgba(255,248,235,.08); --border:rgba(255,248,235,.08);
+      --negative:#E0705F; --gph:#1F1E1C; --gph2:#181816;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#262624; --surface:#2F2F2C; --surface-2:#373633; --surface-3:#43413D;
+    --text:#F4F2EA; --muted:#A8A49A; --sep:rgba(255,248,235,.08); --border:rgba(255,248,235,.08);
+    --negative:#E0705F; --gph:#1F1E1C; --gph2:#181816;
+  }
+  body[data-tab=game]{ --tc:#9A7BC0; --tc2:#C8B4E0; }
+  body[data-tab=today]{ --tc:#D97757; --tc2:#E9A98F; }
+  body[data-tab=plan]{ --tc:#6A9BCC; --tc2:#A9C6E3; }
+  body[data-tab=money]{ --tc:#5E9C80; --tc2:#C9A15E; }
+  body[data-tab=sport]{ --tc:#C15F3C; --tc2:#DD9A7C; }
+  body[data-tab=food]{ --tc:#7E9459; --tc2:#B9C795; }
+  .tab[data-id=game]{ --c:#9A7BC0; } .tab[data-id=today]{ --c:#D97757; } .tab[data-id=plan]{ --c:#6A9BCC; }
+  .tab[data-id=money]{ --c:#5E9C80; } .tab[data-id=sport]{ --c:#C15F3C; } .tab[data-id=food]{ --c:#7E9459; }
+  body{ background:radial-gradient(120% 30% at 50% -6%,color-mix(in srgb,var(--tc) 8%,transparent),transparent 70%) no-repeat,var(--bg); background-attachment:fixed; }
+  h1.page{ font-family:var(--serif); font-weight:500; font-size:34px; letter-spacing:-.02em; }
+  .hero2 .big,.lvbig,.bignum,.ctitle span,#splash b{ font-family:var(--serif); font-weight:500!important; letter-spacing:-.02em!important; }
+  .hero2 .big{ font-size:44px; }
+  .bignum{ font-weight:500!important; }
+  .section-title{ letter-spacing:.07em; }
+  .btn-primary,.pdb{ background:var(--clay)!important; color:#fff!important; }
+  .claim,.quest.done .qchk{ background:var(--clay)!important; border-color:var(--clay)!important; color:#fff!important; }
+  .chip.on,.mxpan.on,.daycell.tod,.mday.sel{ background:var(--text)!important; color:var(--bg)!important; }
+  .hero2{ background:radial-gradient(90% 80% at 100% 0%,color-mix(in srgb,var(--tc) 30%,transparent),transparent 62%),radial-gradient(70% 60% at 0% 100%,color-mix(in srgb,var(--tc2) 12%,transparent),transparent 70%),linear-gradient(165deg,var(--gph),var(--gph2))!important; color:#F4F2EA; }
+  .tabpill{ background:color-mix(in srgb,var(--tc) 12%,transparent)!important; }
+  .tab.on{ color:var(--text)!important; }
+  .lg-pulse path{ stroke:var(--clay); }
+  .tbdg,.bdg{ background:var(--clay); }
+  .seg{ background:var(--surface-3); }
+  .seg button.on{ background:var(--surface); }
+  .card,.row-list,.form-panel,.toolrow,.sitem,.bdc,.mxpan,.mxrow{ background:var(--surface); }
+  .toast,.restp{ background:rgba(38,38,36,.94); color:#F4F2EA; }
+  #splash{ background:radial-gradient(55% 40% at 50% 46%,rgba(217,119,87,.28),transparent 70%),linear-gradient(180deg,#2A2826,#1D1C1A)!important; }
+  #splash .spr{ stroke:#F4F2EA; }
+  #splash .spl2{ stroke:#E08A68; filter:drop-shadow(0 0 16px rgba(217,119,87,.55)); }
+  .pdue{ border-color:color-mix(in srgb,var(--tc) 45%,var(--sep)); }
+  .sctip{ background:#1F1E1C; color:#F4F2EA; }
+  :root[data-theme="dark"] .sctip{ background:#F4F2EA; color:#1F1E1C; }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div><div id="ctitle" class="ctitle" data-act="totop"><span></span></div>
-<div id="splash" aria-hidden="true"><div class="spl"><svg class="splogo" viewBox="0 0 1024 1024"><defs><linearGradient id="spp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7CF0C3"/><stop offset=".5" stop-color="#3FD0B0"/><stop offset="1" stop-color="#5EA8FF"/></linearGradient></defs><path class="spr" d="M 268 434 A 268 268 0 0 1 756 434"/><path class="spr" d="M 756 590 A 268 268 0 0 1 268 590"/><path class="spl2" d="M 150 512 H 392 L 446 392 L 528 652 L 590 452 L 624 512 H 874"/></svg><b>Rythme</b></div></div>
+<div id="splash" aria-hidden="true"><div class="spl"><svg class="splogo" viewBox="0 0 1024 1024"><defs><linearGradient id="spp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E9A98F"/><stop offset="1" stop-color="#C96442"/></linearGradient></defs><path class="spr" d="M 268 434 A 268 268 0 0 1 756 434"/><path class="spr" d="M 756 590 A 268 268 0 0 1 268 590"/><path class="spl2" d="M 150 512 H 392 L 446 392 L 528 652 L 590 452 L 624 512 H 874"/></svg><b>Rythme</b></div></div>
 <div class="app">
   <div class="topbar">
     <p class="greeting" id="greeting"></p>
