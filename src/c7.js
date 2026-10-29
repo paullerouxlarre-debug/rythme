@@ -349,6 +349,15 @@ document.addEventListener('click',e=>{
   if(a==='rcsave'){const f=rcFinal();if(!f)return;ui.tab='sport';ui.sp='add';ui.draft=newDraft();ui.draft.type='course';ui.draft.dist=Math.round(f.d*100)/100;ui.draft.min=Math.round(f.t*10)/10;render();scrollTop();return;}
 });
 const rcStr=(k,v)=>k==='d'?String(Math.round(v*100)/100).replace('.',','):k==='t'?fmtDur(v):fmtPace(v);
+/* saisie sans « : » : les chiffres tapés sont mis en forme (500 → 5:00, 14530 → 1:45:30) */
+function autoColon(v){
+  v=String(v||'');
+  if(/[.,]/.test(v))return v.replace(/[^0-9.,]/g,'');
+  const d=v.replace(/\D/g,'').replace(/^0+(?=\d{3})/,'').slice(0,6);
+  if(d.length<=2)return d;
+  if(d.length<=4)return d.slice(0,-2)+':'+d.slice(-2);
+  return d.slice(0,-4)+':'+d.slice(-4,-2)+':'+d.slice(-2);
+}
 function rcUpdate(f){
   const r=ui.rc,key=f==='v'?'p':f;
   if(f==='v'){const v=num(r.v);r.p=v>0?fmtPace(60/v):'';}
@@ -362,7 +371,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
-  if(t.dataset.rc){const f=t.dataset.rc;ui.rc[f]=t.value;rcUpdate(f);return;}
+  if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}
   if(t.dataset.evi){S.proj.init=Math.max(num(t.value)||0,0);evUpdate(false);saveSoon();return;}
   if(t.dataset.dca&&ui.tab==='money'&&ui.money==='evol'){S.dca=Math.max(num(t.value)||0,0);evUpdate(false);saveSoon();return;}

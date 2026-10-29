@@ -184,11 +184,11 @@ SP.calc=function(){
   const r=ui.rc;
   return `<div class="card"><div class="form-grid">
     <div class="field"><label>Distance (km)</label><input id="rc-d" data-rc="d" inputmode="decimal" placeholder="10" value="${esc(r.d)}"></div>
-    <div class="field"><label>Temps (h:mm:ss)</label><input id="rc-t" data-rc="t" inputmode="numeric" placeholder="50:00" value="${esc(r.t)}"></div>
-    <div class="field"><label>Allure (min/km)</label><input id="rc-p" data-rc="p" inputmode="numeric" placeholder="5:00" value="${esc(r.p)}"></div>
+    <div class="field"><label>Temps</label><input id="rc-t" data-rc="t" inputmode="numeric" pattern="[0-9]*" placeholder="5000 → 50:00" autocomplete="off" value="${esc(r.t)}"></div>
+    <div class="field"><label>Allure (min/km)</label><input id="rc-p" data-rc="p" inputmode="numeric" pattern="[0-9]*" placeholder="500 → 5:00" autocomplete="off" value="${esc(r.p)}"></div>
     <div class="field"><label>Vitesse (km/h)</label><input id="rc-v" data-rc="v" inputmode="decimal" placeholder="12" value="${esc(r.v||'')}"></div></div>
     <div class="chips" style="margin-top:12px">${[[1,'1 km'],[5,'5 km'],[10,'10 km'],[21.0975,'Semi'],[42.195,'Marathon']].map(([v,l])=>`<button class="chip" data-act="rcd" data-id="${v}">${l}</button>`).join('')}<button class="chip" data-act="rcclear">Effacer</button></div>
-    <p class="note" style="margin-top:10px">Renseigne deux informations parmi la distance, le temps, l'allure ou la vitesse, le reste se calcule tout seul.</p></div>
+    <p class="note" style="margin-top:10px">Renseigne deux informations parmi la distance, le temps, l'allure ou la vitesse, le reste se calcule tout seul. Pas besoin de « : » : tape 500 pour 5:00 ou 14530 pour 1:45:30.</p></div>
   <div id="rcout" style="margin-top:12px">${rcResult()}</div>`;
 };
 
