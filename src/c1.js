@@ -34,6 +34,7 @@ const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
+const BUILD='__BUILD__';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,

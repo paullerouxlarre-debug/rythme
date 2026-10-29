@@ -32,7 +32,7 @@ function sheetInner(){
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
   <div class="sublabel">Sur ton iPhone</div>
-  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
+  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.'+'<br>Version du '+BUILD+'. <button class="chip" style="margin-top:8px" data-act="appupd">Rechercher une mise à jour</button>':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
 
   <div class="sublabel">Sauvegarde</div>
   <div class="card"><p class="note" style="margin:0 0 10px">Tes données vivent dans ce navigateur. Enregistre une copie pour les garder ou les passer sur un autre appareil.</p>
@@ -215,6 +215,7 @@ document.addEventListener('click',e=>{
     if(e.u==='kg'){const v=Math.max((num(m.kg)||0)+(+d),0);m.kg=String(v).replace('.',',');if(!m.reps)m.reps='1';}else{m.reps=Math.max((+m.reps||0)+(+d),0);}
     m.date=td;saveSoon();render();return;}
   if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
+  if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}

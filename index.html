@@ -997,6 +997,7 @@ const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
+const BUILD='29/10 15:59';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -2834,7 +2835,7 @@ function sheetInner(){
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
   <div class="sublabel">Sur ton iPhone</div>
-  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
+  <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.'+'<br>Version du '+BUILD+'. <button class="chip" style="margin-top:8px" data-act="appupd">Rechercher une mise à jour</button>':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
 
   <div class="sublabel">Sauvegarde</div>
   <div class="card"><p class="note" style="margin:0 0 10px">Tes données vivent dans ce navigateur. Enregistre une copie pour les garder ou les passer sur un autre appareil.</p>
@@ -3017,6 +3018,7 @@ document.addEventListener('click',e=>{
     if(e.u==='kg'){const v=Math.max((num(m.kg)||0)+(+d),0);m.kg=String(v).replace('.',',');if(!m.reps)m.reps='1';}else{m.reps=Math.max((+m.reps||0)+(+d),0);}
     m.date=td;saveSoon();render();return;}
   if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
+  if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -3236,6 +3238,6 @@ document.addEventListener('pointerdown',e=>{
 })();
 
 </script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl)return;rl=true;location.reload();});addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{window.__swr=r;r.update();}).catch(()=>{}));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&window.__swr)window.__swr.update();});}</script>
 </body>
 </html>

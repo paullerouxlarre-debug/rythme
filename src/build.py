@@ -5,10 +5,12 @@
 Usage : python3 src/build.py   (depuis la racine du dépôt)
 """
 import os, re, time, subprocess, tempfile
+os.environ['TZ']='Europe/Paris'; time.tzset()
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 S = os.path.join(R, 'src')
 parts = ['b0.html','c1.js','c2.js','c3.js','c4.js','c5.js','c6.js','c6b.js','c6c.js','c7.js']
 html = ''.join(open(os.path.join(S,p), encoding='utf-8').read() for p in parts) + '\n</script>\n</body>\n</html>\n'
+html = html.replace('__BUILD__', time.strftime('%d/%m %H:%M', time.localtime()))
 # vérification de syntaxe du script (si node est installé)
 js = html[html.rindex('<script>')+8:html.rindex('</script>')]
 try:
@@ -27,7 +29,7 @@ head = '''<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" type="image/png" href="icon-192.png">
 '''
 pwa = html.replace('<title>Rythme</title>', '<title>Rythme</title>\n'+head, 1)
-reg = "<script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>\n</body>"
+reg = "<script>if('serviceWorker' in navigator&&location.protocol==='https:'){let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(rl)return;rl=true;location.reload();});addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{window.__swr=r;r.update();}).catch(()=>{}));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&window.__swr)window.__swr.update();});}</script>\n</body>"
 i = pwa.rindex('</body>'); pwa = pwa[:i]+reg+pwa[i+7:]
 open(os.path.join(R,'index.html'),'w',encoding='utf-8').write(pwa)
 sw = os.path.join(R,'sw.js'); t = open(sw,encoding='utf-8').read()
