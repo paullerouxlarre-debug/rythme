@@ -1083,7 +1083,7 @@ const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 18:31';
+const BUILD='30/10 18:36';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -3188,7 +3188,7 @@ function mxAnalysis(){
   const P=mxProfile(),p=S.profile||{},age=+p.age||30,bw=curWeight()||+p.weight||0,h=+p.height||0,ins=[];
   if(!P.done.length)return '';
   const ranked=P.done.map(e=>({e,q:mxPct(e,mxPanels().find(x=>x.k==='gym'))})).filter(x=>x.q!=null).sort((a,b)=>b.q-a.q);
-  if(ranked.length>=2){ins.push(['star','Point fort : <b>'+esc(ranked[0].e.n)+'</b> ('+topTxt(ranked[0].q).toLowerCase()+' des pratiquants).']);const w=ranked[ranked.length-1];if(w.q<ranked[0].q-.15)ins.push(['target','À travailler : <b>'+esc(w.e.n)+'</b>, ton exercice le plus en retrait ('+Math.round(w.q*100)+' % battus).']);}
+  if(ranked.length>=2){{const qa=mxPct(ranked[0].e,mxPanels()[0]);ins.push(['star','Point fort : <b>'+esc(ranked[0].e.n)+'</b> ('+topTxt(ranked[0].q).toLowerCase()+' des pratiquants'+(qa!=null?', '+topTxt(qa).toLowerCase()+' des hommes de ton âge':'')+').']);}const w=ranked[ranked.length-1];if(w.q<ranked[0].q-.15){const qa=mxPct(w.e,mxPanels()[0]);ins.push(['target','Ton max le moins avancé, en comparaison : <b>'+esc(w.e.n)+'</b> ('+Math.round(w.q*100)+' % des pratiquants battus'+(qa!=null?', mais '+Math.round(qa*100)+' % des hommes de ton âge':'')+'). C\'est là que tu progresseras le plus vite.']);}}
   const v=k=>{const e=MXL.find(x=>x.k===k);return e?mxVal(e):null;};
   const sq=v('squat'),be=v('bench'),de=v('dead'),oh=v('ohp'),pu=v('pull');
   if(sq&&be){const r=sq/be;ins.push(['scale',r<1.15?'Le bas du corps est en retard sur le haut : squat = '+fmtN(r,2)+' × couché (repère 1,25 à 1,5).':r>1.6?'Jambes dominantes : squat = '+fmtN(r,2)+' × couché, le haut du corps peut progresser.':'Bon équilibre haut / bas du corps (squat = '+fmtN(r,2)+' × couché).']);}
@@ -3196,17 +3196,17 @@ function mxAnalysis(){
   if(oh&&be){const r=oh/be;if(r<.55)ins.push(['scale','Épaules en retrait : militaire = '+fmtN(r,2)+' × couché (repère 0,6 à 0,7).']);}
   if(be&&bw&&pu!=null){if(be/bw>=1&&pu<8)ins.push(['dumb','Tu pousses fort mais tires peu : '+pu+' tractions pour un couché à '+fmtN(be/bw,2)+' × ton poids. Ajoute du travail de dos.']);}
   if(P.str!=null&&P.end!=null){const d=P.str-P.end;ins.push(['bolt',Math.abs(d)<.12?'Profil <b>hybride équilibré</b> : force et endurance au même niveau.':d>0?'Profil <b>plutôt force</b> : l\'endurance est ton levier de progression.':'Profil <b>plutôt endurance</b> : la force est ton levier de progression.']);}
-  if(h&&bw){const imc=bw/((h/100)**2);if(imc>=25&&P.str!=null&&P.str>.6)ins.push(['shield','IMC de '+fmtN(imc,1)+', mais ta force suggère une masse musculaire élevée : l\'IMC surestime sans doute ton surpoids.']);else if(imc>=25)ins.push(['shield','IMC de '+fmtN(imc,1)+' : perdre un peu de poids améliorerait aussi tes temps de course et tes tractions.']);}
-  const L=(S.wlog||[]).slice().sort((a,b)=>a.d<b.d?-1:1);if(L.length>=2){const d=L[L.length-1].kg-L[0].kg;ins.push(['scale','Poids : '+(d>0?'+':'')+fmtN(d,1)+' kg depuis le '+dShort(L[0].d)+'.']);}
-  const ws=weeks(4).map(k=>inDays([0,1,2,3,4,5,6].map(i=>addD(k,i))).length),wa=avg(ws),goal=S.goals.weekSessions;
-  ins.push(['cal','Régularité : '+fmtN(wa,1)+' séance'+(wa>=2?'s':'')+' par semaine sur 4 semaines (objectif '+goal+').'+(wa<goal?' C\'est là que tu gagneras le plus.':'')]);
-  const st=lastDays(14).map(k=>(S.steps||{})[k]).filter(x=>x>0);if(st.length)ins.push(['step','Marche : '+fmtN(Math.round(avg(st)))+' pas par jour en moyenne'+(avg(st)<7000?', un peu bas pour la récupération et la santé.':'.')]);
-  /* âge physiologique */
-  const vo2=vo2From(),parts=[];
-  if(vo2)parts.push({n:'Cardio',a:cardioAge(vo2),w:.5,s:'VO2max estimée '+fmtN(vo2,1)});
-  if(P.sAge!=null)parts.push({n:'Force',a:age-(P.sAge-.5)*20,w:.4,s:topTxt(P.sAge)+' de ton âge'});
-  const used=MXL.filter(e=>mxVal(e)!=null&&(['bench','squat','dead','ohp','row','pull','push'].includes(e.k)||(vo2&&['run5','run10','run21','run42'].includes(e.k)))).map(e=>e.n);
-  const tw=sum(parts.map(x=>x.w)),pa=parts.length?Math.round(sum(parts.map(x=>x.a*x.w))/tw):null;
+  /* âge physiologique : rang moyen face aux hommes de ton âge, sur les seuls max renseignés */
+  const vo2=vo2From(),ageP=mxPanels()[0];
+  const filled=MXL.map(e=>({e,q:mxVal(e)!=null?mxPct(e,ageP):null})).filter(x=>x.q!=null);
+  const grp=(ks)=>{const L=filled.filter(x=>ks.includes(x.e.k));return L.length?avg(L.map(x=>x.q)):null;};
+  const qC=grp(['run400','run5','run10','run21','run42']),qF=grp(['bench','squat','dead','ohp','row','pull','push']);
+  const toAge=q=>Math.min(80,Math.max(18,age-(q-.5)*20));
+  const parts=[];
+  if(qC!=null)parts.push({n:'Cardio',a:toAge(qC),s:topTxt(qC)+' de ton âge'+(vo2?' · VO2 ≈ '+fmtN(vo2,0):'')});
+  if(qF!=null)parts.push({n:'Force',a:toAge(qF),s:topTxt(qF)+' de ton âge'});
+  const used=filled.map(x=>x.e.n);
+  const pa=filled.length?Math.round(toAge(avg(filled.map(x=>x.q)))):null;
   /* athlète hybride */
   const LV=[['Intermédiaire',{squat:1.25,bench:1,dead:1.5,pull:8,run5:25,run10:52}],['Avancé',{squat:1.5,bench:1.25,dead:2,pull:12,run5:22,run10:46}],['Élite',{squat:2,bench:1.5,dead:2.5,pull:20,run5:19,run10:40}]];
   const ok=(k,t)=>{const x=v(k);if(x==null)return null;if(k==='run5'||k==='run10')return x<=t;if(k==='pull')return x>=t;return bw?x/bw>=t:null;};
@@ -3221,7 +3221,7 @@ function mxAnalysis(){
   ${parts.length?`<div class="card" style="margin-top:10px"><div class="anaparts" style="grid-template-columns:repeat(${parts.length},1fr)">${parts.map(x=>`<div><small>${x.n}</small><b>${Math.round(x.a)} ans</b><em>${esc(x.s)}</em></div>`).join('')}</div><p class="note" style="margin:10px 0 0">Calculé uniquement sur : ${esc(used.join(', '))}.</p></div>`:''}
   ${next?`<div class="card" style="margin-top:10px"><div class="sublabel" style="margin:0 0 8px">Pour passer ${esc(next[0])} (athlète hybride)</div><div class="hys">${tgt}</div><p class="note" style="margin:8px 0 0">Force rapportée à ton poids, tractions d'affilée, temps de course. Vert : atteint.</p></div>`:''}
   <div class="card anal" style="margin-top:10px">${ins.map(([i,t])=>`<div class="ani"><span class="qico">${IC(i,16)}</span><p>${t}</p></div>`).join('')}</div>
-  <p class="note">Âge physiologique et score hybride : estimations (VO2max tirée de ton meilleur temps, formule de Daniels, comparée aux normes de VO2max par âge), uniquement à partir des max que tu as renseignés : un exercice vide n'est jamais compté. Indicatif, pas un avis médical.</p>`;
+  <p class="note">Âge physiologique : ton rang moyen face aux hommes de ton âge (sportifs ou non), sur les seuls max renseignés ; un rang médian donne ton âge réel, chaque tranche de 10 % au-dessus retire 2 ans. Aucun calcul sur tes pas, ton poids ou ta régularité. Indicatif, pas un avis médical.</p>`;
 }
 
 /* ================= réglages ================= */
