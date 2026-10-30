@@ -123,8 +123,11 @@ function dueBanner(){
 function workCard(){
   const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
-  return `<div class="section-head"><h2 class="section-title">Boulot</h2><span class="section-sub">${fmtH(wkMin)} sur ${tgt} h cette semaine</span></div>
-  <div class="card punch">
+  if(!dayCtx(td).work&&!rec.in)return '';
+  const open=!!ui.open.wk||!!punchDue();
+  const head=`<div class="section-head"><h2 class="section-title">Boulot</h2><span class="section-sub">${fmtH(wkMin)} sur ${tgt} h cette semaine</span></div>`;
+  if(!open)return head+`<button class="card wkmini" data-act="toggle" data-id="wk"><div style="flex:1;min-width:0"><b id="wlive">${fmtH(workMin(rec,true))}</b><small>${rec.in?'Arrivée '+rec.in+(rec.out?' · départ '+rec.out:ns?' · prochaine étape : '+ns[1].toLowerCase():''):'Pas encore pointé'}</small></div><span class="mxgo" style="margin:0">Détails ›</span></button>`;
+  return head+`<div class="card punch">
     <div class="bignum" id="wlive">${fmtH(workMin(rec,true))}</div>
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
     <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>

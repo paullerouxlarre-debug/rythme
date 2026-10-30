@@ -344,7 +344,7 @@ function gameBody(){
 }
 let _pdk='';
 function gLive(){
-  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();}
+  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();setTimeout(duePopup,first?1600:300);}
   const pn=$('#pdnow');if(pn)pn.textContent=hhmm();
   const g=G(),p=$('#gpts');
   if(p)p.textContent=fmtN(g.pts);

@@ -1022,6 +1022,8 @@
   .anal{ padding:6px 14px; } .ani{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--sep); } .ani:last-child{ border-bottom:none; }
   .ani p{ margin:0; font-size:14px; line-height:1.45; } .ani .qico{ width:30px; height:30px; border-radius:9px; }
   .anag .card,.grid2 .card{ margin-top:0!important; }
+  .wkmini{ width:100%; display:flex; align-items:center; gap:12px; text-align:left; color:var(--text); font:inherit; padding:14px 16px; }
+  .wkmini b{ display:block; font-family:var(--serif); font-weight:500; font-size:26px; letter-spacing:-.02em; } .wkmini small{ display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
 </style>
 </head>
 <body>
@@ -1083,7 +1085,7 @@ const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 18:36';
+const BUILD='30/10 18:50';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1875,7 +1877,7 @@ function gameBody(){
 }
 let _pdk='';
 function gLive(){
-  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();}
+  const pd=punchDue(),pk=pd?pd.key:'';if(pk!==_pdk){const first=_pdk==='';_pdk=pk;if(!first&&ui.tab==='today'&&!document.querySelector('input:focus'))render();else decorate();setTimeout(duePopup,first?1600:300);}
   const pn=$('#pdnow');if(pn)pn.textContent=hhmm();
   const g=G(),p=$('#gpts');
   if(p)p.textContent=fmtN(g.pts);
@@ -2059,8 +2061,11 @@ function dueBanner(){
 function workCard(){
   const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
-  return `<div class="section-head"><h2 class="section-title">Boulot</h2><span class="section-sub">${fmtH(wkMin)} sur ${tgt} h cette semaine</span></div>
-  <div class="card punch">
+  if(!dayCtx(td).work&&!rec.in)return '';
+  const open=!!ui.open.wk||!!punchDue();
+  const head=`<div class="section-head"><h2 class="section-title">Boulot</h2><span class="section-sub">${fmtH(wkMin)} sur ${tgt} h cette semaine</span></div>`;
+  if(!open)return head+`<button class="card wkmini" data-act="toggle" data-id="wk"><div style="flex:1;min-width:0"><b id="wlive">${fmtH(workMin(rec,true))}</b><small>${rec.in?'Arrivée '+rec.in+(rec.out?' · départ '+rec.out:ns?' · prochaine étape : '+ns[1].toLowerCase():''):'Pas encore pointé'}</small></div><span class="mxgo" style="margin:0">Détails ›</span></button>`;
+  return head+`<div class="card punch">
     <div class="bignum" id="wlive">${fmtH(workMin(rec,true))}</div>
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
     <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
@@ -2199,6 +2204,17 @@ async function syncSteps(force){
 const stepPct=()=>S.stepPct==null?30:+S.stepPct;
 function stepMin(k){const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
 const moveMin=k=>sum(wOn(k).map(w=>w.min))+stepMin(k);
+
+/* fenêtre de pointage qui s'ouvre d'elle-même pendant les créneaux (une fois par étape et par jour) */
+function duePopup(){
+  const p=punchDue();if(!p||p.st==='soon'||ui.tab!=='today'||$('#cfm'))return;
+  const td=todayK(),k=td+':'+p.k+':'+(p.st==='late'?'l':'n');S.popSeen=S.popSeen&&S.popSeen.d===td?S.popSeen:{d:td,k:[]};
+  if(S.popSeen.k.includes(k))return;S.popSeen.k.push(k);saveSoon();
+  showModal(`<div class="cfbox"><div class="cfi" style="background:color-mix(in srgb,var(--tc) 14%,transparent);color:var(--tc)">${IC('clock',26)}</div>
+    <h3>${p.st==='late'?'Tu as oublié de pointer '+p.label+' ?':'C\'est l\'heure de pointer '+p.label}</h3><p>Créneau habituel ${hm2(p.w[0])}–${hm2(p.w[1])}. L'heure reste modifiable ensuite.</p>
+    <button class="btn btn-primary" style="width:100%" data-act="punchpop">Pointer maintenant · ${hhmm()}</button>
+    <button class="btn" style="width:100%;margin-top:8px" data-act="cfno">Plus tard</button></div>`);
+}
 
 /* ================= Tendance ================= */
 
@@ -3556,6 +3572,7 @@ document.addEventListener('click',e=>{
   if(a==='tl'){ui.tl=id||'';ui._dir=id?1:-1;render();scrollTop();return;}
 
   /* pointage */
+  if(a==='punchpop'){closeConfirm();const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(innerWidth/2,innerHeight/2,14);render();return;}
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
   if(a==='wsel'){ui.wd=id;render();return;}

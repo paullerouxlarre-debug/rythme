@@ -98,3 +98,14 @@ async function syncSteps(force){
 const stepPct=()=>S.stepPct==null?30:+S.stepPct;
 function stepMin(k){const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
 const moveMin=k=>sum(wOn(k).map(w=>w.min))+stepMin(k);
+
+/* fenêtre de pointage qui s'ouvre d'elle-même pendant les créneaux (une fois par étape et par jour) */
+function duePopup(){
+  const p=punchDue();if(!p||p.st==='soon'||ui.tab!=='today'||$('#cfm'))return;
+  const td=todayK(),k=td+':'+p.k+':'+(p.st==='late'?'l':'n');S.popSeen=S.popSeen&&S.popSeen.d===td?S.popSeen:{d:td,k:[]};
+  if(S.popSeen.k.includes(k))return;S.popSeen.k.push(k);saveSoon();
+  showModal(`<div class="cfbox"><div class="cfi" style="background:color-mix(in srgb,var(--tc) 14%,transparent);color:var(--tc)">${IC('clock',26)}</div>
+    <h3>${p.st==='late'?'Tu as oublié de pointer '+p.label+' ?':'C\'est l\'heure de pointer '+p.label}</h3><p>Créneau habituel ${hm2(p.w[0])}–${hm2(p.w[1])}. L'heure reste modifiable ensuite.</p>
+    <button class="btn btn-primary" style="width:100%" data-act="punchpop">Pointer maintenant · ${hhmm()}</button>
+    <button class="btn" style="width:100%;margin-top:8px" data-act="cfno">Plus tard</button></div>`);
+}

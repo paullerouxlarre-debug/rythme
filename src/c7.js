@@ -331,6 +331,7 @@ document.addEventListener('click',e=>{
   if(a==='tl'){ui.tl=id||'';ui._dir=id?1:-1;render();scrollTop();return;}
 
   /* pointage */
+  if(a==='punchpop'){closeConfirm();const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(innerWidth/2,innerHeight/2,14);render();return;}
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
   if(a==='wsel'){ui.wd=id;render();return;}
