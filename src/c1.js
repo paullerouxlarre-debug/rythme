@@ -85,7 +85,7 @@ if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
 useProfile();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R));}catch(e){}};
-const ui={tab:'today',gt:'adv',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
+const ui={tab:'today',gt:'quest',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over',plan:'month',open:{},draft:null,sel:null,pm:0,edraft:null,msg:'',sheet:false,per:'7',grp:null,wd:null,rc:{d:'',t:'',p:'',v:'',order:[],neg:false},fuel:{min:90}};
 
 function applyPrefs(){
   const r=document.documentElement,p=R.prefs;
@@ -120,7 +120,7 @@ function lineChart(pts,fy){
     <line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" style="stroke:var(--border)"/>
     ${area}${pts.length>1?`<path d="${d}" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="stroke:var(--tc)"/>`:''}
     ${dots}${labs}
-    <text x="${X(hi)}" y="${Y(vals[hi])-9}" font-size="10.5" text-anchor="middle" style="fill:var(--text)">${(fy||fmt)(vals[hi])}</text>
+    <text x="${X(hi)}" y="${Y(vals[hi])-9}" font-size="10.5" text-anchor="${X(hi)<50?'start':X(hi)>W-50?'end':'middle'}" style="fill:var(--text)">${(fy||fmt)(vals[hi])}</text>
   </svg>`;
 }
 function barChart(items,o={}){

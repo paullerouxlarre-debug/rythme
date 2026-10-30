@@ -96,7 +96,7 @@ SP.over=function(){
   const lab=ui.per==='all'?'depuis le début':ui.per+' derniers jours';
   return `<div class="hero2"><div style="display:flex;align-items:center;gap:16px"><div class="rw" style="width:96px;height:96px;flex:none">${ring(goal?wsess.length/goal:0,'#fff',96,11,'rgba(255,255,255,.28)')}<div class="rc" style="flex-direction:column;font-size:26px;font-weight:800">${wsess.length}<small style="font-size:11px;font-weight:600;opacity:.85">/ ${goal}</small></div></div>
     <div style="flex:1;min-width:0"><div class="sm">Cette semaine</div><div style="font-size:22px;font-weight:800;line-height:1.15;margin:2px 0">${wsess.length>=goal?'Objectif atteint':'Encore '+(goal-wsess.length)+' séance'+(goal-wsess.length>1?'s':'')}</div><div class="sm">${streak()} jour${streak()>1?'s':''} d'affilée</div></div></div>
-    <div class="mini3"><div><small>Effort</small><b>${cu(wmin,'h')}</b></div><div><small>Course</small><b>${cu(wkm,'km')}</b></div><div><small>Volume</small><b>${cu(sum(wsess.map(volOf))/1000,'t')}</b></div></div></div>
+    <div class="mini3"><div><small>Effort</small><b>${cu(wmin,'h')}</b></div><div><small>Course</small><b>${cu(wkm,'km')}</b></div><div><small>Pas / jour</small><b>${(()=>{const ds=lastDays(7).map(k=>(S.steps||{})[k]||0).filter(x=>x>0);return ds.length?fmtN(Math.round(avg(ds))):'—';})()}</b></div></div></div>
   ${mxCard()}
   <div style="height:14px"></div>${per}
   ${bodyCard(gs)}
@@ -107,7 +107,7 @@ SP.over=function(){
   <div class="card"><div class="heatw">${cells.join('')}</div></div>
 
   <div class="section-head"><h2 class="section-title">Journal</h2><button class="iconbtn" data-act="gosport" aria-label="Ajouter une séance">+</button></div>
-  <div class="row-list">${jr.map(w=>`<div class="row"><div style="display:flex;gap:10px;align-items:stretch;min-width:0"><div class="evbar" style="background:${SPORTS[w.type].col}"></div><div style="min-width:0"><div class="row-title">${SPORTS[w.type].name}${w.src==='strava'?'<span class="src">Strava</span>':''}</div><div class="row-sub">${dShort(w.date)} · ${w.min} min${w.dist?' · '+fmtN(w.dist,1)+' km · '+pace(w):''}${w.type==='muscu'?' · '+setsOf(w)+' séries':''}</div></div></div><button class="row-del" data-act="delw" data-id="${w.id}" aria-label="Supprimer la séance">×</button></div>`).join('')||'<div class="empty">Aucune séance. Va dans Séance pour enregistrer la première.</div>'}</div>
+  <div class="row-list">${jr.map(w=>`<div class="row"><div style="display:flex;gap:10px;align-items:stretch;min-width:0"><div class="evbar" style="background:${SPORTS[w.type].col}"></div><div style="min-width:0"><div class="row-title">${w.prog?esc(progName(w.prog)):SPORTS[w.type].name}${w.src==='strava'?'<span class="src">Strava</span>':''}</div><div class="row-sub">${dShort(w.date)} · ${w.min} min${w.dist?' · '+fmtN(w.dist,1)+' km':''}${w.prog?' · '+SPORTS[w.type].name:''}</div></div></div><button class="row-del" data-act="delw" data-id="${w.id}" aria-label="Supprimer la séance">×</button></div>`).join('')||'<div class="empty">Aucune séance. Va dans Séance pour enregistrer la première.</div>'}</div>
   ${all.length>5?`<button class="btn btn-ghost" style="width:100%;margin-top:10px" data-act="toggle" data-id="jall">${ui.open.jall?'Réduire':'Tout voir ('+all.length+')'}</button>`:''}`;
 };
 
@@ -127,31 +127,34 @@ function applyTpl(ref){
     if(t.type==='muscu')d.exs=t.exs.map(([n,s,r])=>exFromTpl(n,s,r));
     else{if(t.min)d.min=t.min;if(t.dist)d.dist=t.dist;if(t.fmt)d.fmt=t.fmt;}}
 }
+const PROGS=[
+  {k:'push',n:'Push',d:'Pecs, épaules, triceps',t:'muscu',min:60,x:TPL_M[0].x,ic:'dumb'},
+  {k:'pull',n:'Pull',d:'Dos et biceps',t:'muscu',min:60,x:TPL_M[1].x,ic:'dumb'},
+  {k:'legs',n:'Legs',d:'Jambes',t:'muscu',min:60,x:TPL_M[2].x,ic:'dumb'},
+  {k:'full',n:'Full body',d:'Tout le corps',t:'muscu',min:60,x:TPL_M[3].x,ic:'dumb'},
+  {k:'upper',n:'Haut du corps',d:'Pecs, dos, épaules, bras',t:'muscu',min:60,x:[['Développé couché',3,8],['Tractions',3,8],['Développé militaire',3,10],['Rowing barre',3,10],['Curl barre',2,12]],ic:'dumb'},
+  {k:'core',n:'Abdos & gainage',d:'Sangle abdominale',t:'muscu',min:25,x:[['Crunch',3,15],['Gainage',3,1]],ic:'shield'},
+  {k:'footing',n:'Footing',d:'Allure facile',t:'course',min:45,ic:'run'},
+  {k:'long',n:'Sortie longue',d:'Endurance',t:'course',min:90,ic:'run'},
+  {k:'frac',n:'Fractionné',d:'Séance intense',t:'course',min:40,ic:'bolt'},
+  {k:'race',n:'Course officielle',d:'5 km, 10 km, semi…',t:'course',min:60,ic:'medal'},
+  {k:'padelm',n:'Match de padel',d:'Compétition ou amis',t:'padel',min:90,fmt:'Match',ic:'target'},
+  {k:'padelt',n:'Entraînement padel',d:'Technique',t:'padel',min:60,fmt:'Entraînement',ic:'target'},
+  {k:'board',n:'Bodyboard',d:'Session',t:'bodyboard',min:120,ic:'moon'}
+];
+const progName=k=>{const p=PROGS.find(x=>x.k===k);return p?p.n:k;};
+const PGRP=[['muscu','Musculation'],['course','Course à pied'],['padel','Padel'],['bodyboard','Glisse']];
 SP.add=function(){
-  if(!ui.draft)ui.draft=newDraft();
-  const d=ui.draft,t=d.type,tl=tplList(t),lib=exLib();
-  const dist=num(d.dist),mn=num(d.min);
-  const names=Object.keys(lib).sort();
-  const fld=(l,k,attr,cls='')=>`<div class="field ${cls}"><label>${l}</label><input data-d="${k}" value="${esc(d[k])}" ${attr}></div>`;
-  const exs=d.exs.map((ex,i)=>`<div class="exblock"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="row-title">${esc(ex.name)} <span class="tag" style="background:var(--surface);color:${GCOL[ex.group]||GCOL.Autre}">${esc(ex.group)}</span></div><button class="row-del" data-act="delex" data-id="${i}" aria-label="Retirer l'exercice">×</button></div>
-    ${ex.prev?`<div class="row-sub">Dernière fois : ${ex.prev.map(s=>s.kg+'×'+s.reps).join(', ')}</div>`:''}
-    <div class="setrow head"><span></span><span>kg</span><span>reps</span><span>1RM est.</span><span></span></div>
-    ${ex.sets.map((s,j)=>`<div class="setrow"><span class="setn">${j+1}</span><input data-s="${i}:${j}:kg" inputmode="decimal" value="${esc(s.kg)}" placeholder="kg" aria-label="Poids série ${j+1}"><input data-s="${i}:${j}:reps" inputmode="numeric" value="${esc(s.reps)}" placeholder="reps" aria-label="Répétitions série ${j+1}"><span class="muted" style="font-size:12.5px;text-align:center">${num(s.kg)>0&&num(s.reps)>0?fmtN(e1rm(num(s.kg),num(s.reps))):'–'}</span><button class="row-del" data-act="delset" data-id="${i}:${j}" aria-label="Retirer la série">×</button></div>`).join('')}
-    <button class="btn btn-ghost" style="margin-top:10px;padding:8px 12px;font-size:13.5px" data-act="addset" data-id="${i}">Ajouter une série</button></div>`).join('');
-  const specific=t==='muscu'?`<div class="chips" style="margin:0 0 10px"><span class="muted" style="font-size:12.5px;font-weight:600">Repos</span>${[60,90,120,180].map(s=>`<button class="chip" data-act="rest" data-id="${s}">${s>=120?s/60+' min':s+' s'}</button>`).join('')}</div>${exs}<div class="exadd"><input id="ex-n" list="exl" placeholder="Ajouter un exercice" autocomplete="off"><datalist id="exl">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist><select id="ex-g" aria-label="Groupe musculaire si nouvel exercice">${GROUPS.map(g=>`<option>${g}</option>`).join('')}</select><button class="btn btn-ghost" data-act="addex">Ajouter</button></div><p class="note" style="margin-top:6px">Un nouvel exercice est enregistré avec le groupe choisi.</p>`
-    :t==='course'?`<div class="form-grid">${fld('Distance (km)','dist','inputmode="decimal"')}<div class="field"><label>Allure</label><input value="${dist>0&&mn>0?mmss(mn/dist)+' /km':'–'}" disabled></div></div>`
-    :t==='padel'?`<div class="field"><label>Format</label><select data-d="fmt">${['Match','Entraînement'].map(x=>`<option ${d.fmt===x?'selected':''}>${x}</option>`).join('')}</select></div>`
-    :`<div class="form-grid">${fld('Spot','spot','placeholder="Plage, spot…"')}<div class="field"><label>Houle</label><select data-d="swell">${['Petite','Moyenne','Grosse'].map(x=>`<option ${d.swell===x?'selected':''}>${x}</option>`).join('')}</select></div></div>`;
-  return `
-  <div class="chips" style="margin-bottom:14px">${Object.entries(SPORTS).map(([k,v])=>`<button class="chip ${t===k?'on':''}" data-act="dtype" data-id="${k}">${v.name}</button>`).join('')}</div>
-  <div class="sublabel" style="margin-top:0">Mes entraînements</div>
-  <div class="tiles">${tl.map(x=>`<button class="tile" data-act="tpl" data-id="${x.ref}"><b>${esc(x.n)}</b><span>${esc(x.d)}</span>${x.custom?`<span class="x" data-act="deltpl" data-id="${x.custom}" role="button" aria-label="Supprimer le modèle">×</span>`:''}</button>`).join('')||'<div class="empty">Aucun modèle pour ce sport.</div>'}</div>
-  <div class="form-panel" style="margin-top:14px"><div class="form-grid">
-    ${fld('Date','date','type="date"')}${fld('Durée (min)','min','type="number" inputmode="numeric" placeholder="'+(t==='muscu'?'auto':'45')+'"')}</div>
-    <div style="margin-top:14px">${specific}</div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="addw">Enregistrer la séance</button><button class="btn btn-ghost" data-act="toggle" data-id="tn">Créer un modèle</button></div>
-    ${ui.open.tn?`<div style="display:flex;gap:8px;margin-top:12px"><input id="tpl-n" class="inl" placeholder="Nom de l'entraînement"><button class="btn btn-primary" style="flex:none" data-act="savetpl">Sauver</button></div><p class="note" style="margin-top:6px">Le modèle garde les exercices et séries saisis ci-dessus${t==='muscu'?'':', la durée et la distance'}. Il apparaîtra dans « Mes entraînements ».</p>`:''}
-    ${ui.msg&&ui.tab==='sport'?`<p class="note">${esc(ui.msg)}</p>`:''}</div>`;
+  const q=ui.qd||(ui.qd={p:null,date:todayK(),min:'',dist:''}),P=PROGS.find(x=>x.k===q.p);
+  const form=P?`<div class="card qform"><div class="qhead"><span class="qico">${IC(P.ic,20)}</span><div style="flex:1;min-width:0"><b>${esc(P.n)}</b><small>${esc(SPORTS[P.t].name)}</small></div><button class="row-del" data-act="qprog" data-id="" aria-label="Changer">×</button></div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="field"><label>Date</label><input type="date" data-q="date" value="${esc(q.date)}"></div>
+      <div class="field"><label>Durée (min)</label><input type="number" inputmode="numeric" data-q="min" value="${esc(q.min)}" placeholder="${P.min}"></div>
+      ${P.t==='course'?`<div class="field wide"><label>Distance (km), facultatif</label><input type="number" inputmode="decimal" step="any" data-q="dist" value="${esc(q.dist)}"></div>`:''}</div>
+    <div class="form-actions"><button class="btn btn-primary" style="width:100%" data-act="qsave">Enregistrer la séance</button></div></div>`:'';
+  return `${form}<p class="note" style="margin:${P?'14px':'0'} 4px 6px">Choisis ce que tu as fait : la séance est notée avec sa durée habituelle, modifiable.</p>
+  ${PGRP.map(([t,l])=>`<div class="sublabel">${l}</div><div class="qgrid">${PROGS.filter(p=>p.t===t).map(p=>`<button class="qtile ${q.p===p.k?'on':''}" data-act="qprog" data-id="${p.k}"><span class="qico">${IC(p.ic,18)}</span><b>${esc(p.n)}</b><small>${esc(p.d)} · ${p.min} min</small></button>`).join('')}</div>`).join('')}
+  ${ui.msg&&ui.tab==='sport'?`<p class="note">${esc(ui.msg)}</p>`:''}`;
 };
 
 /* ---- Calcul de course ---- */
@@ -218,6 +221,7 @@ V.food=function(){
   const macro=(l,g,kc,col)=>`<div style="flex:${Math.max(kc,1)};background:${col}"></div>`;
   return `<h1 class="page">Nutrition</h1>
   ${prof}
+  ${weightCard()}
   <div class="card" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div class="section-title" style="color:${c.col}">${c.name}</div><span class="muted" style="font-size:12.5px">aujourd'hui</span></div>
     <div class="chips" style="margin:8px 0 14px">${tags.map(x=>`<span class="chip static on">${x}</span>`).join('')}</div>
     <div class="bignum">${fmtN(n.kc)} <span class="muted" style="font-size:16px;font-weight:600">kcal</span></div>
@@ -237,7 +241,7 @@ V.food=function(){
     <div class="chips" style="margin-top:6px">${[0,1,2,3].map(i=>`<span class="lg"><span class="dot" style="background:${['#8E8E93','#34C759','#FF9500','#FF3B30'][i]}"></span>${['Repos','Léger','Modéré','Gros effort'][i]}</span>`).join('')}</div></div>
   <div class="row-list" style="margin-top:12px">${wkDays.map(({k,n:x})=>`<div class="row"><div style="min-width:0"><div class="row-title cap1">${k===td?'Aujourd\'hui':dLong(k)}</div><div class="row-sub"><span style="color:${x.c.col};font-weight:700">${x.c.name}</span>${x.c.work?' · Boulot':''}${x.c.trip?' · Voyage':''}${x.c.relax?' · Détente':''}${x.c.min?' · '+x.c.min+' min':''}</div></div><div style="text-align:right"><div class="row-value">${fmtN(x.kc)} kcal</div><div class="row-sub">${x.carbs} g gluc. · ${x.prot} g prot.</div></div></div>`).join('')}</div>
 
-  ${wl.length>1?`<div class="section-head"><h2 class="section-title">Poids</h2></div><div class="card">${lineChart(wl,v=>fmtN(v,1)+' kg')}</div>`:''}
+
 
   <div class="section-head"><h2 class="section-title">Repères</h2></div>
   <div class="row-list">${INFO.map(i=>`<details class="acc"><summary><span>${esc(i.t)}</span></summary><p>${esc(i.b)}</p></details>`).join('')}<details class="acc"><summary><span>Compléments (facultatif)</span></summary><p>${esc(SUPPL)}</p></details></div>
@@ -248,3 +252,30 @@ V.food=function(){
     <div class="stat"><div class="k">Boisson</div><div class="v">${Math.round(400*h/10)*10} à ${Math.round(800*h/10)*10} ml</div><div class="s">selon chaleur et sueur</div></div></div></div>
   <p class="note">Repères généraux issus des recommandations de nutrition du sport, à adapter à toi. Ce n'est pas un avis médical. En cas de pathologie, de grossesse ou de régime particulier, demande à un professionnel de santé.</p>`;
 };
+
+/* ================= Poids : saisie libre et statistiques ================= */
+function weightCard(){
+  const L=(S.wlog||[]).slice().sort((a,b)=>a.d<b.d?-1:1),td=todayK();
+  const form=`<div class="wform"><input id="wt-kg" type="number" inputmode="decimal" step="any" placeholder="${L.length?fmtN(L[L.length-1].kg,1):'kg'}"><input id="wt-d" type="date" value="${td}"><button class="btn btn-primary" data-act="wsave">Noter</button></div>`;
+  if(!L.length)return `<div class="section-head"><h2 class="section-title">Mon poids</h2></div><div class="card">${form}<p class="note" style="margin:8px 0 0">Note ton poids quand tu veux, sans régularité imposée : l'app trace la courbe et les tendances.</p></div>`;
+  const last=L[L.length-1],first=L[0];
+  const before=k=>{let r=null;L.forEach(x=>{if(x.d<=k)r=x;});return r;};
+  const p30=before(addD(td,-30)),d30=p30?last.kg-p30.kg:null,dAll=last.kg-first.kg;
+  const kgs=L.map(x=>x.kg),mn=Math.min(...kgs),mx=Math.max(...kgs);
+  const R=L.filter(x=>x.d>=addD(td,-90));let slope=null;
+  if(R.length>=3){const t0=new Date(R[0].d+'T12:00').getTime(),xs=R.map(x=>(new Date(x.d+'T12:00').getTime()-t0)/6048e5),ys=R.map(x=>x.kg),mx_=avg(xs),my=avg(ys);const den=sum(xs.map(x=>(x-mx_)**2));if(den>0)slope=sum(xs.map((x,i)=>(x-mx_)*(ys[i]-my)))/den;}
+  const h=S.profile&&S.profile.height?S.profile.height/100:0,imc=h?last.kg/(h*h):0;
+  const sg=v=>(v>0?'+':v<0?'−':'')+fmtN(Math.abs(v),1)+' kg';
+  const pts=L.slice(-60).map(x=>({l:dShort(x.d),v:x.kg}));
+  return `<div class="section-head"><h2 class="section-title">Mon poids</h2><span class="section-sub">${L.length} pesée${L.length>1?'s':''}</span></div>
+  <div class="card"><div class="wtop"><div><small>${esc(dShort(last.d))}</small><b>${fmtN(last.kg,1)} <span>kg</span></b></div>${slope!=null?`<span class="wtr ${slope<=0?'dn':'up'}">${sg(slope)} / sem.</span>`:''}</div>
+    ${pts.length>1?`<div style="margin-top:8px">${lineChart(pts,v=>fmtN(v,1)+' kg')}</div>`:''}
+    ${form}</div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="stat box"><div class="k">Sur 30 jours</div><div class="v">${d30==null?'—':sg(d30)}</div></div>
+    <div class="stat box"><div class="k">Depuis le début</div><div class="v">${sg(dAll)}</div><div class="s">${esc(dShort(first.d))}</div></div>
+    <div class="stat box"><div class="k">Min / max</div><div class="v">${fmtN(mn,1)} / ${fmtN(mx,1)}</div></div>
+    <div class="stat box"><div class="k">${imc?'IMC':'Moyenne'}</div><div class="v">${imc?fmtN(imc,1):fmtN(avg(kgs),1)+' kg'}</div>${imc?`<div class="s">${imc<18.5?'insuffisance pondérale':imc<25?'corpulence normale':imc<30?'surpoids':'obésité'}</div>`:''}</div></div>
+  <details class="card wdet" ${ui.open.wh?'open':''}><summary data-act="togglesum" data-id="wh"><span>Historique des pesées</span><span class="muted" style="font-size:13px">${ui.open.wh?'Masquer':'Afficher'}</span></summary>
+    ${ui.open.wh?`<div class="row-list" style="margin-top:10px;box-shadow:none">${L.slice().reverse().map(x=>`<div class="row"><span class="row-title cap1" style="font-weight:500">${esc(dLong(x.d))}</span><div style="display:flex;align-items:center;gap:10px"><span class="row-value">${fmtN(x.kg,1)} kg</span><button class="row-del" data-act="wdel" data-id="${x.d}" aria-label="Supprimer">×</button></div></div>`).join('')}</div>`:''}</details>`;
+}

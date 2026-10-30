@@ -38,6 +38,7 @@ function sheetInner(){
     <div class="field" style="margin-top:10px"><label>Synchro automatique : lien de ton Gist GitHub</label><input data-stepsync="1" value="${esc(S.stepsSync||'')}" placeholder="https://gist.github.com/…" autocomplete="off" autocapitalize="off"></div>
     <div class="form-actions" style="margin-top:8px"><button class="btn btn-ghost" data-act="stepsynctest">Synchroniser maintenant</button></div>
     ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
+    <div class="field" style="margin-top:10px"><label>Part des pas dans l'objectif sport (%)</label><input type="number" inputmode="numeric" value="${stepPct()}" data-steppct="1"></div><p class="note" style="margin:4px 0 0">Atteindre ton objectif de pas remplit ce pourcentage de tes ${S.goals.dayMin} min de sport du jour.</p>
     <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
 
   <div class="sublabel">Notifications</div>
@@ -256,11 +257,13 @@ document.addEventListener('click',e=>{
       else{ui.msg=r.added+' sortie'+(r.added>1?'s':'')+' importée'+(r.added>1?'s':'')+(r.dup?', '+r.dup+' déjà présente'+(r.dup>1?'s':''):'')+(r.skip?', '+r.skip+' ignorée'+(r.skip>1?'s':'')+' (autre sport ou trop courte)':'')+(r.bad?', '+r.bad+' avec une date illisible':'')+'.';save();}
       renderSheet();render();}).catch(()=>{ui.msg='Lecture du fichier impossible.';renderSheet();});return;}
 
+  if(a==='mxadd'){const n=val('mx-new');if(!n)return;S.maxCustom=S.maxCustom||[];S.maxCustom.push({k:'c'+uid(),n});save();render();return;}
+  if(a==='mxdel'){S.maxCustom=(S.maxCustom||[]).filter(x=>x.k!==id);if(S.maxes)delete S.maxes[id];save();render();return;}
   if(a==='mxpan'){ui.mxp=id;render();return;}
-  if(a==='mxstep'){const[k,d]=id.split(':'),e=MXL.find(x=>x.k===k);S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});
+  if(a==='mxstep'){const[k,d]=id.split(':'),e=allMx().find(x=>x.k===k);S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});
     if(e.u==='kg'){const v=Math.max((num(m.kg)||0)+(+d),0);m.kg=String(v).replace('.',',');if(!m.reps)m.reps='1';}else{m.reps=Math.max((+m.reps||0)+(+d),0);}
-    m.date=td;saveSoon();render();return;}
-  if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
+    m.date=td;mxRecord(k);saveSoon();render();return;}
+  if(a==='mxuse'){const e=allMx().find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};mxRecord(id);save();render();toast('Max mis à jour');return;}
   if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='icspt'){openIcs('rythme-rappels-pointage.ics',icsPointage());return;}
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
@@ -272,6 +275,17 @@ document.addEventListener('click',e=>{
   if(a==='stepsxml'){const f=$('#stx-f')&&$('#stx-f').files[0];if(!f){ui.msg='Choisis le fichier export.xml.';renderSheet();return;}
     ui.msg='Lecture du fichier…';renderSheet();
     parseHealthXml(f,p=>{const n=document.querySelector('#sheet .stxp');if(n)n.textContent=Math.round(p*100)+' %';}).then(o=>{const n=mergeSteps(o),k=Object.keys(o).length;save();ui.msg=k?k+' jours de pas importés.':'Aucun pas trouvé dans ce fichier.';renderSheet();render();}).catch(()=>{ui.msg='Lecture impossible.';renderSheet();});return;}
+  if(a==='qprog'){const p=PROGS.find(x=>x.k===id);ui.qd=Object.assign(ui.qd||{date:todayK()},{p:id||null,min:p?String(p.min):'',dist:''});render();if(p)scrollTop();return;}
+  if(a==='qsave'){const q=ui.qd||{},p=PROGS.find(x=>x.k===q.p);if(!p)return;const mn=num(q.min)>0?num(q.min):p.min;
+    const w={id:uid(),date:q.date||td,type:p.t,rpe:6,min:mn,prog:p.k};
+    if(p.x)w.exs=p.x.map(([n,s,r])=>({name:n,group:exLib()[n]||'Abdos',sets:Array.from({length:s},()=>({kg:0,reps:r}))}));
+    if(p.t==='course'&&num(q.dist)>0)w.dist=num(q.dist);if(p.fmt)w.fmt=p.fmt;
+    S.workouts.push(w);evPlanned(w.date).filter(ev=>!ev.sport||ev.sport===p.t).forEach(ev=>{ev.done=ev.done||{};ev.done[w.date]=true;});
+    ui.qd=null;ui.sp='over';save();burst(e.clientX,e.clientY,20);toast(p.n+' notée · '+mn+' min');render();scrollTop();return;}
+  if(a==='wsave'){const kg=num(val('wt-kg')),d=val('wt-d')||td;if(!(kg>20&&kg<400)){toast('Indique ton poids en kg');return;}
+    S.wlog=S.wlog||[];const ex=S.wlog.find(x=>x.d===d);if(ex)ex.kg=kg;else S.wlog.push({d,kg});S.wlog.sort((a,b)=>a.d<b.d?-1:1);
+    if(S.profile)S.profile.weight=S.wlog[S.wlog.length-1].kg;save();toast('Poids noté : '+fmtN(kg,1)+' kg');render();return;}
+  if(a==='wdel'){S.wlog=(S.wlog||[]).filter(x=>x.d!==id);save();render();return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -413,7 +427,7 @@ document.addEventListener('click',e=>{
   if(a==='delw'){S.workouts=S.workouts.filter(w=>w.id!==id);save();render();return;}
   if(a==='rcd'){ui.rc.d=String(id).replace('.',',');rcUpdate('d');return;}
   if(a==='rcclear'){ui.rc={d:'',t:'',p:'',v:'',order:[],neg:false};render();return;}
-  if(a==='rcsave'){const f=rcFinal();if(!f)return;ui.tab='sport';ui.sp='add';ui.draft=newDraft();ui.draft.type='course';ui.draft.dist=Math.round(f.d*100)/100;ui.draft.min=Math.round(f.t*10)/10;render();scrollTop();return;}
+  if(a==='rcsave'){const f=rcFinal();if(!f)return;ui.tab='sport';ui.tl='';ui.sp='add';ui.qd={p:'race',date:todayK(),dist:String(Math.round(f.d*100)/100),min:String(Math.round(f.t))};render();scrollTop();return;}
 });
 const rcStr=(k,v)=>k==='d'?String(Math.round(v*100)/100).replace('.',','):k==='t'?fmtDur(v):fmtPace(v);
 /* saisie sans « : » : les chiffres tapés sont mis en forme (500 → 5:00, 14530 → 1:45:30) */
@@ -440,6 +454,8 @@ function rcUpdate(f){
 document.addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
+  if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
+  if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}

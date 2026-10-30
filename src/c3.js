@@ -85,7 +85,7 @@ function moodNow(){
 function objectives(){
   const td=todayK(),ws=wk(td),mk=td.slice(0,7),g=G(),out=[];
   const add=(scope,key,t,s,pts,p)=>{const id=scope+':'+(scope==='d'?td:scope==='w'?ws:mk)+':'+key;out.push({id,scope,t,s,pts,p:Math.min(Math.max(p,0),1),done:p>=1,claimed:!!g.claimed[id]});};
-  const m=sum(wOn(td).map(w=>w.min)),gm=S.goals.dayMin;
+  const m=moveMin(td),gm=S.goals.dayMin;
   add('d','move','Bouger 20 min',m+' min',3,m/20);
   add('d','goal','Objectif du jour',m+' / '+gm+' min',5,m/gm);
   const pl=evPlanned(td);
@@ -175,7 +175,7 @@ const BADGES=[
   {id:'km50',e:'run',n:'Coureur',r:15,ok:s=>s.km>=50},{id:'km200',e:'medal',n:'Marathonien',r:40,ok:s=>s.km>=200},{id:'mu10',e:'dumb',n:'Force',r:15,ok:s=>s.mu>=10},
   {id:'k3',e:'target',n:'Touche-à-tout',r:10,ok:s=>s.kinds>=3},{id:'str3',e:'flame',n:'Sur la lancée',r:8,ok:s=>s.ms>=3},{id:'str7',e:'star',n:'Semaine parfaite',r:20,ok:s=>s.ms>=7},
   {id:'str14',e:'shield',n:'Increvable',r:40,ok:s=>s.ms>=14},{id:'lvl10',e:'up',n:'Niveau 10',r:15,ok:s=>s.lvl>=10},{id:'st5',e:'bolt',n:'Athlète',r:25,ok:s=>s.stage>=5},
-  {id:'boss',e:'shield',n:'Défi relevé',r:20,ok:s=>s.boss},{id:'chest7',e:'gift',n:'Fidèle',r:20,ok:s=>s.chest>=7},{id:'shop',e:'bag',n:'Collectionneur',r:15,ok:s=>s.own>=3},
+  {id:'shop',e:'bag',n:'Collectionneur',r:15,ok:s=>s.own>=3},
   {id:'goal',e:'trophy',n:'Objectif atteint',r:25,ok:s=>s.goal},{id:'work',e:'clock',n:'Assidu',r:10,ok:s=>s.wd>=20}
 ];
 function checkBadges(){
@@ -331,14 +331,16 @@ function succTab(){
   return `<div class="section-head" style="margin-top:0"><h2 class="section-title">Formes</h2><span class="section-sub">${L.stage} / ${STAGES.length}</span></div>
   <div class="card"><div class="evo">${strip}</div></div>
   <div class="section-head"><h2 class="section-title">Succès</h2><span class="section-sub">${n} / ${BADGES.length}</span></div>
+  <div style="margin-top:12px">${shareBtnCard()}</div>
   <div class="bdgrid">${BADGES.map(b=>{const ok=!!g.badges[b.id];return `<div class="bdc ${ok?'ok':''}"><div class="bde">${IC(b.e,22)}</div><b>${b.n}</b><span>${ok?'+'+b.r+' '+STAR:'+'+b.r+' '+STAR}</span></div>`;}).join('')}</div>`;
 }
 
-const GT=[['adv','Aventure'],['quest','Quêtes'],['shop','Boutique'],['succ','Succès']];
+const GT=[['quest','Quêtes'],['shop','Boutique'],['succ','Succès']];
 function gameBody(){
-  const t=ui.gt||'adv',pend=objectives().concat(goalMiles()).filter(o=>o.done&&!o.claimed).length;
+  if(!ui.gt||ui.gt==='adv')ui.gt='quest';
+  const t=ui.gt,pend=objectives().concat(goalMiles()).filter(o=>o.done&&!o.claimed).length;
   return `<div class="seg gseg" style="margin:14px 0">${GT.map(([k,l])=>`<button class="${t===k?'on':''}" data-act="gt" data-id="${k}">${l}${k==='quest'&&pend?`<i class="bdg">${pend}</i>`:''}</button>`).join('')}</div>
-  ${t==='adv'?adventureTab():t==='quest'?questsTab():t==='shop'?shopTab():succTab()}`;
+  ${t==='quest'?questsTab():t==='shop'?shopTab():succTab()}`;
 }
 let _pdk='';
 function gLive(){

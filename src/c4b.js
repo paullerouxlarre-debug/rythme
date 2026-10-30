@@ -93,3 +93,8 @@ async function syncSteps(force){
     return k;
   }catch(e){return -1;}
 }
+
+/* les pas comptent pour une part de l'objectif sport du jour */
+const stepPct=()=>S.stepPct==null?30:+S.stepPct;
+function stepMin(k){const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
+const moveMin=k=>sum(wOn(k).map(w=>w.min))+stepMin(k);

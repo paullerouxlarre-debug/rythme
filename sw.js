@@ -1,6 +1,6 @@
 /* Rythme : fonctionne hors ligne. Les données restent dans le téléphone (localStorage).
    Stratégie : réseau d'abord (toujours la dernière version), cache en secours hors connexion. */
-const C='rythme-1793360493';
+const C='rythme-1793380116';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(CORE.map(u=>fetch(new Request(u,{cache:'reload'})).then(r=>r.ok&&c.put(u,r)).catch(()=>{})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

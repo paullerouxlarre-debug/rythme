@@ -12,9 +12,17 @@ const MXL=[
   {k:'row',n:'Rowing barre',lib:'Rowing barre',u:'kg',g:{m:.55,s:.34},l:{m:1.1,s:.308}},
   {k:'pull',n:'Tractions',lib:'Tractions',u:'reps',g:{m:5,s:.75},l:{m:11,s:.5}},
   {k:'run5',n:'5 km',u:'time',g:{m:33,s:.22},l:{m:26.5,s:.18},c:{m:20,s:.12}},
-  {k:'run10',n:'10 km',u:'time',g:{m:68,s:.22},l:{m:53.1,s:.17},c:{m:42,s:.12}}
+  {k:'run10',n:'10 km',u:'time',g:{m:68,s:.22},l:{m:53.1,s:.17},c:{m:42,s:.12}},
+  {k:'run21',n:'Semi-marathon',u:'time',l:{m:118,s:.16},c:{m:92,s:.1}},
+  {k:'run42',n:'Marathon',u:'time',l:{m:250,s:.15},c:{m:200,s:.1}}
 ];
-const MXSEX={bench:.55,squat:.68,dead:.68,ohp:.6,row:.62,pull:.45,run5:1.12,run10:1.12};
+const MXSEX={bench:.55,squat:.68,dead:.68,ohp:.6,row:.62,pull:.45,run5:1.12,run10:1.12,run21:1.12,run42:1.12};
+const allMx=()=>MXL.concat((S.maxCustom||[]).map(c=>({k:c.k,n:c.n,lib:c.n,u:'kg',custom:1})));
+function mxRecord(k){const e=allMx().find(x=>x.k===k);if(!e)return;const v=mxVal(e);S.maxHist=S.maxHist||{};const h=S.maxHist[k]||(S.maxHist[k]=[]);if(v==null)return;const td=todayK(),l=h[h.length-1],v2=Math.round(v*100)/100;if(l&&l.d===td)l.v=v2;else if(!l||l.v!==v2)h.push({d:td,v:v2});}
+function mxEvo(e){const h=(S.maxHist||{})[e.k]||[];if(h.length<2)return '';const a=h[0],b=h[h.length-1],run=e.u==='time',d=b.v-a.v,better=run?d<0:d>0;
+  const txt=e.u==='kg'?(d>0?'+':'')+fmtN(d,1)+' kg':e.u==='reps'?(d>0?'+':'')+fmtN(d)+' rép.':(d<0?'−':'+')+fmtDur(Math.abs(d));
+  const vs=h.slice(-12).map(x=>x.v),mn=Math.min(...vs),mx=Math.max(...vs),W=90,H=24,pts=vs.map((v,i)=>((vs.length===1?W/2:i*W/(vs.length-1)).toFixed(1))+','+(mx===mn?H/2:(run?(v-mn)/(mx-mn)*H:H-(v-mn)/(mx-mn)*H)).toFixed(1)).join(' ');
+  return `<div class="mxevo"><svg viewBox="-2 -2 ${W+4} ${H+4}" width="${W}" height="${H}"><polyline points="${pts}" fill="none" stroke="var(--tc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="${better?'up':'dn'}">${txt}</span><small>depuis le ${esc(dShort(a.d))}</small></div>`;}
 function ageBand(a){return a<30?[18,29]:a<40?[30,39]:a<50?[40,49]:a<60?[50,59]:[60,99];}
 function ageF(a,run){const f=run?[1,1.005,1.05,1.12,1.25]:[1,.98,.92,.84,.72];const i=a<30?0:a<40?1:a<50?2:a<60?3:4;return f[i];}
 function mxPanels(){
@@ -73,26 +81,27 @@ SP.max=function(){
     <div class="sm" style="text-transform:none;letter-spacing:0;opacity:.75;font-size:13px">${g?topTxt(g.age)+' des '+esc(pans[0].n.toLowerCase()):'Renseigne au moins un max ci-dessous'}</div>
     <div class="mini3"><div><small>${esc(pans[1].n)}</small><b>${g&&g.all!=null?topTxt(g.all).replace('Mieux que ','> '):'—'}</b></div><div><small>Pratiquants</small><b>${g&&g.gym!=null?topTxt(g.gym).replace('Mieux que ','> '):'—'}</b></div><div><small>Poids</small><b>${bw?fmtN(bw,1)+' kg':'—'}</b></div></div></div>`;
   const panSel=`<div class="mxpans">${pans.map(x=>`<button class="mxpan ${x.k===pk?'on':''}" data-act="mxpan" data-id="${x.k}"><b>${esc(x.n)}</b><small>${esc(x.d)}</small></button>`).join('')}</div>`;
-  const rows=MXL.map(e=>{
+  const rows=allMx().map(e=>{
     const m=S.maxes[e.k]||{},v=mxVal(e),p=v!=null?mxPct(e,pan):null,jb=journalBest(e);
     const inp=e.u==='kg'?`<div class="mxin"><button class="mxs" data-act="mxstep" data-id="${e.k}:-2.5" aria-label="Moins">−</button><input data-mx="${e.k}:kg" inputmode="decimal" placeholder="kg" value="${esc(m.kg||'')}"><button class="mxs" data-act="mxstep" data-id="${e.k}:2.5" aria-label="Plus">+</button><span class="mxx">×</span><input class="mxr" data-mx="${e.k}:reps" inputmode="numeric" placeholder="1" value="${esc(m.reps||'')}"><span class="mxu">rép.</span></div>`
       :e.u==='reps'?`<div class="mxin"><button class="mxs" data-act="mxstep" data-id="${e.k}:-1" aria-label="Moins">−</button><input data-mx="${e.k}:reps" inputmode="numeric" placeholder="0" value="${esc(m.reps==null?'':m.reps)}"><button class="mxs" data-act="mxstep" data-id="${e.k}:1" aria-label="Plus">+</button><span class="mxu">rép. d'affilée</span></div>`
-      :`<div class="mxin"><input class="mxt" data-mx="${e.k}:t" inputmode="numeric" placeholder="${e.k==='run5'?'2500 → 25:00':'5000 → 50:00'}" value="${esc(m.t||'')}"><span class="mxu">temps</span></div>`;
+      :`<div class="mxin"><input class="mxt" data-mx="${e.k}:t" inputmode="numeric" placeholder="${({run5:'2500 → 25:00',run10:'5000 → 50:00',run21:'15000 → 1:50:00',run42:'40000 → 4:00:00'})[e.k]||''}" value="${esc(m.t||'')}"><span class="mxu">temps</span></div>`;
     const sug=jb&&e.u==='kg'&&(!v||jb.v>v+.5)?`<button class="mxsug" data-act="mxuse" data-id="${e.k}">Journal : ${fmtN(jb.kg,1)} kg × ${jb.reps} · utiliser</button>`:jb&&e.u==='reps'&&(v==null||jb.reps>v)?`<button class="mxsug" data-act="mxuse" data-id="${e.k}">Journal : ${jb.reps} rép. · utiliser</button>`:'';
     const ref=e.u==='kg'&&v?`<span class="mxe">${(+m.reps||1)>1?'1RM estimé '+fmtN(v,1)+' kg · ':''}${bw?fmtN(v/bw,2)+' × ton poids':''}</span>`:'';
     const out=p==null?(v!=null&&!e[pan.src]?`<div class="mxna">Pas de repère fiable pour ce panel</div>`:''):`${mxBar(p)}<div class="mxres"><b>${topTxt(p)}</b>${(()=>{const gp=mxPct(e,pans.find(x=>x.k==='gym'));return gp==null?'':`<span class="mxtier" title="Niveau parmi les pratiquants">${mxTier(gp)} · ${e.u==='time'?'coureurs':'pratiquants'}</span>`;})()}</div>
       <div class="mxall">${pans.map(x=>{const q=mxPct(e,x);return q==null?'':`<span class="${x.k===pk?'on':''}">${esc(x.k==='age'?'Âge':x.k==='all'?'Tous':x.k==='gym'?'Pratiquants':'Compét.')} ${q<.01?'<1':q>.99?'>99':Math.round(q*100)}</span>`;}).join('')}</div>`;
-    return `<div class="card mxrow"><div class="mxh"><b>${esc(e.n)}</b>${ref}</div>${inp}${sug}<div class="mxo" id="mxo-${e.k}">${out}</div></div>`;
+    return `<div class="card mxrow"><div class="mxh"><b>${esc(e.n)}</b>${ref}${e.custom?`<button class="row-del" data-act="mxdel" data-id="${e.k}" aria-label="Retirer">×</button>`:''}</div>${inp}${sug}<div class="mxo" id="mxo-${e.k}">${out}</div>${mxEvo(e)}</div>`;
   }).join('');
   return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Mes max</h1>${hero}
   <div class="section-head" style="margin-top:20px"><h2 class="section-title">Comparer avec</h2></div>${panSel}
   ${!bw?`<div class="card" style="margin-top:12px"><p class="note" style="margin:0">Ajoute ton poids dans Nutrition : la force se compare en fonction du poids de corps.</p></div>`:''}
   <div class="section-head"><h2 class="section-title">Mes exercices</h2><span class="section-sub">les chiffres = % battus</span></div>
   <div class="mxlist">${rows}</div>
+  <div class="card" style="margin-top:10px"><div class="sublabel" style="margin:0 0 8px">Ajouter un exercice</div><div style="display:flex;gap:8px"><select id="mx-new" class="inl" style="flex:1;min-width:0">${Object.keys(exLib()).filter(n=>!allMx().some(e=>e.lib===n)).sort().map(n=>`<option>${esc(n)}</option>`).join('')}</select><button class="btn btn-ghost" style="flex:none" data-act="mxadd">Ajouter</button></div><p class="note" style="margin:6px 0 0">Pour suivre ton max sur n'importe quel exercice. Pas de comparaison de population pour ceux-là.</p></div>
   <p class="note">Estimations à partir de repères publics : standards de force par poids de corps (Strength Level, StrengthLog), niveau attendu d'un adulte non entraîné, records amateurs de force athlétique, temps des finishers de 5 et 10 km par âge. Les max avec répétitions sont convertis en 1RM (formule d'Epley). À prendre comme un ordre de grandeur, pas comme un classement officiel.</p>`;
 };
 function mxRefresh(k){
-  const e=MXL.find(x=>x.k===k);if(!e)return;
+  const e=allMx().find(x=>x.k===k);if(!e)return;mxRecord(k);save();
   /* re-rendu léger : on recalcule toute la page sans perdre le focus du champ en cours */
   const a=document.activeElement,sel=a&&a.dataset&&a.dataset.mx,pos=a&&a.selectionStart;
   render();

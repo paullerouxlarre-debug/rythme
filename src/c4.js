@@ -20,13 +20,13 @@ V.game=function(){announceBadges();return `<h1 class="page">Progrès</h1>${scene
 /* ---- Ma journée ---- */
 V.today=function(){
   if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Ma journée</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
-  const td=todayK(),tm=addD(td,1),ev0=evOn(td),ev1=evOn(tm),w=wOn(td),min=sum(w.map(x=>x.min)),g=S.goals.dayMin;
+  const td=todayK(),tm=addD(td,1),ev0=evOn(td),ev1=evOn(tm),w=wOn(td),min=moveMin(td),smin=stepMin(td),g=S.goals.dayMin;
   const d=new Date(),wd=d.toLocaleDateString('fr-FR',{weekday:'long'}),full=d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   const ws=wk(td),days=[0,1,2,3,4,5,6].map(i=>addD(ws,i)),wsess=inDays(days);
   const km=sum(wsess.filter(x=>x.type==='course').map(x=>x.dist||0));
   const ctx=dayCtx(td);
   const av=objectives().filter(o=>o.done&&!o.claimed);
-  const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:sum(wOn(k).map(x=>x.min)),c:k===td?'var(--tc)':'var(--surface-3)'}));
+  const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:moveMin(k),c:k===td?'var(--tc)':'var(--surface-3)'}));
   const L=glevel();
   const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#A9C6E3',c2:'#6A9BCC',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#A9C6E3',c2:'#6A9BCC',k:'Planning',v:pld+' / '+pl.length};
@@ -47,7 +47,7 @@ V.today=function(){
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
     <div class="rw" style="width:104px;height:104px;flex:none">${ring(g?min/g:0,'var(--tc)')}<div class="rc" style="flex-direction:column;font-size:22px;font-weight:800">${min}<small class="muted" style="font-size:11px;font-weight:500">min</small></div></div>
     <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15.5px">${min>=g?'Objectif atteint':min>0?'Encore '+(g-min)+' min':'Pas encore de séance'}</div>
-    <div class="muted" style="font-size:13px;margin:3px 0 10px">${w.length?w.map(x=>SPORTS[x.type].name).join(', '):'Un modèle d\'entraînement va plus vite'}</div>
+    <div class="muted" style="font-size:13px;margin:3px 0 10px">${[w.length?w.map(x=>x.prog?progName(x.prog):SPORTS[x.type].name).join(', '):'',smin?'dont '+smin+' min de pas':''].filter(Boolean).join(' · ')||'Note une séance en deux gestes'}</div>
     <button class="btn btn-primary" style="width:100%" data-act="gosport">Ajouter une séance</button></div></div>
     <div style="margin-top:12px">${barChart(bars,{h:90,goal:g,goalLabel:g+' min'})}</div></div>
 
