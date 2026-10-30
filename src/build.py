@@ -8,7 +8,7 @@ import os, re, time, subprocess, tempfile
 os.environ['TZ']='Europe/Paris'; time.tzset()
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 S = os.path.join(R, 'src')
-parts = ['b0.html','c1.js','c2.js','c3.js','c4.js','c5.js','c6.js','c6b.js','c6c.js','c7.js']
+parts = ['b0.html','c1.js','c2.js','c3.js','c4.js','c5.js','c5b.js','c6.js','c6b.js','c6c.js','c7.js']
 html = ''.join(open(os.path.join(S,p), encoding='utf-8').read() for p in parts) + '\n</script>\n</body>\n</html>\n'
 html = html.replace('__BUILD__', time.strftime('%d/%m %H:%M', time.localtime()))
 # vérification de syntaxe du script (si node est installé)

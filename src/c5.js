@@ -260,7 +260,9 @@ M.inc=function(){
   const stack=ms.map(k=>({l:mShort(k).split(' ')[0],parts:S.sources.map(s=>({v:sum(S.incomes.filter(i=>i.m===k&&i.source===s).map(i=>i.amount)),c:col(s)}))}));
   const bySrc=S.sources.map(s=>({n:s,v:sum(S.incomes.filter(i=>i.m.startsWith(yr)&&i.source===s).map(i=>i.amount)),c:col(s)}));
   const m=mkey(new Date());
-  return `
+  setTimeout(scanPays,300);
+  return `${payStats()}
+  <div class="section-head"><h2 class="section-title">Revenus</h2></div>
   <div class="card"><div class="muted" style="font-size:12.5px">12 derniers mois, par origine</div>
     ${tot.length?stackBars(stack):'<div class="empty">Ajoute tes revenus pour voir la courbe et les statistiques.</div>'}
     <div class="chips" style="margin-top:6px">${S.sources.map(s=>`<span class="lg"><span class="dot" style="background:${col(s)}"></span>${esc(s)}</span>`).join('')}</div></div>
@@ -281,14 +283,13 @@ M.inc=function(){
 
   <div class="section-head"><h2 class="section-title">Fiches de paie</h2><button class="iconbtn" data-act="toggle" data-id="fp" aria-label="Ajouter une fiche">${ui.open.fp?'×':'+'}</button></div>
   ${ui.open.fp?`<div class="form-panel"><div class="form-grid">
-    <div class="field"><label>Mois</label><input id="p-m" type="month" value="${m}"></div>
+    <div class="field wide"><label>Fichiers PDF (plusieurs possibles)</label><input id="p-f" type="file" accept="application/pdf,.pdf" multiple></div>
     <div class="field"><label>Origine</label><select id="p-s">${S.sources.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div>
-    <div class="field"><label>Net à payer (€), facultatif</label><input id="p-a" type="number" inputmode="decimal" step="any"></div>
-    <div class="field"><label>Fichier PDF</label><input id="p-f" type="file" accept="application/pdf,.pdf"></div></div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="addpay">Ajouter la fiche</button></div>
+    <div class="field"><label>Mois si non trouvé</label><input id="p-m" type="month" value="${m}"></div></div>
+    <div class="form-actions"><button class="btn btn-primary" data-act="addpay">Ajouter et lire les fiches</button></div>
     ${ui.msg?`<p class="note" style="margin-top:8px">${esc(ui.msg)}</p>`:''}
-    <p class="note">Les PDF restent sur cet appareil, dans ce navigateur. Ils ne sont envoyés nulle part. Si tu renseignes le net, il est ajouté à tes revenus du mois.</p></div>`:''}
-  <div class="row-list">${S.pays.slice().sort((a,b)=>a.m<b.m?1:-1).map(p=>`<div class="row"><div style="min-width:0"><div class="row-title"><span class="dot" style="background:${col(p.source)}"></span> ${esc(p.source)} · ${mShort(p.m)}</div><div class="row-sub">${esc(p.name)} · ${fmtN(p.size/1024)} Ko${p.net?' · '+fmt(p.net):''}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-primary" style="padding:6px 12px;font-size:12.5px;flex:none" data-act="openpay" data-id="${p.id}">Ouvrir</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="getpay" data-id="${p.id}">Enregistrer</button><button class="row-del" data-act="delpay" data-id="${p.id}" aria-label="Supprimer">×</button></div></div>`).join('')||'<div class="empty">Aucune fiche de paie ajoutée.</div>'}</div>
+    <p class="note">Le mois, le brut, le net, l'impôt, les cotisations et les congés sont lus automatiquement. Le net versé est ajouté à tes revenus du mois. Les PDF restent sur cet appareil et ne sont envoyés nulle part.</p></div>`:''}
+  <div class="row-list">${S.pays.slice().sort((a,b)=>a.m<b.m?1:-1).map(p=>`<div class="row"><div style="min-width:0"><div class="row-title"><span class="dot" style="background:${col(p.source)}"></span> ${esc(p.source)} · ${mShort(p.m)}</div><div class="row-sub">${p.d&&p.d.brut?'Brut '+fmt(p.d.brut)+' · ':''}${esc(p.d?'':p.name+' · ')}${p.d?'':fmtN(p.size/1024)+' Ko'}${p.net?' · Net '+fmt(p.net):''}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-primary" style="padding:6px 12px;font-size:12.5px;flex:none" data-act="openpay" data-id="${p.id}">Ouvrir</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="getpay" data-id="${p.id}">Enregistrer</button><button class="row-del" data-act="delpay" data-id="${p.id}" aria-label="Supprimer">×</button></div></div>`).join('')||'<div class="empty">Aucune fiche de paie ajoutée.</div>'}</div>
 
   <div class="section-head"><h2 class="section-title">Historique</h2></div>
   <div class="row-list">${S.incomes.slice().sort((a,b)=>a.m<b.m?1:-1).map(i=>`<div class="row"><div class="row-title"><span class="dot" style="background:${col(i.source)}"></span> ${mShort(i.m)} · ${esc(i.source)}</div><div style="display:flex;gap:10px;align-items:center"><span class="row-value">${fmt(i.amount)}</span><button class="row-del" data-act="delinc" data-id="${i.id}" aria-label="Supprimer">×</button></div></div>`).join('')}</div>`;

@@ -937,6 +937,18 @@
   .pdue{ border-color:color-mix(in srgb,var(--tc) 45%,var(--sep)); }
   .sctip{ background:#1F1E1C; color:#F4F2EA; }
   :root[data-theme="dark"] .sctip{ background:#F4F2EA; color:#1F1E1C; }
+  .payc{ padding:16px; }
+  .payh{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .payh small{ display:block; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+  .payh b{ display:block; font-family:var(--serif); font-weight:500; font-size:34px; letter-spacing:-.02em; margin-top:2px; }
+  .paytx{ font-size:12px; font-weight:650; color:var(--tc); background:color-mix(in srgb,var(--tc) 12%,transparent); border-radius:8px; padding:4px 8px; white-space:nowrap; }
+  .payflow{ margin-top:12px; border-top:1px solid var(--sep); }
+  .payflow>div{ display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--sep); font-size:14px; }
+  .payflow span{ color:var(--muted); } .payflow em{ font-style:normal; font-size:12px; opacity:.8; margin-left:4px; }
+  .payflow b{ font-weight:600; font-variant-numeric:tabular-nums; }
+  .payflow .tot span{ color:var(--text); font-weight:650; } .payflow .tot b{ font-weight:700; }
+  .paybar{ height:8px; border-radius:5px; background:var(--surface-3); margin-top:14px; overflow:hidden; }
+  .paybar i{ display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,var(--tc),var(--tc2)); animation:mxgrow 1s cubic-bezier(.2,.8,.2,1) both; }
 </style>
 </head>
 <body>
@@ -997,7 +1009,7 @@ const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='29/10 15:59';
+const BUILD='30/10 08:27';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -2257,7 +2269,9 @@ M.inc=function(){
   const stack=ms.map(k=>({l:mShort(k).split(' ')[0],parts:S.sources.map(s=>({v:sum(S.incomes.filter(i=>i.m===k&&i.source===s).map(i=>i.amount)),c:col(s)}))}));
   const bySrc=S.sources.map(s=>({n:s,v:sum(S.incomes.filter(i=>i.m.startsWith(yr)&&i.source===s).map(i=>i.amount)),c:col(s)}));
   const m=mkey(new Date());
-  return `
+  setTimeout(scanPays,300);
+  return `${payStats()}
+  <div class="section-head"><h2 class="section-title">Revenus</h2></div>
   <div class="card"><div class="muted" style="font-size:12.5px">12 derniers mois, par origine</div>
     ${tot.length?stackBars(stack):'<div class="empty">Ajoute tes revenus pour voir la courbe et les statistiques.</div>'}
     <div class="chips" style="margin-top:6px">${S.sources.map(s=>`<span class="lg"><span class="dot" style="background:${col(s)}"></span>${esc(s)}</span>`).join('')}</div></div>
@@ -2278,14 +2292,13 @@ M.inc=function(){
 
   <div class="section-head"><h2 class="section-title">Fiches de paie</h2><button class="iconbtn" data-act="toggle" data-id="fp" aria-label="Ajouter une fiche">${ui.open.fp?'×':'+'}</button></div>
   ${ui.open.fp?`<div class="form-panel"><div class="form-grid">
-    <div class="field"><label>Mois</label><input id="p-m" type="month" value="${m}"></div>
+    <div class="field wide"><label>Fichiers PDF (plusieurs possibles)</label><input id="p-f" type="file" accept="application/pdf,.pdf" multiple></div>
     <div class="field"><label>Origine</label><select id="p-s">${S.sources.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div>
-    <div class="field"><label>Net à payer (€), facultatif</label><input id="p-a" type="number" inputmode="decimal" step="any"></div>
-    <div class="field"><label>Fichier PDF</label><input id="p-f" type="file" accept="application/pdf,.pdf"></div></div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="addpay">Ajouter la fiche</button></div>
+    <div class="field"><label>Mois si non trouvé</label><input id="p-m" type="month" value="${m}"></div></div>
+    <div class="form-actions"><button class="btn btn-primary" data-act="addpay">Ajouter et lire les fiches</button></div>
     ${ui.msg?`<p class="note" style="margin-top:8px">${esc(ui.msg)}</p>`:''}
-    <p class="note">Les PDF restent sur cet appareil, dans ce navigateur. Ils ne sont envoyés nulle part. Si tu renseignes le net, il est ajouté à tes revenus du mois.</p></div>`:''}
-  <div class="row-list">${S.pays.slice().sort((a,b)=>a.m<b.m?1:-1).map(p=>`<div class="row"><div style="min-width:0"><div class="row-title"><span class="dot" style="background:${col(p.source)}"></span> ${esc(p.source)} · ${mShort(p.m)}</div><div class="row-sub">${esc(p.name)} · ${fmtN(p.size/1024)} Ko${p.net?' · '+fmt(p.net):''}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-primary" style="padding:6px 12px;font-size:12.5px;flex:none" data-act="openpay" data-id="${p.id}">Ouvrir</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="getpay" data-id="${p.id}">Enregistrer</button><button class="row-del" data-act="delpay" data-id="${p.id}" aria-label="Supprimer">×</button></div></div>`).join('')||'<div class="empty">Aucune fiche de paie ajoutée.</div>'}</div>
+    <p class="note">Le mois, le brut, le net, l'impôt, les cotisations et les congés sont lus automatiquement. Le net versé est ajouté à tes revenus du mois. Les PDF restent sur cet appareil et ne sont envoyés nulle part.</p></div>`:''}
+  <div class="row-list">${S.pays.slice().sort((a,b)=>a.m<b.m?1:-1).map(p=>`<div class="row"><div style="min-width:0"><div class="row-title"><span class="dot" style="background:${col(p.source)}"></span> ${esc(p.source)} · ${mShort(p.m)}</div><div class="row-sub">${p.d&&p.d.brut?'Brut '+fmt(p.d.brut)+' · ':''}${esc(p.d?'':p.name+' · ')}${p.d?'':fmtN(p.size/1024)+' Ko'}${p.net?' · Net '+fmt(p.net):''}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-primary" style="padding:6px 12px;font-size:12.5px;flex:none" data-act="openpay" data-id="${p.id}">Ouvrir</button><button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="getpay" data-id="${p.id}">Enregistrer</button><button class="row-del" data-act="delpay" data-id="${p.id}" aria-label="Supprimer">×</button></div></div>`).join('')||'<div class="empty">Aucune fiche de paie ajoutée.</div>'}</div>
 
   <div class="section-head"><h2 class="section-title">Historique</h2></div>
   <div class="row-list">${S.incomes.slice().sort((a,b)=>a.m<b.m?1:-1).map(i=>`<div class="row"><div class="row-title"><span class="dot" style="background:${col(i.source)}"></span> ${mShort(i.m)} · ${esc(i.source)}</div><div style="display:flex;gap:10px;align-items:center"><span class="row-value">${fmt(i.amount)}</span><button class="row-del" data-act="delinc" data-id="${i.id}" aria-label="Supprimer">×</button></div></div>`).join('')}</div>`;
@@ -2324,6 +2337,90 @@ function simUpdate(){
   c.innerHTML=`<div class="grid2"><div class="stat"><div class="k">Mensualité maximale</div><div class="v">${fmt(maxM)}</div></div>
   <div class="stat"><div class="k">Capital empruntable</div><div class="v">${fmt(cap)}</div></div>
   <div class="stat" style="grid-column:1/-1"><div class="k">Prix de bien estimé avec ton apport</div><div class="v pos">${fmt(bien)}</div></div></div>`;
+}
+
+/* ================= Fiches de paie : lecture automatique ================= */
+async function pdfLines(blob){
+  const L=await loadPdfJs(),doc=await L.getDocument({data:await blob.arrayBuffer()}).promise,out=[];
+  for(let i=1;i<=Math.min(doc.numPages,3);i++){
+    const tc=await (await doc.getPage(i)).getTextContent(),rows=[];
+    tc.items.forEach(it=>{if(!it.str||!it.str.trim())return;const y=it.transform[5],x=it.transform[4];
+      let r=rows.find(r=>Math.abs(r.y-y)<2.5);if(!r){r={y,it:[]};rows.push(r);}r.it.push({x,s:it.str});});
+    rows.sort((a,b)=>b.y-a.y).forEach(r=>out.push(r.it.sort((a,b)=>a.x-b.x).map(o=>o.s).join(' ').replace(/\s+/g,' ').trim()));
+  }
+  return out;
+}
+const AMT='(\\d{1,3}(?:[ \\u00a0\\u202f]\\d{3})*(?:[.,]\\d{1,2})?)';
+const pAmt=s=>{if(s==null)return null;s=String(s).replace(/[   ]/g,'').replace(',','.');const n=parseFloat(s);return isFinite(n)?n:null;};
+function parsePay(lines){
+  const T=lines.join(' \n ').replace(/[  ]/g,' '),F=T.replace(/\s*\n\s*/g,' ');
+  const g=(re)=>{const m=F.match(re);return m?pAmt(m[1]):null;};
+  const d={};
+  let m=F.match(/Du\s+(\d{2})\/(\d{2})\/(\d{4})\s+au\s+(\d{2})\/(\d{2})\/(\d{4})/i);
+  if(m)d.m=m[3]+'-'+m[2];
+  else{const MO={janvier:1,'février':2,fevrier:2,mars:3,avril:4,mai:5,juin:6,juillet:7,'août':8,aout:8,septembre:9,octobre:10,novembre:11,'décembre':12,decembre:12};
+    const mm=F.toLowerCase().match(/(janvier|f[ée]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[ée]cembre)\s+(20\d{2})/);
+    if(mm)d.m=mm[2]+'-'+pad(MO[mm[1]]||MO[mm[1].normalize('NFD').replace(/[̀-ͯ]/g,'')]);}
+  d.brut=g(new RegExp('(?:Salaire\\s+)?brut(?:\\s+total)?\\s*:?\\s*'+AMT+'\\s*€','i'))??g(new RegExp('R[ÉE]MUN[ÉE]RATION BRUTE\\s+'+AMT,'i'));
+  d.charges=g(new RegExp('Charges salariales\\s*:?\\s*'+AMT,'i'))??g(new RegExp('TOTAL DES COTISATIONS ET CONTRIBUTIONS\\s+'+AMT,'i'));
+  d.netAvant=g(new RegExp('Net à payer avant imp[ôo]t(?: sur le revenu)?\\s*:?\\s*'+AMT,'i'));
+  d.impot=g(new RegExp('Imp[ôo]t (?:sur le revenu )?prélevé(?: à la source)?\\s*:?\\s*-?\\s*'+AMT,'i'));
+  d.netSocial=g(new RegExp('Montant net social\\s*:?\\s*'+AMT,'i'));
+  d.net=g(new RegExp('Net à payer après imp[ôo]t\\s*:?\\s*'+AMT,'i'))??g(new RegExp('Net payé\\s*:?\\s*'+AMT,'i'))??g(new RegExp('Salaire net à payer\\s+'+AMT+'\\s*€','i'));
+  m=F.match(new RegExp('Assiette de l.imp[ôo]t.*?Cumul imp[ôo]t prélevé.*?'+AMT+'\\s*€\\s+(\\d{1,2}(?:[.,]\\d{1,2})?)\\s*%\\s+'+AMT+'\\s*€?\\s+'+AMT,'i'));
+  if(m){d.imposable=pAmt(m[1]);d.taux=pAmt(m[2]);d.cumImposable=pAmt(m[3]);d.cumImpot=pAmt(m[4]);}
+  else{d.taux=g(/Taux (?:neutre|personnalis[ée]|PAS)?\s*:?\s*(\d{1,2}(?:[.,]\d{1,2})?)\s*%/i);d.imposable=g(new RegExp('Net imposable\\s*:?\\s*'+AMT,'i'));}
+  m=F.match(new RegExp('TOTAL DES COTISATIONS ET CONTRIBUTIONS\\s+'+AMT+'\\s+'+AMT,'i'));if(m)d.patronal=pAmt(m[2]);
+  d.cout=g(new RegExp('Co[ûu]t (?:global|total employeur)\\s*:?\\s*'+AMT,'i'));
+  m=F.match(/Cong[ée]s pay[ée]s[^]{0,140}?(\d+[.,]\d+)\s*jours/i);if(m)d.cp=pAmt(m[1]);
+  m=F.match(/\bRTT\b[^]{0,200}?(\d+[.,]\d+)\s*jours/i);if(m)d.rtt=pAmt(m[1]);
+  if(d.net==null&&d.netAvant!=null&&d.impot!=null)d.net=Math.round((d.netAvant-d.impot)*100)/100;
+  if(d.cout==null&&d.brut!=null&&d.patronal!=null)d.cout=Math.round((d.brut+d.patronal)*100)/100;
+  Object.keys(d).forEach(k=>{if(d[k]==null)delete d[k];});
+  return d;
+}
+async function readPay(blob){try{return parsePay(await pdfLines(blob));}catch(e){return null;}}
+let _payScan=false;
+function scanPays(){
+  if(_payScan)return;const todo=S.pays.filter(p=>!p.d&&!p.tried);if(!todo.length)return;_payScan=true;
+  (async()=>{let n=0;for(const p of todo){p.tried=1;try{const b=await idb.get(p.id);if(!b)continue;const d=await readPay(b);if(d&&(d.net||d.brut)){applyPay(p,d);n++;}}catch(e){}}
+    _payScan=false;save();if(n){toast(n+' fiche'+(n>1?'s':'')+' lue'+(n>1?'s':''));if(ui.tab==='money'&&ui.money==='inc')render();}})();
+}
+function applyPay(p,d){
+  p.d=d;if(d.m&&!p.mFixed)p.m=d.m;if(d.net)p.net=d.net;
+  if(p.net){const ex=S.incomes.find(i=>i.m===p.m&&i.source===p.source);if(ex)ex.amount=p.net;else S.incomes.push({id:uid(),m:p.m,amount:p.net,source:p.source});}
+}
+const payWithD=()=>S.pays.filter(p=>p.d&&(p.d.net||p.d.brut)).sort((a,b)=>a.m<b.m?-1:1);
+const f2=n=>(isFinite(n)?n:0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+function payStats(){
+  const L=payWithD();if(!L.length)return '';
+  const last=L[L.length-1],d=last.d,yr=last.m.slice(0,4),Y=L.filter(p=>p.m.startsWith(yr));
+  const cum=k=>sum(Y.map(p=>p.d[k]||0));
+  const pc=(a,b)=>a&&b?fmtN(a/b*100,1)+' %':'—';
+  const wk=k=>{const days=Object.keys(S.work.days).filter(x=>x.startsWith(k));return sum(days.map(x=>workMin(S.work.days[x],false)));};
+  const hrs0=wk(last.m)/60,hrs=hrs0>=60?hrs0:0;
+  const series=[{v:L.map(p=>p.d.brut||0),c:'#9A9488',w:1.8,n:'Brut'},{v:L.map(p=>p.d.net||0),c:'var(--tc)',w:2.6,n:'Net versé'},{v:L.map(p=>p.d.impot||0),c:'#C9A15E',w:1.6,dash:1,n:'Impôt'}];
+  const chart=L.length>1?`<div class="card" style="margin-top:12px"><div class="muted" style="font-size:12.5px;margin-bottom:6px">Brut, net versé et impôt, mois par mois</div>${multiLine(series,L.map(p=>mShort(p.m)),v=>fmt(v))}</div>`:'';
+  const cout=d.cout||((d.brut||0)+(d.patronal||0))||0;
+  return `<div class="section-head"><h2 class="section-title">Mes fiches de paie</h2><span class="section-sub">${L.length} lue${L.length>1?'s':''}</span></div>
+  <div class="card payc"><div class="payh"><div><small>${esc(mShort(last.m))} · net versé</small><b>${f2(d.net||0)}</b></div>${d.taux!=null?`<span class="paytx">Impôt ${fmtN(d.taux,1)} %</span>`:''}</div>
+    <div class="payflow">
+      ${d.brut?`<div><span>Brut</span><b>${f2(d.brut)}</b></div>`:''}
+      ${d.charges?`<div><span>Cotisations salariales <em>${pc(d.charges,d.brut)}</em></span><b>− ${f2(d.charges)}</b></div>`:''}
+      ${d.impot?`<div><span>Impôt prélevé</span><b>− ${f2(d.impot)}</b></div>`:''}
+      ${d.net?`<div class="tot"><span>Net versé</span><b>${f2(d.net)}</b></div>`:''}
+    </div>
+    ${cout&&d.net?`<div class="paybar"><i style="width:${Math.round(d.net/cout*100)}%"></i></div><p class="note" style="margin:6px 0 0">Ton employeur dépense ${fmt(cout)} pour ce mois : tu en touches ${Math.round(d.net/cout*100)} %.</p>`:''}
+  </div>
+  ${chart}
+  <div class="grid2" style="margin-top:12px">
+    <div class="stat box"><div class="k">Net versé ${yr}</div><div class="v">${fmt(cum('net'))}</div><div class="s">${Y.length} mois</div></div>
+    <div class="stat box"><div class="k">Brut ${yr}</div><div class="v">${fmt(cum('brut'))}</div></div>
+    <div class="stat box"><div class="k">Impôt prélevé ${yr}</div><div class="v">${fmt(d.cumImpot||cum('impot'))}</div></div>
+    <div class="stat box"><div class="k">${hrs>0?'Net par heure pointée':'Net imposable ce mois'}</div><div class="v">${hrs>0?fmtN((d.net||0)/hrs,2)+' €':d.imposable?fmt(d.imposable):'—'}</div><div class="s">${hrs>0?fmtH(hrs*60)+' en '+esc(mShort(last.m)):''}</div></div>
+    ${d.cp!=null?`<div class="stat box"><div class="k">Congés payés</div><div class="v">${fmtN(d.cp,2)} j</div></div>`:''}
+    ${d.rtt!=null?`<div class="stat box"><div class="k">RTT</div><div class="v">${fmtN(d.rtt,2)} j</div></div>`:''}
+  </div>`;
 }
 
 /* ================= Muscle ================= */
@@ -3076,15 +3173,20 @@ document.addEventListener('click',e=>{
   if(a==='delinc'){S.incomes=S.incomes.filter(i=>i.id!==id);save();render();return;}
   if(a==='addsrc'){const n=val('src-n').trim();if(!n||S.sources.includes(n))return;S.sources.push(n);save();render();return;}
   if(a==='addpay'){
-    const f=$('#p-f')&&$('#p-f').files[0],m=val('p-m'),s=val('p-s'),net=num(val('p-a'));
-    if(!f){ui.msg='Choisis un fichier PDF.';render();return;}
-    if(!m){ui.msg='Indique le mois.';render();return;}
-    const pid=uid();
-    idb.put(pid,f).then(()=>{
-      S.pays.push({id:pid,m,source:s,net:isNaN(net)?0:net,name:f.name,size:f.size});
-      if(!isNaN(net)){const ex=S.incomes.find(i=>i.m===m&&i.source===s);if(ex)ex.amount=net;else S.incomes.push({id:uid(),m,amount:net,source:s});}
-      ui.msg='Fiche ajoutée.';save();render();
-    }).catch(()=>{ui.msg='Le stockage de fichiers n\'est pas disponible dans ce navigateur.';render();});return;}
+    const fs=$('#p-f')?[...$('#p-f').files]:[],mDef=val('p-m'),s=val('p-s');
+    if(!fs.length){ui.msg='Choisis un ou plusieurs fichiers PDF.';render();return;}
+    ui.msg='Lecture de '+fs.length+' fiche'+(fs.length>1?'s':'')+'…';render();
+    (async()=>{let ok=0,read=0,fail=0;
+      for(const f of fs){const pid=uid();
+        try{await idb.put(pid,f);}catch(er){fail++;continue;}
+        const p={id:pid,m:mDef,source:s,net:0,name:f.name,size:f.size,tried:1};
+        const d=await readPay(f);if(d&&(d.net||d.brut)){read++;}
+        const dup=d&&d.m&&S.pays.find(x=>x.m===d.m&&x.source===s&&x.d&&x.d.net===d.net);
+        if(dup){idb.del(pid).catch(()=>{});continue;}
+        S.pays.push(p);if(d&&(d.net||d.brut))applyPay(p,d);ok++;}
+      ui.msg=ok?(ok+' fiche'+(ok>1?'s':'')+' ajoutée'+(ok>1?'s':'')+(read<ok?', dont '+(ok-read)+' sans lecture automatique (renseigne le net à la main)':'')+'.'):(fail?'Le stockage de fichiers n\'est pas disponible dans ce navigateur.':'Ces fiches sont déjà enregistrées.');
+      save();render();if(read)toast(read+' fiche'+(read>1?'s':'')+' lue'+(read>1?'s':''));})();return;}
+  if(a==='rereadpays'){S.pays.forEach(p=>{delete p.tried;});scanPays();return;}
   if(a==='openpay'){const p=S.pays.find(x=>x.id===id);if(!p)return;
     idb.get(id).then(b=>{if(!b)throw new Error('x');return showPdf(b,p);}).catch(()=>{ui.msg='Impossible d\'ouvrir ce fichier ici.';render();});return;}
   if(a==='closepdf'){const o=$('#pdfv');if(o)o.remove();document.body.style.overflow=ui.sheet?'hidden':'';return;}

@@ -273,15 +273,20 @@ document.addEventListener('click',e=>{
   if(a==='delinc'){S.incomes=S.incomes.filter(i=>i.id!==id);save();render();return;}
   if(a==='addsrc'){const n=val('src-n').trim();if(!n||S.sources.includes(n))return;S.sources.push(n);save();render();return;}
   if(a==='addpay'){
-    const f=$('#p-f')&&$('#p-f').files[0],m=val('p-m'),s=val('p-s'),net=num(val('p-a'));
-    if(!f){ui.msg='Choisis un fichier PDF.';render();return;}
-    if(!m){ui.msg='Indique le mois.';render();return;}
-    const pid=uid();
-    idb.put(pid,f).then(()=>{
-      S.pays.push({id:pid,m,source:s,net:isNaN(net)?0:net,name:f.name,size:f.size});
-      if(!isNaN(net)){const ex=S.incomes.find(i=>i.m===m&&i.source===s);if(ex)ex.amount=net;else S.incomes.push({id:uid(),m,amount:net,source:s});}
-      ui.msg='Fiche ajoutée.';save();render();
-    }).catch(()=>{ui.msg='Le stockage de fichiers n\'est pas disponible dans ce navigateur.';render();});return;}
+    const fs=$('#p-f')?[...$('#p-f').files]:[],mDef=val('p-m'),s=val('p-s');
+    if(!fs.length){ui.msg='Choisis un ou plusieurs fichiers PDF.';render();return;}
+    ui.msg='Lecture de '+fs.length+' fiche'+(fs.length>1?'s':'')+'…';render();
+    (async()=>{let ok=0,read=0,fail=0;
+      for(const f of fs){const pid=uid();
+        try{await idb.put(pid,f);}catch(er){fail++;continue;}
+        const p={id:pid,m:mDef,source:s,net:0,name:f.name,size:f.size,tried:1};
+        const d=await readPay(f);if(d&&(d.net||d.brut)){read++;}
+        const dup=d&&d.m&&S.pays.find(x=>x.m===d.m&&x.source===s&&x.d&&x.d.net===d.net);
+        if(dup){idb.del(pid).catch(()=>{});continue;}
+        S.pays.push(p);if(d&&(d.net||d.brut))applyPay(p,d);ok++;}
+      ui.msg=ok?(ok+' fiche'+(ok>1?'s':'')+' ajoutée'+(ok>1?'s':'')+(read<ok?', dont '+(ok-read)+' sans lecture automatique (renseigne le net à la main)':'')+'.'):(fail?'Le stockage de fichiers n\'est pas disponible dans ce navigateur.':'Ces fiches sont déjà enregistrées.');
+      save();render();if(read)toast(read+' fiche'+(read>1?'s':'')+' lue'+(read>1?'s':''));})();return;}
+  if(a==='rereadpays'){S.pays.forEach(p=>{delete p.tried;});scanPays();return;}
   if(a==='openpay'){const p=S.pays.find(x=>x.id===id);if(!p)return;
     idb.get(id).then(b=>{if(!b)throw new Error('x');return showPdf(b,p);}).catch(()=>{ui.msg='Impossible d\'ouvrir ce fichier ici.';render();});return;}
   if(a==='closepdf'){const o=$('#pdfv');if(o)o.remove();document.body.style.overflow=ui.sheet?'hidden':'';return;}
