@@ -36,8 +36,8 @@ function mxPanels(){
 }
 const ncdf=z=>{const t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;};
 function mxVal(e){const m=(S.maxes||{})[e.k];if(!m)return null;
-  if(e.u==='kg'){const kg=+m.kg,r=+m.reps||1;if(!(kg>0))return null;return r<=1?kg:kg*(1+Math.min(r,12)/30);}
-  if(e.u==='reps'){return +m.reps>=0&&m.reps!==''?+m.reps:null;}
+  if(e.u==='kg'){const kg=num(m.kg),r=num(m.reps)>0?num(m.reps):1;if(!(kg>0))return null;return r<=1?kg:kg*(1+Math.min(r,12)/30);}
+  if(e.u==='reps'){return (m.reps===''||m.reps==null||isNaN(+m.reps))?null:+m.reps;}
   const t=parseDur(m.t);return t>0?t:null;}
 function mxPct(e,pan){
   const v=mxVal(e);if(v==null)return null;
@@ -158,10 +158,8 @@ function mxAnalysis(){
   /* âge physiologique */
   const vo2=vo2From(),parts=[];
   if(vo2)parts.push({n:'Cardio',a:cardioAge(vo2),w:.5,s:'VO2max estimée '+fmtN(vo2,1)});
-  if(P.sAge!=null)parts.push({n:'Force',a:age-(P.sAge-.5)*20,w:.3,s:topTxt(P.sAge)+' de ton âge'});
-  let life=0,ls=[];if(st.length){const a=avg(st);life+=a>=10000?-2:a>=7000?0:3;ls.push(fmtN(Math.round(a))+' pas/j');}
-  if(h&&bw){const imc=bw/((h/100)**2);life+=imc<18.5?1:imc<25?0:imc<30?(P.str>.6?0:2):5;ls.push('IMC '+fmtN(imc,1));}
-  if(ls.length)parts.push({n:'Hygiène',a:age+life,w:.2,s:ls.join(' · ')});
+  if(P.sAge!=null)parts.push({n:'Force',a:age-(P.sAge-.5)*20,w:.4,s:topTxt(P.sAge)+' de ton âge'});
+  const used=MXL.filter(e=>mxVal(e)!=null&&(['bench','squat','dead','ohp','row','pull','push'].includes(e.k)||(vo2&&['run5','run10','run21','run42'].includes(e.k)))).map(e=>e.n);
   const tw=sum(parts.map(x=>x.w)),pa=parts.length?Math.round(sum(parts.map(x=>x.a*x.w))/tw):null;
   /* athlète hybride */
   const LV=[['Intermédiaire',{squat:1.25,bench:1,dead:1.5,pull:8,run5:25,run10:52}],['Avancé',{squat:1.5,bench:1.25,dead:2,pull:12,run5:22,run10:46}],['Élite',{squat:2,bench:1.5,dead:2.5,pull:20,run5:19,run10:40}]];
@@ -172,10 +170,10 @@ function mxAnalysis(){
   const tgt=next?Object.entries(next[1]).map(([k,t])=>{const r=ok(k,t);return `<span class="hy ${r===true?'ok':r===false?'no':'na'}">${lab[k]} ${k==='pull'?t:k.startsWith('run')?t+':00':fmtN(t,2)+'×'}</span>`;}).join(''):'';
   return `<div class="section-head"><h2 class="section-title">Mon analyse</h2></div>
   <div class="grid2 anag">
-    <div class="card anak"><small>Âge physiologique</small><b>${pa!=null?pa+' <span>ans</span>':'—'}</b><em>${pa!=null?(pa<age?(age-pa)+' ans de moins que ton âge':pa>age?(pa-age)+' ans de plus que ton âge':'égal à ton âge'):'Renseigne un temps de course'}</em></div>
-    <div class="card anak"><small>Athlète hybride</small><b>${hs!=null?hs+' <span>/100</span>':'—'}</b><em>Niveau ${esc(lvl)}</em></div></div>
-  ${parts.length?`<div class="card" style="margin-top:10px"><div class="anaparts">${parts.map(x=>`<div><small>${x.n}</small><b>${Math.round(x.a)} ans</b><em>${esc(x.s)}</em></div>`).join('')}</div></div>`:''}
+    <div class="card anak"><small>Âge physiologique</small><b>${pa!=null?pa+' <span>ans</span>':'—'}</b><em>${pa!=null?(pa<age?(age-pa)+' ans de moins que ton âge':pa>age?(pa-age)+' ans de plus que ton âge':'égal à ton âge'):'Renseigne au moins un max'}</em></div>
+    <div class="card anak"><small>Athlète hybride</small><b>${hs!=null?hs+' <span>/100</span>':'—'}</b><em>${hs!=null?'Niveau '+esc(lvl):'Renseigne un max de force et un temps de course'}</em></div></div>
+  ${parts.length?`<div class="card" style="margin-top:10px"><div class="anaparts" style="grid-template-columns:repeat(${parts.length},1fr)">${parts.map(x=>`<div><small>${x.n}</small><b>${Math.round(x.a)} ans</b><em>${esc(x.s)}</em></div>`).join('')}</div><p class="note" style="margin:10px 0 0">Calculé uniquement sur : ${esc(used.join(', '))}.</p></div>`:''}
   ${next?`<div class="card" style="margin-top:10px"><div class="sublabel" style="margin:0 0 8px">Pour passer ${esc(next[0])} (athlète hybride)</div><div class="hys">${tgt}</div><p class="note" style="margin:8px 0 0">Force rapportée à ton poids, tractions d'affilée, temps de course. Vert : atteint.</p></div>`:''}
   <div class="card anal" style="margin-top:10px">${ins.map(([i,t])=>`<div class="ani"><span class="qico">${IC(i,16)}</span><p>${t}</p></div>`).join('')}</div>
-  <p class="note">Âge physiologique et score hybride : estimations à partir de tes max (VO2max tirée de ton meilleur temps, formule de Daniels, comparée aux normes de VO2max par âge), de tes pas et de ton IMC. Indicatif, pas un avis médical.</p>`;
+  <p class="note">Âge physiologique et score hybride : estimations (VO2max tirée de ton meilleur temps, formule de Daniels, comparée aux normes de VO2max par âge), uniquement à partir des max que tu as renseignés : un exercice vide n'est jamais compté. Indicatif, pas un avis médical.</p>`;
 }
