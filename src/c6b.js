@@ -2,6 +2,7 @@
 /* ================= v13 : visuel pétillant, cercle d'amis, carte à partager, repos, records ================= */
 /* --- décor --- */
 function visInit(){
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
   const sp=$('#splash');if(sp){setTimeout(()=>sp.classList.add('out'),1000);setTimeout(()=>sp.remove(),1900);}
   addEventListener('resize',placePill);
   setInterval(restTick,500);

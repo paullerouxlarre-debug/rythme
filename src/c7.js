@@ -31,6 +31,13 @@ function sheetInner(){
   <div class="card"><p class="note" style="margin:0 0 10px">Importe un fichier Excel (.xlsx, .xls) ou .csv avec une ligne par jour : <b>Date</b>, <b>Début</b>, <b>Fin</b>, et si tu veux <b>Pause</b> (ou début et fin de pause). Une colonne <b>Heures</b> seule marche aussi. Les jours déjà pointés ne sont pas écrasés.</p>
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
+  <div class="sublabel">Notifications</div>
+  <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
+    <button class="btn btn-primary" style="width:100%" data-act="icspt">Rappels de pointage (lun–ven)</button>
+    <p class="note" style="margin:6px 0 10px">7:00 arrivée · 12:00 pause · 13:00 retour · 17:00 départ, sauf tes jours de congé.</p>
+    <button class="btn btn-ghost" style="width:100%" data-act="icspl">Ajouter mon planning au Calendrier</button>
+    <p class="note" style="margin:6px 0 0">Rappel 30 min avant chaque événement à venir. Sur l'iPhone, choisis « Calendrier » puis « Tout ajouter ».</p></div>
+
   <div class="sublabel">Sur ton iPhone</div>
   <div class="card"><p class="note" style="margin:0">${(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?'Rythme est installée comme une app sur cet appareil. Tes données restent sur le téléphone.'+'<br>Version du '+BUILD+'. <button class="chip" style="margin-top:8px" data-act="appupd">Rechercher une mise à jour</button>':'Pour une vraie app (icône, plein écran, hors ligne), installe la version autonome de Rythme depuis Safari : Partager, puis <b>Sur l\'écran d\'accueil</b>. Pour passer tes données, utilise « Enregistrer une copie » ici puis « Restaurer » dans l\'app.'}</p></div>
 
@@ -73,6 +80,36 @@ function doWipe(k){
   try{indexedDB.deleteDatabase('rythme_files');}catch(er){}
   R={active:null,profiles:[{id:uid(),name:'Moi',data:blank()}],prefs:{accent:ACCENTS[0][1],theme:'auto'}};R.active=R.profiles[0].id;
   applyPrefs();useProfile();resetUi();save();ui.msg='Toutes les données ont été effacées.';renderSheet();render();toast('Données effacées');
+}
+/* ---- rappels dans le Calendrier de l'iPhone (.ics, notifications natives, 100 % local) ---- */
+const icsD=(k,t)=>k.replace(/-/g,'')+'T'+t.replace(':','')+'00';
+const icsEsc=s=>String(s||'').replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
+function icsWrap(evs){return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Rythme//FR','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Rythme'].concat(evs,['END:VCALENDAR']).join('\r\n');}
+function icsPointage(){
+  let k=todayK();while(new Date(k+'T12:00').getDay()!==1)k=addD(k,1);
+  const offs=[];for(let i=0;i<400;i++){const d=addD(todayK(),i);if(evOn(d).some(e=>e.kind==='Congé'))offs.push(d);}
+  const st=Date.now();
+  return icsWrap([['in','07:00','Pointer ton arrivée'],['lo','12:00','Pointer ta pause déjeuner'],['li','13:00','Pointer ton retour'],['out','17:00','Pointer ton départ']].map(([id,t,txt])=>{
+    const e=t.split(':'),end=pad(+e[0])+':'+pad(+e[1]+5);
+    return ['BEGIN:VEVENT','UID:rythme-'+id+'@rythme','DTSTAMP:'+icsD(todayK(),'00:00')+'Z','DTSTART:'+icsD(k,t),'DTEND:'+icsD(k,end),'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+      ...(offs.length?['EXDATE:'+offs.map(d=>icsD(d,t)).join(',')]:[]),'SUMMARY:'+icsEsc(txt),'DESCRIPTION:Ouvre Rythme pour pointer.','TRANSP:TRANSPARENT',
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(txt),'TRIGGER:PT0M','END:VALARM','END:VEVENT'].join('\r\n');}));
+}
+function icsPlanning(){
+  const td=todayK(),evs=S.events.filter(e=>(e.end||e.date)>=td&&e.kind!=='Congé');
+  return icsWrap(evs.map(e=>{const allDay=!e.time||e.end;const L=['BEGIN:VEVENT','UID:rythme-'+e.id+'@rythme','DTSTAMP:'+icsD(td,'00:00')+'Z'];
+    if(allDay){L.push('DTSTART;VALUE=DATE:'+e.date.replace(/-/g,''),'DTEND;VALUE=DATE:'+addD(e.end||e.date,1).replace(/-/g,''));}
+    else{const[h,m]=e.time.split(':').map(Number),t2=h*60+m+(+e.dur||60);L.push('DTSTART:'+icsD(e.date,e.time),'DTEND:'+icsD(e.date,pad(Math.floor(t2/60)%24)+':'+pad(t2%60)));}
+    if(e.rep==='w')L.push('RRULE:FREQ=WEEKLY');else if(e.rep==='y')L.push('RRULE:FREQ=YEARLY');
+    L.push('SUMMARY:'+icsEsc(e.title||e.kind),'CATEGORIES:'+icsEsc(e.kind));
+    if(!allDay)L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(e.title||e.kind),'TRIGGER:-PT30M','END:VALARM');
+    L.push('END:VEVENT');return L.join('\r\n');}));
+}
+function openIcs(name,txt){
+  const blob=new Blob([txt],{type:'text/calendar;charset=utf-8'});
+  if(window.claude&&window.claude.use){toast('À faire depuis l\'app installée sur ton iPhone');return;}
+  try{const f=new File([blob],name,{type:'text/calendar'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Rythme'}).catch(()=>{});return;}}catch(e){}
+  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),8000);
 }
 function saveFile(name,data){
   try{
@@ -124,7 +161,7 @@ function animateCounts(){
     if(k<1)requestAnimationFrame(step);else els.forEach(el=>{const f=CUF[el.dataset.f];if(f)el.textContent=f(+el.dataset.v);});};
   requestAnimationFrame(step);
 }
-function revealBelow(main){
+function revealBelow(main){return;
   if(!('IntersectionObserver' in window))return;
   const vh=innerHeight,els=[...main.children].filter(el=>el.getBoundingClientRect().top>vh*0.92);
   if(!els.length)return;
@@ -216,6 +253,8 @@ document.addEventListener('click',e=>{
     m.date=td;saveSoon();render();return;}
   if(a==='mxuse'){const e=MXL.find(x=>x.k===id),jb=journalBest(e);if(!jb)return;S.maxes=S.maxes||{};S.maxes[id]=e.u==='reps'?{reps:jb.reps,date:jb.date}:{kg:String(jb.kg).replace('.',','),reps:String(jb.reps),date:jb.date};save();render();toast('Max mis à jour');return;}
   if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
+  if(a==='icspt'){openIcs('rythme-rappels-pointage.ics',icsPointage());return;}
+  if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
