@@ -58,6 +58,7 @@ function stepsGuide(){
     <li>Après la boucle : <b>Combiner le texte</b> (retour à la ligne), puis <b>Copier dans le presse-papiers</b>.</li>
   </ol>
   <p><b>Pour l'automatiser :</b> Raccourcis > Automatisation > <b>+</b> > Heure de la journée (par ex. 8:00, 12:30 et 20:00), choisis <b>Exécuter immédiatement</b>, puis le raccourci « Pas Rythme ». Tes pas sont alors copiés tout seuls ; à l'ouverture, Rythme te propose de les coller d'un geste.</p><p> Tu peux aussi importer tout l'historique : dans Santé, ta photo > Exporter toutes les données, ouvre le zip dans Fichiers, puis choisis <b>export.xml</b> dans Réglages.</p>
+  <p><b>Sans aucun geste :</b> le raccourci peut aussi envoyer tes pas dans un Gist GitHub privé que Rythme lit à chaque ouverture (lien à coller dans Réglages > Pas).</p>
   <button class="btn btn-primary" style="width:100%" data-act="stepspaste">Coller mes pas maintenant</button>
   <button class="btn" style="width:100%;margin-top:8px" data-act="cfno">Fermer</button></div>`;
 }
@@ -71,6 +72,24 @@ function importStepsText(t){const o=parseStepsText(t),n=mergeSteps(o),k=Object.k
 
 function stepsBanner(){
   const st=S.steps||{};if(!Object.keys(st).length)return '';
-  const age=Date.now()-(S.stepsAt||0);if(st[todayK()]!=null&&age<3*3600e3)return '';
+  const age=Date.now()-(S.stepsAt||0);if(st[todayK()]!=null&&age<3*3600e3)return '';if(gistApi(S.stepsSync))return '';
   return `<button class="stpb" data-act="stepspaste"><span class="stpi">${IC('step',18)}</span><span><b>Actualiser mes pas</b><small>Un geste pour coller les pas copiés par ton raccourci</small></span><span class="chev">›</span></button>`;
+}
+
+/* ---- synchronisation automatique via un Gist GitHub (le raccourci y écrit, l'app le lit) ---- */
+function gistApi(u){u=String(u||'').trim();const m=u.match(/([0-9a-f]{20,40})/i);return m?'https://api.github.com/gists/'+m[1]:'';}
+let _syncT=0;
+async function syncSteps(force){
+  const api=gistApi(S.stepsSync);if(!api)return null;
+  if(!force&&Date.now()-_syncT<10*60e3)return null;_syncT=Date.now();
+  if(window.claude&&window.claude.use)return null;
+  try{
+    const r=await fetch(api,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});if(!r.ok)throw new Error('http '+r.status);
+    const j=await r.json(),fs=Object.values(j.files||{});if(!fs.length)throw new Error('vide');
+    let f=fs.find(x=>/pas|step/i.test(x.filename))||fs[0],txt=f.content;
+    if(f.truncated&&f.raw_url)txt=await (await fetch(f.raw_url,{cache:'no-store'})).text();
+    const o=parseStepsText(txt),k=Object.keys(o).length,before=JSON.stringify(S.steps||{});
+    if(k){mergeSteps(o);S.stepsSyncAt=Date.now();save();if(JSON.stringify(S.steps)!==before&&ui.tab==='today')render();}
+    return k;
+  }catch(e){return -1;}
 }

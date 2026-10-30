@@ -9,6 +9,7 @@ function visInit(){
   addEventListener('scroll',onScroll,{passive:true});swipeInit();scrubInit();
   if(moodNow()==='sleepy'&&G().wb!==todayK()){G().wb=todayK();saveSoon();setTimeout(()=>toast('Content de te revoir · 10 min suffisent pour relancer'),2600);}
   setTimeout(placePill,300);
+  setTimeout(()=>syncSteps(true),1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncSteps(false);});
 }
 function placePill(){
   const t=document.querySelector('.tab.on'),p=$('#tabpill');if(!t||!p)return;

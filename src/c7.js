@@ -35,6 +35,9 @@ function sheetInner(){
   <div class="card"><p class="note" style="margin:0 0 10px">Colle les pas copiés par ton raccourci, ou importe tout l'historique depuis l'export de l'app Santé (fichier <b>export.xml</b>, après avoir ouvert le zip dans Fichiers).</p>
     <div class="form-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="stepsguide">Comment faire</button><button class="btn btn-ghost" data-act="stepspaste">Coller mes pas</button></div>
     <input id="stx-f" type="file" accept=".xml,text/xml,application/xml" style="margin-top:12px"><div class="form-actions"><button class="btn btn-primary" data-act="stepsxml">Importer export.xml</button></div><p class="note stxp" style="margin:4px 0 0"></p>
+    <div class="field" style="margin-top:10px"><label>Synchro automatique : lien de ton Gist GitHub</label><input data-stepsync="1" value="${esc(S.stepsSync||'')}" placeholder="https://gist.github.com/…" autocomplete="off" autocapitalize="off"></div>
+    <div class="form-actions" style="margin-top:8px"><button class="btn btn-ghost" data-act="stepsynctest">Synchroniser maintenant</button></div>
+    ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
     <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
 
   <div class="sublabel">Notifications</div>
@@ -261,6 +264,7 @@ document.addEventListener('click',e=>{
   if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='icspt'){openIcs('rythme-rappels-pointage.ics',icsPointage());return;}
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
+  if(a==='stepsynctest'){if(!gistApi(S.stepsSync)){ui.msg='Colle d\'abord le lien de ton Gist.';renderSheet();return;}if(window.claude&&window.claude.use){ui.msg='La synchro marche depuis l\'app installée sur ton iPhone.';renderSheet();return;}ui.msg='Synchronisation…';renderSheet();syncSteps(true).then(k=>{ui.msg=k>0?k+' jours de pas synchronisés.':k===0?'Le Gist ne contient pas encore de pas : lance le raccourci une fois.':'Impossible de lire le Gist. Vérifie le lien.';renderSheet();render();});return;}
   if(a==='stepsguide'){showModal(stepsGuide());return;}
   if(a==='stepspaste'){(async()=>{let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText();}catch(er){}
       const o=parseStepsText(t);if(Object.keys(o).length){importStepsText(t);}else showModal(stepsPasteBox(t?'Le presse-papiers ne contient pas de pas. Lance d\'abord le raccourci « Pas Rythme », ou colle le texte ici.':''));})();return;}
@@ -435,6 +439,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
