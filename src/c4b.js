@@ -32,7 +32,7 @@ async function parseHealthXml(file,onProg){
   const out={};Object.keys(per).forEach(k=>{out[k]=Math.round(Math.max(...Object.values(per[k])));});
   return out;
 }
-function mergeSteps(o){S.steps=S.steps||{};let n=0;Object.entries(o).forEach(([k,v])=>{if(v>0&&S.steps[k]!==v){S.steps[k]=v;n++;}});return n;}
+function mergeSteps(o){S.steps=S.steps||{};if(Object.keys(o).length)S.stepsAt=Date.now();let n=0;Object.entries(o).forEach(([k,v])=>{if(v>0&&S.steps[k]!==v){S.steps[k]=v;n++;}});return n;}
 function stepsCard(){
   const st=S.steps||{},keys=Object.keys(st).sort();
   if(!keys.length)return `<div class="section-head"><h2 class="section-title">Pas</h2></div>
@@ -57,7 +57,7 @@ function stepsGuide(){
     <li>Ajoute <b>Répéter avec chacun</b>. Dedans : <b>Formater la date</b> (date de début de l'élément, format personnalisé <code>yyyy-MM-dd</code>), puis <b>Texte</b> : la date formatée, un point-virgule, la <b>valeur</b> de l'élément.</li>
     <li>Après la boucle : <b>Combiner le texte</b> (retour à la ligne), puis <b>Copier dans le presse-papiers</b>.</li>
   </ol>
-  <p>Ensuite : lance « Pas Rythme » (widget ou Siri), ouvre Rythme et touche <b>Mettre à jour mes pas</b>. Tu peux aussi importer tout l'historique : dans Santé, ta photo > Exporter toutes les données, ouvre le zip dans Fichiers, puis choisis <b>export.xml</b> dans Réglages.</p>
+  <p><b>Pour l'automatiser :</b> Raccourcis > Automatisation > <b>+</b> > Heure de la journée (par ex. 8:00, 12:30 et 20:00), choisis <b>Exécuter immédiatement</b>, puis le raccourci « Pas Rythme ». Tes pas sont alors copiés tout seuls ; à l'ouverture, Rythme te propose de les coller d'un geste.</p><p> Tu peux aussi importer tout l'historique : dans Santé, ta photo > Exporter toutes les données, ouvre le zip dans Fichiers, puis choisis <b>export.xml</b> dans Réglages.</p>
   <button class="btn btn-primary" style="width:100%" data-act="stepspaste">Coller mes pas maintenant</button>
   <button class="btn" style="width:100%;margin-top:8px" data-act="cfno">Fermer</button></div>`;
 }
@@ -68,3 +68,9 @@ function stepsPasteBox(msg){
 }
 function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';}
 function importStepsText(t){const o=parseStepsText(t),n=mergeSteps(o),k=Object.keys(o).length;save();closeConfirm();render();toast(k?k+' jour'+(k>1?'s':'')+' de pas importé'+(k>1?'s':''):'Aucun pas trouvé dans le texte');}
+
+function stepsBanner(){
+  const st=S.steps||{};if(!Object.keys(st).length)return '';
+  const age=Date.now()-(S.stepsAt||0);if(st[todayK()]!=null&&age<3*3600e3)return '';
+  return `<button class="stpb" data-act="stepspaste"><span class="stpi">${IC('step',18)}</span><span><b>Actualiser mes pas</b><small>Un geste pour coller les pas copiés par ton raccourci</small></span><span class="chev">›</span></button>`;
+}

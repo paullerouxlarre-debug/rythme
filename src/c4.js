@@ -31,7 +31,7 @@ V.today=function(){
   const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#A9C6E3',c2:'#6A9BCC',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#A9C6E3',c2:'#6A9BCC',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#E08A68',c2:'#C96442',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#E3C17A',c2:'#C9A15E',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
-  return `${dueBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
+  return `${dueBanner()}${stepsBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
     <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">Série ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
     <div class="mini3 rleg">${RG.map(r=>`<div><small><i style="background:linear-gradient(135deg,${r.c1},${r.c2})"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div></div>
 
