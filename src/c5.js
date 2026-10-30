@@ -91,11 +91,14 @@ M.goal=function(){
 };
 
 const SCOL=['#0A84FF','#34C759','#FF9500','#AF52DE','#FF2D55','#32ADE6'];
-const pctTot=()=>sum(S.lines.map(l=>l.pct||0));
+const useAmt=()=>S.lines.some(l=>l.amt>0);
+const lw=l=>useAmt()?(+l.amt||0):(+l.pct||0);
+const pctTot=()=>sum(S.lines.map(lw));
+const amtTot=()=>sum(S.lines.map(l=>+l.amt||0));
 const lineRate=l=>(l.r!=null&&l.r!==''&&isFinite(l.r))?+l.r:(S.ret[l.cls]||0);
 function mix(){
   const tot=pctTot(),ct={};CLASSES.forEach(c=>ct[c]=0);
-  S.lines.forEach(l=>{ct[l.cls]+=l.pct||0;});
+  S.lines.forEach(l=>{ct[l.cls]+=lw(l);});
   if(tot<=0)return {tot:0,ct,sh:{ETF:0,Actions:0,Crypto:0},empty:true};
   const sh={};CLASSES.forEach(c=>sh[c]=ct[c]/tot);
   return {tot,ct,sh,empty:false};
@@ -103,7 +106,7 @@ function mix(){
 function blended(){
   const m=mix();
   if(m.empty)return {r:S.ret.ETF,sp:S.spread.ETF,m};
-  return {r:sum(S.lines.map(l=>(l.pct||0)*lineRate(l)))/m.tot,sp:sum(S.lines.map(l=>(l.pct||0)*(S.spread[l.cls]||0)))/m.tot,m};
+  return {r:sum(S.lines.map(l=>lw(l)*lineRate(l)))/m.tot,sp:sum(S.lines.map(l=>lw(l)*(S.spread[l.cls]||0)))/m.tot,m};
 }
 function project(init,monthly,years,r){
   const rm=Math.pow(1+r/100,1/12)-1;let v=init;const out=[v];
@@ -119,38 +122,39 @@ M.alloc=function(){
   const segs=CLASSES.map(c=>({n:c,v:m.sh[c],c:CCOL[c]}));
   const risk=m.empty?'—':m.sh.Crypto>=.2?'Très volatil':m.sh.Crypto+m.sh.Actions>=.7?'Dynamique':m.sh.Crypto+m.sh.Actions>=.4?'Équilibré':'Prudent';
   const sorted=S.lines.slice().sort((a,b)=>(b.pct||0)-(a.pct||0));
-  const rows=sorted.map(l=>`<div class="row" style="flex-wrap:wrap;gap:8px 10px"><div style="flex:1;min-width:0"><div class="row-title"><span class="dot" style="background:${CCOL[l.cls]}"></span> ${esc(l.name)}</div><div class="row-sub">${l.cls} · ${m.tot>0?fmt(dca*(l.pct||0)/m.tot)+' / mois':''}</div></div>
-    <div style="display:flex;align-items:center;gap:6px"><input class="mini" style="width:64px" type="number" inputmode="decimal" step="any" value="${l.pct}" data-lp="${l.id}" aria-label="Pourcentage de ${esc(l.name)}"><span class="muted" style="font-size:13px">%</span><button class="row-del" data-act="dell" data-id="${l.id}" aria-label="Supprimer">×</button></div>
-    <div class="progress" style="width:100%"><div style="width:${m.tot>0?(l.pct||0)/m.tot*100:0}%;background:${CCOL[l.cls]}"></div></div></div>`).join('');
-  const bar=m.empty?'':`<div class="alloc-bar" style="margin-top:14px">${sorted.map(l=>`<div style="width:${(l.pct||0)/m.tot*100}%;background:${CCOL[l.cls]};opacity:${.55+.45*((sorted.indexOf(l)%2)?.6:1)}"></div>`).join('')}</div>`;
+  const A=useAmt(),T=amtTot();
+  const rows=sorted.map(l=>{const sh=m.tot>0?lw(l)/m.tot:0;return `<div class="row" style="flex-wrap:wrap;gap:8px 10px"><div style="flex:1;min-width:0"><div class="row-title"><span class="dot" style="background:${CCOL[l.cls]}"></span> ${esc(l.name)}</div><div class="row-sub">${l.cls}${m.tot>0?' · <b style="color:var(--text)">'+fmtN(sh*100,1)+' %</b>':''}${m.tot>0&&dca?' · '+fmt(dca*sh)+' / mois':''}${A&&!(l.amt>0)?' · <span style="color:var(--negative)">montant à renseigner</span>':''}</div></div>
+    <div style="display:flex;align-items:center;gap:6px"><input class="mini" style="width:96px" type="number" inputmode="decimal" step="any" value="${l.amt>0?l.amt:''}" placeholder="${!A&&l.pct?fmtN(l.pct,0)+' %':'0'}" data-la="${l.id}" aria-label="Montant de ${esc(l.name)}"><span class="muted" style="font-size:13px">€</span><button class="row-del" data-act="dell" data-id="${l.id}" aria-label="Supprimer">×</button></div>
+    <div class="progress" style="width:100%"><div style="width:${sh*100}%;background:${CCOL[l.cls]}"></div></div></div>`;}).join('');
+  const bar=m.empty?'':`<div class="alloc-bar" style="margin-top:14px">${sorted.map(l=>`<div style="width:${lw(l)/m.tot*100}%;background:${CCOL[l.cls]};opacity:${.55+.45*((sorted.indexOf(l)%2)?.6:1)}"></div>`).join('')}</div>`;
   return `
   <div class="hero2"><div class="field"><label style="color:rgba(255,255,255,.85)">Versement mensuel régulier (DCA)</label><div style="display:flex;align-items:center;gap:8px"><input class="inl" type="number" inputmode="decimal" step="any" value="${dca||''}" placeholder="300" data-dca="1" style="font-size:22px;font-weight:700"><span class="muted" style="font-weight:600">€ / mois</span><div class="stp"><button data-act="dcastep" data-id="-50" aria-label="Moins 50 euros">−</button><button data-act="dcastep" data-id="50" aria-label="Plus 50 euros">+</button></div></div></div>
-    <div class="grid2" style="margin-top:12px"><div class="stat"><div class="k">Par an</div><div class="v">${fmt(dca*12)}</div></div><div class="stat"><div class="k">Placements</div><div class="v">${S.lines.length}</div></div></div></div>
+    <div class="grid2" style="margin-top:12px"><div class="stat"><div class="k">Valeur du portefeuille</div><div class="v">${A?fmt(T):'—'}</div></div><div class="stat"><div class="k">Versé par an</div><div class="v">${fmt(dca*12)}</div></div></div></div>
 
   <div class="section-head"><h2 class="section-title">Mon portefeuille</h2><span class="section-sub">${risk}</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
-    ${donut(segs,fmtN(m.tot,0)+' %')}
-    <div class="legend" style="flex:1;min-width:0">${segs.map(s=>`<div class="li"><span class="dot" style="background:${s.c}"></span><span class="n">${s.n}</span><span class="p">${fmtN(s.v*100,1)} % · ${fmt(dca*s.v)}</span></div>`).join('')}</div></div>${bar}
-    ${m.empty?'<p class="note">Ajoute tes placements avec leur pourcentage. Aucun montant total n\'est enregistré, seulement les proportions et ton versement mensuel.</p>':Math.abs(m.tot-100)>0.05?`<div class="callout" style="margin-top:14px">Le total fait ${fmtN(m.tot,1)} %. <button class="chip" data-act="norm" style="margin-left:6px">Ramener à 100 %</button></div>`:''}</div>
+    ${donut(segs,A?fmtK(T):fmtN(m.tot,0)+' %')}
+    <div class="legend" style="flex:1;min-width:0">${segs.map(s=>`<div class="li"><span class="dot" style="background:${s.c}"></span><span class="n">${s.n}</span><span class="p">${fmtN(s.v*100,1)} %${A?' · '+fmt(T*s.v):''}</span></div>`).join('')}</div></div>${bar}
+    ${m.empty?'<p class="note">Ajoute tes placements avec le montant investi : les pourcentages se calculent tout seuls.</p>':!A?'<div class="callout" style="margin-top:14px">Renseigne le montant de chaque placement : les parts du portefeuille seront calculées automatiquement.</div>':''}</div>
 
   <div class="section-head"><h2 class="section-title">Mes placements</h2><button class="iconbtn" data-act="toggle" data-id="fl" aria-label="Ajouter un placement">+</button></div>
   ${ui.open.fl?`<div class="form-panel"><div class="form-grid">
     <div class="field wide"><label>Nom</label><input id="l-n" placeholder="MSCI World, Nvidia, Bitcoin…"></div>
     <div class="field"><label>Type</label><select id="l-c">${CLASSES.map(c=>`<option>${c}</option>`).join('')}</select></div>
-    <div class="field"><label>Part du portefeuille (%)</label><input id="l-w" type="number" inputmode="decimal" step="any" placeholder="40"></div>
+    <div class="field"><label>Montant investi (€)</label><input id="l-w" type="number" inputmode="decimal" step="any" placeholder="2500"></div>
     <div class="field wide"><label>Rendement annuel supposé (%), facultatif</label><input id="l-r" type="number" inputmode="decimal" step="any" placeholder="par défaut selon le type"></div></div>
     <div class="form-actions"><button class="btn btn-primary" data-act="addline">Ajouter</button><button class="btn btn-ghost" data-act="toggle" data-id="fl">Annuler</button></div></div>`:''}
-  <div class="row-list">${rows||'<div class="empty">Pas encore de placement. Ajoute un ETF, une action ou une crypto avec sa part en pourcentage.</div>'}</div>
+  <div class="row-list">${rows||'<div class="empty">Pas encore de placement. Ajoute un ETF, une action ou une crypto avec le montant investi.</div>'}</div>
   ${m.tot>0&&dca>0?`<div class="section-head"><h2 class="section-title">Où part mon DCA</h2><span class="section-sub">${fmt(dca)} / mois</span></div>
-  <div class="card">${barChart(sorted.map(l=>({l:l.name.slice(0,7),v:dca*(l.pct||0)/m.tot,c:CCOL[l.cls]})).slice(0,10),{h:140,fy:v=>fmtN(v)})}</div>`:''}
-  <p class="note">Les proportions sont ramenées à 100 %. Chaque placement peut avoir son propre rendement supposé. Sinon on utilise la valeur par défaut de son type, modifiable dans Évolution.</p>`;
+  <div class="card">${barChart(sorted.map(l=>({l:l.name.slice(0,7),v:dca*lw(l)/m.tot,c:CCOL[l.cls]})).slice(0,10),{h:140,fy:v=>fmtN(v)})}</div>`:''}
+  <p class="note">Les parts du portefeuille sont calculées à partir des montants, et la valeur totale sert de capital de départ dans Évolution. Chaque placement peut avoir son propre rendement supposé. Sinon on utilise la valeur par défaut de son type, modifiable dans Évolution.</p>`;
 };
 
 const LCOL=['#0FA97A','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#F5B400','#8E8E93'];
 function evCalc(y){
   const tot=pctTot(),lines=tot>0?S.lines:[{id:'x',name:'ETF monde',cls:'ETF',pct:100}],T=tot>0?tot:100;
   const init=S.proj.init||0,dca=S.dca||0;
-  const layers=lines.map((l,i)=>{const sh=(l.pct||0)/T,r=lineRate(l),sp=S.spread[l.cls]||0;
+  const layers=lines.map((l,i)=>{const sh=lw(l)/T,r=lineRate(l),sp=S.spread[l.cls]||0;
     return {name:l.name,c:LCOL[i%LCOL.length],cls:l.cls,sh,v:project(init*sh,dca*sh,y,r),lo:project(init*sh,dca*sh,y,Math.max(r-sp,-5)),hi:project(init*sh,dca*sh,y,r+sp)};});
   const sumAt=(k,i)=>sum(layers.map(L=>L[k][i]));
   const mid=layers[0].v.map((_,i)=>sumAt('v',i)),lo=mid.map((_,i)=>sumAt('lo',i)),hi=mid.map((_,i)=>sumAt('hi',i));

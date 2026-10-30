@@ -730,7 +730,7 @@
 
   /* progression */
   .progress{ height:6px; background:var(--surface-3); }
-  .progress div{ background:var(--tc)!important; }
+  .progress div:not([style*="background"]){ background:var(--tc)!important; }
   .progress>div::after{ display:none; }
   .progress.xl{ height:8px; }
   .progress.xl>div{ background:linear-gradient(90deg,var(--tc),var(--tc2))!important; animation:none!important; }
@@ -1003,13 +1003,13 @@ const tmin=s=>{if(!s)return NaN;const[h,m]=s.split(':').map(Number);return h*60+
 
 /* ================= constants ================= */
 const CLASSES=['ETF','Actions','Crypto'];
-const CCOL={ETF:'#34C759',Actions:'#FF9500',Crypto:'#AF52DE'};
+const CCOL={ETF:'#5E9C80',Actions:'#D97757',Crypto:'#9A7BC0'};
 const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculation',col:'#0A84FF'},padel:{name:'Padel',col:'#FFCC00'},bodyboard:{name:'Bodyboard',col:'#32ADE6'}};
 const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D6',Perso:'#AF52DE',Santé:'#00C7BE',Détente:'#34C759'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 08:27';
+const BUILD='30/10 08:39';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -2100,11 +2100,14 @@ M.goal=function(){
 };
 
 const SCOL=['#0A84FF','#34C759','#FF9500','#AF52DE','#FF2D55','#32ADE6'];
-const pctTot=()=>sum(S.lines.map(l=>l.pct||0));
+const useAmt=()=>S.lines.some(l=>l.amt>0);
+const lw=l=>useAmt()?(+l.amt||0):(+l.pct||0);
+const pctTot=()=>sum(S.lines.map(lw));
+const amtTot=()=>sum(S.lines.map(l=>+l.amt||0));
 const lineRate=l=>(l.r!=null&&l.r!==''&&isFinite(l.r))?+l.r:(S.ret[l.cls]||0);
 function mix(){
   const tot=pctTot(),ct={};CLASSES.forEach(c=>ct[c]=0);
-  S.lines.forEach(l=>{ct[l.cls]+=l.pct||0;});
+  S.lines.forEach(l=>{ct[l.cls]+=lw(l);});
   if(tot<=0)return {tot:0,ct,sh:{ETF:0,Actions:0,Crypto:0},empty:true};
   const sh={};CLASSES.forEach(c=>sh[c]=ct[c]/tot);
   return {tot,ct,sh,empty:false};
@@ -2112,7 +2115,7 @@ function mix(){
 function blended(){
   const m=mix();
   if(m.empty)return {r:S.ret.ETF,sp:S.spread.ETF,m};
-  return {r:sum(S.lines.map(l=>(l.pct||0)*lineRate(l)))/m.tot,sp:sum(S.lines.map(l=>(l.pct||0)*(S.spread[l.cls]||0)))/m.tot,m};
+  return {r:sum(S.lines.map(l=>lw(l)*lineRate(l)))/m.tot,sp:sum(S.lines.map(l=>lw(l)*(S.spread[l.cls]||0)))/m.tot,m};
 }
 function project(init,monthly,years,r){
   const rm=Math.pow(1+r/100,1/12)-1;let v=init;const out=[v];
@@ -2128,38 +2131,39 @@ M.alloc=function(){
   const segs=CLASSES.map(c=>({n:c,v:m.sh[c],c:CCOL[c]}));
   const risk=m.empty?'—':m.sh.Crypto>=.2?'Très volatil':m.sh.Crypto+m.sh.Actions>=.7?'Dynamique':m.sh.Crypto+m.sh.Actions>=.4?'Équilibré':'Prudent';
   const sorted=S.lines.slice().sort((a,b)=>(b.pct||0)-(a.pct||0));
-  const rows=sorted.map(l=>`<div class="row" style="flex-wrap:wrap;gap:8px 10px"><div style="flex:1;min-width:0"><div class="row-title"><span class="dot" style="background:${CCOL[l.cls]}"></span> ${esc(l.name)}</div><div class="row-sub">${l.cls} · ${m.tot>0?fmt(dca*(l.pct||0)/m.tot)+' / mois':''}</div></div>
-    <div style="display:flex;align-items:center;gap:6px"><input class="mini" style="width:64px" type="number" inputmode="decimal" step="any" value="${l.pct}" data-lp="${l.id}" aria-label="Pourcentage de ${esc(l.name)}"><span class="muted" style="font-size:13px">%</span><button class="row-del" data-act="dell" data-id="${l.id}" aria-label="Supprimer">×</button></div>
-    <div class="progress" style="width:100%"><div style="width:${m.tot>0?(l.pct||0)/m.tot*100:0}%;background:${CCOL[l.cls]}"></div></div></div>`).join('');
-  const bar=m.empty?'':`<div class="alloc-bar" style="margin-top:14px">${sorted.map(l=>`<div style="width:${(l.pct||0)/m.tot*100}%;background:${CCOL[l.cls]};opacity:${.55+.45*((sorted.indexOf(l)%2)?.6:1)}"></div>`).join('')}</div>`;
+  const A=useAmt(),T=amtTot();
+  const rows=sorted.map(l=>{const sh=m.tot>0?lw(l)/m.tot:0;return `<div class="row" style="flex-wrap:wrap;gap:8px 10px"><div style="flex:1;min-width:0"><div class="row-title"><span class="dot" style="background:${CCOL[l.cls]}"></span> ${esc(l.name)}</div><div class="row-sub">${l.cls}${m.tot>0?' · <b style="color:var(--text)">'+fmtN(sh*100,1)+' %</b>':''}${m.tot>0&&dca?' · '+fmt(dca*sh)+' / mois':''}${A&&!(l.amt>0)?' · <span style="color:var(--negative)">montant à renseigner</span>':''}</div></div>
+    <div style="display:flex;align-items:center;gap:6px"><input class="mini" style="width:96px" type="number" inputmode="decimal" step="any" value="${l.amt>0?l.amt:''}" placeholder="${!A&&l.pct?fmtN(l.pct,0)+' %':'0'}" data-la="${l.id}" aria-label="Montant de ${esc(l.name)}"><span class="muted" style="font-size:13px">€</span><button class="row-del" data-act="dell" data-id="${l.id}" aria-label="Supprimer">×</button></div>
+    <div class="progress" style="width:100%"><div style="width:${sh*100}%;background:${CCOL[l.cls]}"></div></div></div>`;}).join('');
+  const bar=m.empty?'':`<div class="alloc-bar" style="margin-top:14px">${sorted.map(l=>`<div style="width:${lw(l)/m.tot*100}%;background:${CCOL[l.cls]};opacity:${.55+.45*((sorted.indexOf(l)%2)?.6:1)}"></div>`).join('')}</div>`;
   return `
   <div class="hero2"><div class="field"><label style="color:rgba(255,255,255,.85)">Versement mensuel régulier (DCA)</label><div style="display:flex;align-items:center;gap:8px"><input class="inl" type="number" inputmode="decimal" step="any" value="${dca||''}" placeholder="300" data-dca="1" style="font-size:22px;font-weight:700"><span class="muted" style="font-weight:600">€ / mois</span><div class="stp"><button data-act="dcastep" data-id="-50" aria-label="Moins 50 euros">−</button><button data-act="dcastep" data-id="50" aria-label="Plus 50 euros">+</button></div></div></div>
-    <div class="grid2" style="margin-top:12px"><div class="stat"><div class="k">Par an</div><div class="v">${fmt(dca*12)}</div></div><div class="stat"><div class="k">Placements</div><div class="v">${S.lines.length}</div></div></div></div>
+    <div class="grid2" style="margin-top:12px"><div class="stat"><div class="k">Valeur du portefeuille</div><div class="v">${A?fmt(T):'—'}</div></div><div class="stat"><div class="k">Versé par an</div><div class="v">${fmt(dca*12)}</div></div></div></div>
 
   <div class="section-head"><h2 class="section-title">Mon portefeuille</h2><span class="section-sub">${risk}</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
-    ${donut(segs,fmtN(m.tot,0)+' %')}
-    <div class="legend" style="flex:1;min-width:0">${segs.map(s=>`<div class="li"><span class="dot" style="background:${s.c}"></span><span class="n">${s.n}</span><span class="p">${fmtN(s.v*100,1)} % · ${fmt(dca*s.v)}</span></div>`).join('')}</div></div>${bar}
-    ${m.empty?'<p class="note">Ajoute tes placements avec leur pourcentage. Aucun montant total n\'est enregistré, seulement les proportions et ton versement mensuel.</p>':Math.abs(m.tot-100)>0.05?`<div class="callout" style="margin-top:14px">Le total fait ${fmtN(m.tot,1)} %. <button class="chip" data-act="norm" style="margin-left:6px">Ramener à 100 %</button></div>`:''}</div>
+    ${donut(segs,A?fmtK(T):fmtN(m.tot,0)+' %')}
+    <div class="legend" style="flex:1;min-width:0">${segs.map(s=>`<div class="li"><span class="dot" style="background:${s.c}"></span><span class="n">${s.n}</span><span class="p">${fmtN(s.v*100,1)} %${A?' · '+fmt(T*s.v):''}</span></div>`).join('')}</div></div>${bar}
+    ${m.empty?'<p class="note">Ajoute tes placements avec le montant investi : les pourcentages se calculent tout seuls.</p>':!A?'<div class="callout" style="margin-top:14px">Renseigne le montant de chaque placement : les parts du portefeuille seront calculées automatiquement.</div>':''}</div>
 
   <div class="section-head"><h2 class="section-title">Mes placements</h2><button class="iconbtn" data-act="toggle" data-id="fl" aria-label="Ajouter un placement">+</button></div>
   ${ui.open.fl?`<div class="form-panel"><div class="form-grid">
     <div class="field wide"><label>Nom</label><input id="l-n" placeholder="MSCI World, Nvidia, Bitcoin…"></div>
     <div class="field"><label>Type</label><select id="l-c">${CLASSES.map(c=>`<option>${c}</option>`).join('')}</select></div>
-    <div class="field"><label>Part du portefeuille (%)</label><input id="l-w" type="number" inputmode="decimal" step="any" placeholder="40"></div>
+    <div class="field"><label>Montant investi (€)</label><input id="l-w" type="number" inputmode="decimal" step="any" placeholder="2500"></div>
     <div class="field wide"><label>Rendement annuel supposé (%), facultatif</label><input id="l-r" type="number" inputmode="decimal" step="any" placeholder="par défaut selon le type"></div></div>
     <div class="form-actions"><button class="btn btn-primary" data-act="addline">Ajouter</button><button class="btn btn-ghost" data-act="toggle" data-id="fl">Annuler</button></div></div>`:''}
-  <div class="row-list">${rows||'<div class="empty">Pas encore de placement. Ajoute un ETF, une action ou une crypto avec sa part en pourcentage.</div>'}</div>
+  <div class="row-list">${rows||'<div class="empty">Pas encore de placement. Ajoute un ETF, une action ou une crypto avec le montant investi.</div>'}</div>
   ${m.tot>0&&dca>0?`<div class="section-head"><h2 class="section-title">Où part mon DCA</h2><span class="section-sub">${fmt(dca)} / mois</span></div>
-  <div class="card">${barChart(sorted.map(l=>({l:l.name.slice(0,7),v:dca*(l.pct||0)/m.tot,c:CCOL[l.cls]})).slice(0,10),{h:140,fy:v=>fmtN(v)})}</div>`:''}
-  <p class="note">Les proportions sont ramenées à 100 %. Chaque placement peut avoir son propre rendement supposé. Sinon on utilise la valeur par défaut de son type, modifiable dans Évolution.</p>`;
+  <div class="card">${barChart(sorted.map(l=>({l:l.name.slice(0,7),v:dca*lw(l)/m.tot,c:CCOL[l.cls]})).slice(0,10),{h:140,fy:v=>fmtN(v)})}</div>`:''}
+  <p class="note">Les parts du portefeuille sont calculées à partir des montants, et la valeur totale sert de capital de départ dans Évolution. Chaque placement peut avoir son propre rendement supposé. Sinon on utilise la valeur par défaut de son type, modifiable dans Évolution.</p>`;
 };
 
 const LCOL=['#0FA97A','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#F5B400','#8E8E93'];
 function evCalc(y){
   const tot=pctTot(),lines=tot>0?S.lines:[{id:'x',name:'ETF monde',cls:'ETF',pct:100}],T=tot>0?tot:100;
   const init=S.proj.init||0,dca=S.dca||0;
-  const layers=lines.map((l,i)=>{const sh=(l.pct||0)/T,r=lineRate(l),sp=S.spread[l.cls]||0;
+  const layers=lines.map((l,i)=>{const sh=lw(l)/T,r=lineRate(l),sp=S.spread[l.cls]||0;
     return {name:l.name,c:LCOL[i%LCOL.length],cls:l.cls,sh,v:project(init*sh,dca*sh,y,r),lo:project(init*sh,dca*sh,y,Math.max(r-sp,-5)),hi:project(init*sh,dca*sh,y,r+sp)};});
   const sumAt=(k,i)=>sum(layers.map(L=>L[k][i]));
   const mid=layers[0].v.map((_,i)=>sumAt('v',i)),lo=mid.map((_,i)=>sumAt('lo',i)),hi=mid.map((_,i)=>sumAt('hi',i));
@@ -3162,8 +3166,8 @@ document.addEventListener('click',e=>{
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
   if(a==='rcneg'){ui.rc.neg=!ui.rc.neg;const o=$('#rcout');if(o)o.innerHTML=rcResult();return;}
   /* argent */
-  if(a==='addline'){const n=val('l-n').trim(),w=num(val('l-w')),r=num(val('l-r'));if(!n||!(w>0))return;S.lines.push({id:uid(),name:n,cls:val('l-c'),pct:w,r:isNaN(r)?null:r});ui.open.fl=false;save();render();return;}
-  if(a==='dell'){S.lines=S.lines.filter(x=>x.id!==id);save();render();return;}
+  if(a==='addline'){const n=val('l-n').trim(),w=num(val('l-w')),r=num(val('l-r'));if(!n||!(w>0))return;S.lines.push({id:uid(),name:n,cls:val('l-c'),pct:0,amt:w,r:isNaN(r)?null:r});syncInit();ui.open.fl=false;save();render();return;}
+  if(a==='dell'){S.lines=S.lines.filter(x=>x.id!==id);syncInit();save();render();return;}
   if(a==='norm'){const t=pctTot();if(t>0){S.lines.forEach(l=>{l.pct=Math.round((l.pct||0)/t*1000)/10;});save();render();}return;}
   if(a==='addsc'){const l=S.scen[S.scen.length-1];S.scen.push(Object.assign({},l,{id:uid(),name:'Scénario '+(S.scen.length+1)}));save();render();return;}
   if(a==='delsc'){if(S.scen.length>1){S.scen=S.scen.filter(x=>x.id!==id);save();render();}return;}
@@ -3269,6 +3273,7 @@ function autoColon(v){
   if(d.length<=4)return d.slice(0,-2)+':'+d.slice(-2);
   return d.slice(0,-4)+':'+d.slice(-4,-2)+':'+d.slice(-2);
 }
+function syncInit(){const t=sum(S.lines.map(l=>+l.amt||0));if(t>0)S.proj.init=Math.round(t);}
 function rcUpdate(f){
   const r=ui.rc,key=f==='v'?'p':f;
   if(f==='v'){const v=num(r.v);r.p=v>0?fmtPace(60/v):'';}
@@ -3308,6 +3313,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||35,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}
   if(t.dataset.dca){S.dca=Math.max(num(t.value)||0,0);save();render();return;}
+  if(t.dataset.la){const l=S.lines.find(x=>x.id===t.dataset.la);if(l){l.amt=Math.max(num(t.value)||0,0);syncInit();saveSoon();clearTimeout(ui._lat);ui._lat=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.la,pos=a&&a.selectionStart;render();if(sel){const n=document.querySelector('[data-la="'+sel+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(er){}}}},700);}return;}
   if(t.dataset.lp){const l=S.lines.find(x=>x.id===t.dataset.lp);if(l){l.pct=Math.max(num(t.value)||0,0);save();render();}return;}
   if(t.dataset.sc){const[sid,f]=t.dataset.sc.split(':'),s=S.scen.find(x=>x.id===sid);
     if(s){if(f==='name')s.name=t.value.trim()||s.name;else if(f==='tilt')s.tilt=+t.value;else if(f==='monthly')s.monthly=t.value===''?null:Math.max(num(t.value)||0,0);else s[f]=f==='years'?Math.min(Math.max(Math.round(num(t.value))||1,1),50):(num(t.value)||0);save();render();}return;}

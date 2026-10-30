@@ -262,8 +262,8 @@ document.addEventListener('click',e=>{
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
   if(a==='rcneg'){ui.rc.neg=!ui.rc.neg;const o=$('#rcout');if(o)o.innerHTML=rcResult();return;}
   /* argent */
-  if(a==='addline'){const n=val('l-n').trim(),w=num(val('l-w')),r=num(val('l-r'));if(!n||!(w>0))return;S.lines.push({id:uid(),name:n,cls:val('l-c'),pct:w,r:isNaN(r)?null:r});ui.open.fl=false;save();render();return;}
-  if(a==='dell'){S.lines=S.lines.filter(x=>x.id!==id);save();render();return;}
+  if(a==='addline'){const n=val('l-n').trim(),w=num(val('l-w')),r=num(val('l-r'));if(!n||!(w>0))return;S.lines.push({id:uid(),name:n,cls:val('l-c'),pct:0,amt:w,r:isNaN(r)?null:r});syncInit();ui.open.fl=false;save();render();return;}
+  if(a==='dell'){S.lines=S.lines.filter(x=>x.id!==id);syncInit();save();render();return;}
   if(a==='norm'){const t=pctTot();if(t>0){S.lines.forEach(l=>{l.pct=Math.round((l.pct||0)/t*1000)/10;});save();render();}return;}
   if(a==='addsc'){const l=S.scen[S.scen.length-1];S.scen.push(Object.assign({},l,{id:uid(),name:'Scénario '+(S.scen.length+1)}));save();render();return;}
   if(a==='delsc'){if(S.scen.length>1){S.scen=S.scen.filter(x=>x.id!==id);save();render();}return;}
@@ -369,6 +369,7 @@ function autoColon(v){
   if(d.length<=4)return d.slice(0,-2)+':'+d.slice(-2);
   return d.slice(0,-4)+':'+d.slice(-4,-2)+':'+d.slice(-2);
 }
+function syncInit(){const t=sum(S.lines.map(l=>+l.amt||0));if(t>0)S.proj.init=Math.round(t);}
 function rcUpdate(f){
   const r=ui.rc,key=f==='v'?'p':f;
   if(f==='v'){const v=num(r.v);r.p=v>0?fmtPace(60/v):'';}
@@ -408,6 +409,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||35,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}
   if(t.dataset.dca){S.dca=Math.max(num(t.value)||0,0);save();render();return;}
+  if(t.dataset.la){const l=S.lines.find(x=>x.id===t.dataset.la);if(l){l.amt=Math.max(num(t.value)||0,0);syncInit();saveSoon();clearTimeout(ui._lat);ui._lat=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.la,pos=a&&a.selectionStart;render();if(sel){const n=document.querySelector('[data-la="'+sel+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(er){}}}},700);}return;}
   if(t.dataset.lp){const l=S.lines.find(x=>x.id===t.dataset.lp);if(l){l.pct=Math.max(num(t.value)||0,0);save();render();}return;}
   if(t.dataset.sc){const[sid,f]=t.dataset.sc.split(':'),s=S.scen.find(x=>x.id===sid);
     if(s){if(f==='name')s.name=t.value.trim()||s.name;else if(f==='tilt')s.tilt=+t.value;else if(f==='monthly')s.monthly=t.value===''?null:Math.max(num(t.value)||0,0);else s[f]=f==='years'?Math.min(Math.max(Math.round(num(t.value))||1,1),50):(num(t.value)||0);save();render();}return;}

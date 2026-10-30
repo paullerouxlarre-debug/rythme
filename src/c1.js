@@ -28,7 +28,7 @@ const tmin=s=>{if(!s)return NaN;const[h,m]=s.split(':').map(Number);return h*60+
 
 /* ================= constants ================= */
 const CLASSES=['ETF','Actions','Crypto'];
-const CCOL={ETF:'#34C759',Actions:'#FF9500',Crypto:'#AF52DE'};
+const CCOL={ETF:'#5E9C80',Actions:'#D97757',Crypto:'#9A7BC0'};
 const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculation',col:'#0A84FF'},padel:{name:'Padel',col:'#FFCC00'},bodyboard:{name:'Bodyboard',col:'#32ADE6'}};
 const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D6',Perso:'#AF52DE',Santé:'#00C7BE',Détente:'#34C759'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];

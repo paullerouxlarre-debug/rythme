@@ -721,7 +721,7 @@
 
   /* progression */
   .progress{ height:6px; background:var(--surface-3); }
-  .progress div{ background:var(--tc)!important; }
+  .progress div:not([style*="background"]){ background:var(--tc)!important; }
   .progress>div::after{ display:none; }
   .progress.xl{ height:8px; }
   .progress.xl>div{ background:linear-gradient(90deg,var(--tc),var(--tc2))!important; animation:none!important; }
