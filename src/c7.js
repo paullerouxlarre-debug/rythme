@@ -196,12 +196,12 @@ document.addEventListener('click',e=>{
     ui.hmsg='Lecture du fichier…';renderSheet();
     loadXLSX().then(X=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsArrayBuffer(f);}).then(buf=>{
       const wb=X.read(buf,{type:'array'});const d1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
-      const r={added:0,dup:0,bad:0,tot:0,off:0,cols:''};let seen=0;
+      const r={added:0,dup:0,bad:0,tot:0,off:0,conge:0,cols:''};let seen=0;
       wb.SheetNames.forEach(n=>{const rows=X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});
         if(!rows.slice(0,15).some(x=>(x||[]).some(c=>/^(date|jour)\b/i.test(String(c).trim()))))return;
-        seen++;const q=importHours(rows,{d1904});['added','dup','bad','tot','off'].forEach(k=>r[k]+=q[k]||0);});
+        seen++;const q=importHours(rows,{d1904});['added','dup','bad','tot','off','conge'].forEach(k=>r[k]+=q[k]||0);});
       if(!seen){const q=importHours(X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}),{d1904});Object.assign(r,q);}
-      ui.hmsg=r.added?(r.added+' jour'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':'')+' · '+fmtH(r.tot)+' au total'+(r.dup?', '+r.dup+' déjà pointé'+(r.dup>1?'s':''):'')+(r.off?', '+r.off+' jour'+(r.off>1?'s':'')+' de congé':'')+(r.bad?', '+r.bad+' ligne'+(r.bad>1?'s':'')+' illisible'+(r.bad>1?'s':''):'')+'.'+(r.cols?' Fichier '+r.cols+'.':'')):('Aucun jour importé'+(r.dup?' ('+r.dup+' déjà pointés)':'')+'. Vérifie les colonnes Date, Début et Fin.');
+      ui.hmsg=(r.added||r.conge)?(r.added+' jour'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':'')+' · '+fmtH(r.tot)+' au total'+(r.dup?', '+r.dup+' déjà pointé'+(r.dup>1?'s':''):'')+(r.conge?', '+r.conge+' jour'+(r.conge>1?'s':'')+' de congé ajouté'+(r.conge>1?'s':'')+' au planning':r.off?', congés déjà dans le planning':'')+(r.bad?', '+r.bad+' ligne'+(r.bad>1?'s':'')+' illisible'+(r.bad>1?'s':''):'')+'.'+(r.cols?' Fichier '+r.cols+'.':'')):(r.dup||r.off?'Rien de nouveau : '+(r.dup?r.dup+' jour'+(r.dup>1?'s':'')+' déjà pointé'+(r.dup>1?'s':''):'')+(r.dup&&r.off?', ':'')+(r.off?'congés déjà dans le planning':'')+'.':'Aucun jour trouvé. Vérifie les colonnes Date, Début et Fin.');
       if(r.added){save();}renderSheet();render();})).catch(()=>{ui.hmsg='Lecture impossible. Vérifie ta connexion et le format du fichier.';renderSheet();});return;}
   if(a==='svimport'){
     const f=$('#sv-f')&&$('#sv-f').files[0];if(!f){ui.msg='Choisis le fichier activities.csv.';renderSheet();return;}

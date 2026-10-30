@@ -71,6 +71,18 @@ function importStrava(text){
 }
 
 /* ================= import Excel : heures travaillées ================= */
+/* jours marqués « x » dans la feuille de temps → événements « Congé » dans le planning */
+function addConges(days){
+  const has=k=>evOn(k).some(e=>e.kind==='Congé');
+  const ds=[...new Set(days)].filter(k=>!has(k)).sort();if(!ds.length)return 0;
+  const groups=[];
+  ds.forEach(k=>{const g=groups[groups.length-1];
+    if(g){let gap=addD(g.end,1),ok=true;while(gap<k){const w=new Date(gap+'T12:00').getDay();if(w!==0&&w!==6){ok=false;break;}gap=addD(gap,1);}
+      if(ok){g.end=k;g.n++;return;}}
+    groups.push({start:k,end:k,n:1});});
+  groups.forEach(g=>S.events.push({id:uid(),title:g.n>1?'Congés':'Congé',kind:'Congé',date:g.start,end:g.end>g.start?g.end:'',time:'',dur:'',rep:'',src:'xlsx'}));
+  return ds.length;
+}
 function importHours(rows,opt){
   opt=opt||{};
   const sv=v=>v==null?'':String(v).trim();
@@ -107,12 +119,12 @@ function importHours(rows,opt){
     const t=pTime(v);if(!isNaN(t))return t;
     const n=num(sv(v));if(isNaN(n)||n<=0)return 0;return pause?Math.round(n):Math.round(n<=24?n*60:n);};
   const hm=m=>pad(Math.floor(m/60))+':'+pad(m%60);
-  let added=0,dup=0,bad=0,tot=0,off=0;const batch={};
+  let added=0,dup=0,bad=0,tot=0,off=0;const batch={},offs=[];
   rows.slice(hi+1).forEach(r=>{
     if(!r||!r.length)return;
     const k=pDate(r[iD]);if(!k){if(r.some(c=>(typeof c==='number'&&c>0&&c<1)||/^\d{1,2}\s*[:h]\s*\d{2}$/.test(sv(c))))bad++;return;}
     let rec=null;
-    if(iIn>=0&&/^x$/i.test(sv(r[iIn]))){off++;return;}
+    if(iIn>=0&&/^x$/i.test(sv(r[iIn]))){off++;offs.push(k);return;}
     const a=iIn>=0?pTime(r[iIn]):NaN,b=iOut>=0?pTime(r[iOut]):NaN;
     if(!isNaN(a)&&isNaN(b)&&k===todayK()){const lo=iLo>=0?pTime(r[iLo]):NaN,li=iLi>=0?pTime(r[iLi]):NaN;rec={in:hm(a)};if(!isNaN(lo))rec.lo=hm(lo);if(!isNaN(li))rec.li=hm(li);batch[k]=rec;return;}
     if(isNaN(a)&&isNaN(b)&&(iDur<0||!(pDur(r[iDur],false)>0)))return;
@@ -137,7 +149,8 @@ function importHours(rows,opt){
     const rec=batch[k];delete rec.syn;
     S.work.days[k]=rec;added++;tot+=workMin(rec,false);
   });
-  return {added,dup,bad,tot,off,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
+  const conge=addConges(offs);
+  return {added,dup,bad,tot,off,conge,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
 }
 
 /* ================= fichiers locaux (fiches de paie) ================= */
@@ -157,7 +170,7 @@ function dayCtx(k){
   const min=Math.max(planMin,doneMin);
   const wr=S.work.days[k];
   const dw=new Date(k+'T12:00').getDay();
-  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'));
+  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'||e.kind==='Congé'));
   const trip=ev.some(e=>e.kind==='Voyage');
   const relax=ev.some(e=>e.kind==='Détente');
   const kc=sum(sp.map(e=>(MET[e.sport||'course']||6)*weight()*((e.dur||0)/60)));
@@ -239,6 +252,7 @@ const PWIN={in:[420,480],lo:[720,750],li:[780,810],out:[1005,1065]};
 const PDUE={in:'ton arrivée',lo:'ta pause déjeuner',li:'ton retour de pause',out:'ton départ'};
 function punchDue(){
   const d=new Date(),wd=d.getDay();if(wd<1||wd>5)return null;
+  if(evOn(todayK()).some(e=>e.kind==='Congé'))return null;
   const rec=S.work.days[todayK()]||{},ns=nextStep(rec);if(!ns)return null;
   const k=ns[0],w=PWIN[k],now=d.getHours()*60+d.getMinutes();
   const order=['in','lo','li','out'],nx=order[order.indexOf(k)+1],end=nx?PWIN[nx][0]-15:20*60;

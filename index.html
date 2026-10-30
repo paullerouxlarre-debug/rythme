@@ -949,6 +949,19 @@
   .payflow .tot span{ color:var(--text); font-weight:650; } .payflow .tot b{ font-weight:700; }
   .paybar{ height:8px; border-radius:5px; background:var(--surface-3); margin-top:14px; overflow:hidden; }
   .paybar i{ display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,var(--tc),var(--tc2)); animation:mxgrow 1s cubic-bezier(.2,.8,.2,1) both; }
+  /* champs : tailles homogènes (iOS) */
+  .form-grid{ align-items:end; }
+  .field input,.field select,.exadd input,.exadd select,.inl,.plain,.mini,.mxin input{ box-sizing:border-box; max-width:100%; }
+  .field input,.field select{ min-height:46px; height:46px; line-height:1.2; }
+  input[type=date],input[type=time],input[type=month],input[type=datetime-local]{ -webkit-appearance:none; appearance:none; display:block; width:100%; min-width:0; min-height:46px; text-align:left; background-clip:padding-box; }
+  input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value,input[type=month]::-webkit-date-and-time-value{ text-align:left; margin:0; }
+  input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{ opacity:.55; }
+  .field select{ -webkit-appearance:none; appearance:none; padding-right:32px; background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%; background-size:5px 5px; background-repeat:no-repeat; }
+  .field label{ min-height:16px; line-height:1.25; }
+  .steps input[type=time]{ min-height:0; height:auto; padding:2px 0 0; text-align:center; background:none; }
+  .steps input[type=time]::-webkit-date-and-time-value{ text-align:center; }
+  .exadd{ align-items:stretch; } .exadd input,.exadd select{ min-height:44px; }
+  .setrow input{ min-height:40px; }
 </style>
 </head>
 <body>
@@ -1005,11 +1018,11 @@ const tmin=s=>{if(!s)return NaN;const[h,m]=s.split(':').map(Number);return h*60+
 const CLASSES=['ETF','Actions','Crypto'];
 const CCOL={ETF:'#5E9C80',Actions:'#D97757',Crypto:'#9A7BC0'};
 const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculation',col:'#0A84FF'},padel:{name:'Padel',col:'#FFCC00'},bodyboard:{name:'Bodyboard',col:'#32ADE6'}};
-const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D6',Perso:'#AF52DE',Santé:'#00C7BE',Détente:'#34C759'};
+const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA8',Congé:'#C9A15E',Perso:'#9A7BC0',Santé:'#4FA39A',Détente:'#7E9459'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 08:39';
+const BUILD='30/10 08:57';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1261,6 +1274,18 @@ function importStrava(text){
 }
 
 /* ================= import Excel : heures travaillées ================= */
+/* jours marqués « x » dans la feuille de temps → événements « Congé » dans le planning */
+function addConges(days){
+  const has=k=>evOn(k).some(e=>e.kind==='Congé');
+  const ds=[...new Set(days)].filter(k=>!has(k)).sort();if(!ds.length)return 0;
+  const groups=[];
+  ds.forEach(k=>{const g=groups[groups.length-1];
+    if(g){let gap=addD(g.end,1),ok=true;while(gap<k){const w=new Date(gap+'T12:00').getDay();if(w!==0&&w!==6){ok=false;break;}gap=addD(gap,1);}
+      if(ok){g.end=k;g.n++;return;}}
+    groups.push({start:k,end:k,n:1});});
+  groups.forEach(g=>S.events.push({id:uid(),title:g.n>1?'Congés':'Congé',kind:'Congé',date:g.start,end:g.end>g.start?g.end:'',time:'',dur:'',rep:'',src:'xlsx'}));
+  return ds.length;
+}
 function importHours(rows,opt){
   opt=opt||{};
   const sv=v=>v==null?'':String(v).trim();
@@ -1297,12 +1322,12 @@ function importHours(rows,opt){
     const t=pTime(v);if(!isNaN(t))return t;
     const n=num(sv(v));if(isNaN(n)||n<=0)return 0;return pause?Math.round(n):Math.round(n<=24?n*60:n);};
   const hm=m=>pad(Math.floor(m/60))+':'+pad(m%60);
-  let added=0,dup=0,bad=0,tot=0,off=0;const batch={};
+  let added=0,dup=0,bad=0,tot=0,off=0;const batch={},offs=[];
   rows.slice(hi+1).forEach(r=>{
     if(!r||!r.length)return;
     const k=pDate(r[iD]);if(!k){if(r.some(c=>(typeof c==='number'&&c>0&&c<1)||/^\d{1,2}\s*[:h]\s*\d{2}$/.test(sv(c))))bad++;return;}
     let rec=null;
-    if(iIn>=0&&/^x$/i.test(sv(r[iIn]))){off++;return;}
+    if(iIn>=0&&/^x$/i.test(sv(r[iIn]))){off++;offs.push(k);return;}
     const a=iIn>=0?pTime(r[iIn]):NaN,b=iOut>=0?pTime(r[iOut]):NaN;
     if(!isNaN(a)&&isNaN(b)&&k===todayK()){const lo=iLo>=0?pTime(r[iLo]):NaN,li=iLi>=0?pTime(r[iLi]):NaN;rec={in:hm(a)};if(!isNaN(lo))rec.lo=hm(lo);if(!isNaN(li))rec.li=hm(li);batch[k]=rec;return;}
     if(isNaN(a)&&isNaN(b)&&(iDur<0||!(pDur(r[iDur],false)>0)))return;
@@ -1327,7 +1352,8 @@ function importHours(rows,opt){
     const rec=batch[k];delete rec.syn;
     S.work.days[k]=rec;added++;tot+=workMin(rec,false);
   });
-  return {added,dup,bad,tot,off,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
+  const conge=addConges(offs);
+  return {added,dup,bad,tot,off,conge,cols:hi>=0?'':'sans en-têtes (colonnes : date, début, fin, pause)'};
 }
 
 /* ================= fichiers locaux (fiches de paie) ================= */
@@ -1347,7 +1373,7 @@ function dayCtx(k){
   const min=Math.max(planMin,doneMin);
   const wr=S.work.days[k];
   const dw=new Date(k+'T12:00').getDay();
-  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'));
+  const work=ev.some(e=>e.kind==='Boulot')||!!(wr&&wr.in)||(dw>=1&&dw<=5&&!ev.some(e=>e.kind==='Voyage'||e.kind==='Congé'));
   const trip=ev.some(e=>e.kind==='Voyage');
   const relax=ev.some(e=>e.kind==='Détente');
   const kc=sum(sp.map(e=>(MET[e.sport||'course']||6)*weight()*((e.dur||0)/60)));
@@ -1429,6 +1455,7 @@ const PWIN={in:[420,480],lo:[720,750],li:[780,810],out:[1005,1065]};
 const PDUE={in:'ton arrivée',lo:'ta pause déjeuner',li:'ton retour de pause',out:'ton départ'};
 function punchDue(){
   const d=new Date(),wd=d.getDay();if(wd<1||wd>5)return null;
+  if(evOn(todayK()).some(e=>e.kind==='Congé'))return null;
   const rec=S.work.days[todayK()]||{},ns=nextStep(rec);if(!ns)return null;
   const k=ns[0],w=PWIN[k],now=d.getHours()*60+d.getMinutes();
   const order=['in','lo','li','out'],nx=order[order.indexOf(k)+1],end=nx?PWIN[nx][0]-15:20*60;
@@ -1732,7 +1759,7 @@ function goalCard(o){
   const pr=goalProg(o),T=GTYPES[o.type],ms=goalMiles().filter(m=>m.gid===o.id),done=pr.p>=1;
   return `<div class="card gcard ${done?'done':''}"><div style="display:flex;gap:14px;align-items:center"><div class="rw gring" style="width:70px;height:70px;flex:none">${ring(pr.p,done?'#34C759':'#8A4BFF',70,9)}<div class="rc" style="font-size:16px">${Math.round(pr.p*100)}<small style="font-size:10px;font-weight:600">%</small></div></div>
     <div style="flex:1;min-width:0"><div class="row-title gname">${IC(T.e,16)} ${esc(gName(o))}</div><div class="row-sub">${esc(pr.lab)}${pr.left?' · '+pr.left:''}</div></div><button class="row-del" data-act="delgoal" data-id="${o.id}" aria-label="Supprimer l'objectif">×</button></div>
-    ${o.type==='weight'&&!done?`<div style="display:flex;gap:8px;margin-top:12px"><input id="gw-now" class="inl" type="number" inputmode="decimal" step="any" placeholder="Mon poids du jour (kg)"><button class="btn btn-ghost" data-act="logw">Peser</button></div>`:''}
+    ${o.type==='weight'&&!done?`<div style="display:flex;gap:8px;margin-top:12px"><input id="gw-now" class="inl" style="flex:1 1 0;min-width:0;width:0" type="number" inputmode="decimal" step="any" placeholder="Mon poids du jour (kg)"><button class="btn btn-ghost" data-act="logw">Peser</button></div>`:''}
     <div class="chips" style="margin-top:12px">${ms.map(m=>m.claimed?`<span class="chip static on">${Math.round(m.f*100)} %</span>`:m.done?`<button class="claim" data-act="claim" data-id="${m.id}">${Math.round(m.f*100)} % · +${m.pts} ${STAR}</button>`:`<span class="chip static off">${Math.round(m.f*100)} % · +${m.pts} ${STAR}</span>`).join('')}</div></div>`;
 }
 function goalsSection(){
@@ -2575,7 +2602,8 @@ SP.add=function(){
   <div class="sublabel" style="margin-top:0">Mes entraînements</div>
   <div class="tiles">${tl.map(x=>`<button class="tile" data-act="tpl" data-id="${x.ref}"><b>${esc(x.n)}</b><span>${esc(x.d)}</span>${x.custom?`<span class="x" data-act="deltpl" data-id="${x.custom}" role="button" aria-label="Supprimer le modèle">×</span>`:''}</button>`).join('')||'<div class="empty">Aucun modèle pour ce sport.</div>'}</div>
   <div class="form-panel" style="margin-top:14px"><div class="form-grid">
-    ${fld('Date','date','type="date"')}${fld('Durée (min)','min','type="number" inputmode="numeric" placeholder="'+(t==='muscu'?'auto':'45')+'"')}    <div style="margin-top:14px">${specific}</div>
+    ${fld('Date','date','type="date"')}${fld('Durée (min)','min','type="number" inputmode="numeric" placeholder="'+(t==='muscu'?'auto':'45')+'"')}</div>
+    <div style="margin-top:14px">${specific}</div>
     <div class="form-actions"><button class="btn btn-primary" data-act="addw">Enregistrer la séance</button><button class="btn btn-ghost" data-act="toggle" data-id="tn">Créer un modèle</button></div>
     ${ui.open.tn?`<div style="display:flex;gap:8px;margin-top:12px"><input id="tpl-n" class="inl" placeholder="Nom de l'entraînement"><button class="btn btn-primary" style="flex:none" data-act="savetpl">Sauver</button></div><p class="note" style="margin-top:6px">Le modèle garde les exercices et séries saisis ci-dessus${t==='muscu'?'':', la durée et la distance'}. Il apparaîtra dans « Mes entraînements ».</p>`:''}
     ${ui.msg&&ui.tab==='sport'?`<p class="note">${esc(ui.msg)}</p>`:''}</div>`;
@@ -3100,12 +3128,12 @@ document.addEventListener('click',e=>{
     ui.hmsg='Lecture du fichier…';renderSheet();
     loadXLSX().then(X=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsArrayBuffer(f);}).then(buf=>{
       const wb=X.read(buf,{type:'array'});const d1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
-      const r={added:0,dup:0,bad:0,tot:0,off:0,cols:''};let seen=0;
+      const r={added:0,dup:0,bad:0,tot:0,off:0,conge:0,cols:''};let seen=0;
       wb.SheetNames.forEach(n=>{const rows=X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});
         if(!rows.slice(0,15).some(x=>(x||[]).some(c=>/^(date|jour)\b/i.test(String(c).trim()))))return;
-        seen++;const q=importHours(rows,{d1904});['added','dup','bad','tot','off'].forEach(k=>r[k]+=q[k]||0);});
+        seen++;const q=importHours(rows,{d1904});['added','dup','bad','tot','off','conge'].forEach(k=>r[k]+=q[k]||0);});
       if(!seen){const q=importHours(X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}),{d1904});Object.assign(r,q);}
-      ui.hmsg=r.added?(r.added+' jour'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':'')+' · '+fmtH(r.tot)+' au total'+(r.dup?', '+r.dup+' déjà pointé'+(r.dup>1?'s':''):'')+(r.off?', '+r.off+' jour'+(r.off>1?'s':'')+' de congé':'')+(r.bad?', '+r.bad+' ligne'+(r.bad>1?'s':'')+' illisible'+(r.bad>1?'s':''):'')+'.'+(r.cols?' Fichier '+r.cols+'.':'')):('Aucun jour importé'+(r.dup?' ('+r.dup+' déjà pointés)':'')+'. Vérifie les colonnes Date, Début et Fin.');
+      ui.hmsg=(r.added||r.conge)?(r.added+' jour'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':'')+' · '+fmtH(r.tot)+' au total'+(r.dup?', '+r.dup+' déjà pointé'+(r.dup>1?'s':''):'')+(r.conge?', '+r.conge+' jour'+(r.conge>1?'s':'')+' de congé ajouté'+(r.conge>1?'s':'')+' au planning':r.off?', congés déjà dans le planning':'')+(r.bad?', '+r.bad+' ligne'+(r.bad>1?'s':'')+' illisible'+(r.bad>1?'s':''):'')+'.'+(r.cols?' Fichier '+r.cols+'.':'')):(r.dup||r.off?'Rien de nouveau : '+(r.dup?r.dup+' jour'+(r.dup>1?'s':'')+' déjà pointé'+(r.dup>1?'s':''):'')+(r.dup&&r.off?', ':'')+(r.off?'congés déjà dans le planning':'')+'.':'Aucun jour trouvé. Vérifie les colonnes Date, Début et Fin.');
       if(r.added){save();}renderSheet();render();})).catch(()=>{ui.hmsg='Lecture impossible. Vérifie ta connexion et le format du fichier.';renderSheet();});return;}
   if(a==='svimport'){
     const f=$('#sv-f')&&$('#sv-f').files[0];if(!f){ui.msg='Choisis le fichier activities.csv.';renderSheet();return;}

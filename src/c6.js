@@ -147,7 +147,8 @@ SP.add=function(){
   <div class="sublabel" style="margin-top:0">Mes entraînements</div>
   <div class="tiles">${tl.map(x=>`<button class="tile" data-act="tpl" data-id="${x.ref}"><b>${esc(x.n)}</b><span>${esc(x.d)}</span>${x.custom?`<span class="x" data-act="deltpl" data-id="${x.custom}" role="button" aria-label="Supprimer le modèle">×</span>`:''}</button>`).join('')||'<div class="empty">Aucun modèle pour ce sport.</div>'}</div>
   <div class="form-panel" style="margin-top:14px"><div class="form-grid">
-    ${fld('Date','date','type="date"')}${fld('Durée (min)','min','type="number" inputmode="numeric" placeholder="'+(t==='muscu'?'auto':'45')+'"')}    <div style="margin-top:14px">${specific}</div>
+    ${fld('Date','date','type="date"')}${fld('Durée (min)','min','type="number" inputmode="numeric" placeholder="'+(t==='muscu'?'auto':'45')+'"')}</div>
+    <div style="margin-top:14px">${specific}</div>
     <div class="form-actions"><button class="btn btn-primary" data-act="addw">Enregistrer la séance</button><button class="btn btn-ghost" data-act="toggle" data-id="tn">Créer un modèle</button></div>
     ${ui.open.tn?`<div style="display:flex;gap:8px;margin-top:12px"><input id="tpl-n" class="inl" placeholder="Nom de l'entraînement"><button class="btn btn-primary" style="flex:none" data-act="savetpl">Sauver</button></div><p class="note" style="margin-top:6px">Le modèle garde les exercices et séries saisis ci-dessus${t==='muscu'?'':', la durée et la distance'}. Il apparaîtra dans « Mes entraînements ».</p>`:''}
     ${ui.msg&&ui.tab==='sport'?`<p class="note">${esc(ui.msg)}</p>`:''}</div>`;

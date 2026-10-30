@@ -290,7 +290,7 @@ function goalCard(o){
   const pr=goalProg(o),T=GTYPES[o.type],ms=goalMiles().filter(m=>m.gid===o.id),done=pr.p>=1;
   return `<div class="card gcard ${done?'done':''}"><div style="display:flex;gap:14px;align-items:center"><div class="rw gring" style="width:70px;height:70px;flex:none">${ring(pr.p,done?'#34C759':'#8A4BFF',70,9)}<div class="rc" style="font-size:16px">${Math.round(pr.p*100)}<small style="font-size:10px;font-weight:600">%</small></div></div>
     <div style="flex:1;min-width:0"><div class="row-title gname">${IC(T.e,16)} ${esc(gName(o))}</div><div class="row-sub">${esc(pr.lab)}${pr.left?' · '+pr.left:''}</div></div><button class="row-del" data-act="delgoal" data-id="${o.id}" aria-label="Supprimer l'objectif">×</button></div>
-    ${o.type==='weight'&&!done?`<div style="display:flex;gap:8px;margin-top:12px"><input id="gw-now" class="inl" type="number" inputmode="decimal" step="any" placeholder="Mon poids du jour (kg)"><button class="btn btn-ghost" data-act="logw">Peser</button></div>`:''}
+    ${o.type==='weight'&&!done?`<div style="display:flex;gap:8px;margin-top:12px"><input id="gw-now" class="inl" style="flex:1 1 0;min-width:0;width:0" type="number" inputmode="decimal" step="any" placeholder="Mon poids du jour (kg)"><button class="btn btn-ghost" data-act="logw">Peser</button></div>`:''}
     <div class="chips" style="margin-top:12px">${ms.map(m=>m.claimed?`<span class="chip static on">${Math.round(m.f*100)} %</span>`:m.done?`<button class="claim" data-act="claim" data-id="${m.id}">${Math.round(m.f*100)} % · +${m.pts} ${STAR}</button>`:`<span class="chip static off">${Math.round(m.f*100)} % · +${m.pts} ${STAR}</span>`).join('')}</div></div>`;
 }
 function goalsSection(){

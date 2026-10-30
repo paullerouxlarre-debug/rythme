@@ -30,7 +30,7 @@ const tmin=s=>{if(!s)return NaN;const[h,m]=s.split(':').map(Number);return h*60+
 const CLASSES=['ETF','Actions','Crypto'];
 const CCOL={ETF:'#5E9C80',Actions:'#D97757',Crypto:'#9A7BC0'};
 const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculation',col:'#0A84FF'},padel:{name:'Padel',col:'#FFCC00'},bodyboard:{name:'Bodyboard',col:'#32ADE6'}};
-const EK={Voyage:'#32ADE6',Sport:'#FF9500',Anniversaire:'#FF2D55',Boulot:'#5856D6',Perso:'#AF52DE',Santé:'#00C7BE',Détente:'#34C759'};
+const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA8',Congé:'#C9A15E',Perso:'#9A7BC0',Santé:'#4FA39A',Détente:'#7E9459'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';

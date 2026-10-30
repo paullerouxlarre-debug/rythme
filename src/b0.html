@@ -940,6 +940,19 @@
   .payflow .tot span{ color:var(--text); font-weight:650; } .payflow .tot b{ font-weight:700; }
   .paybar{ height:8px; border-radius:5px; background:var(--surface-3); margin-top:14px; overflow:hidden; }
   .paybar i{ display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,var(--tc),var(--tc2)); animation:mxgrow 1s cubic-bezier(.2,.8,.2,1) both; }
+  /* champs : tailles homogènes (iOS) */
+  .form-grid{ align-items:end; }
+  .field input,.field select,.exadd input,.exadd select,.inl,.plain,.mini,.mxin input{ box-sizing:border-box; max-width:100%; }
+  .field input,.field select{ min-height:46px; height:46px; line-height:1.2; }
+  input[type=date],input[type=time],input[type=month],input[type=datetime-local]{ -webkit-appearance:none; appearance:none; display:block; width:100%; min-width:0; min-height:46px; text-align:left; background-clip:padding-box; }
+  input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value,input[type=month]::-webkit-date-and-time-value{ text-align:left; margin:0; }
+  input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{ opacity:.55; }
+  .field select{ -webkit-appearance:none; appearance:none; padding-right:32px; background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%; background-size:5px 5px; background-repeat:no-repeat; }
+  .field label{ min-height:16px; line-height:1.25; }
+  .steps input[type=time]{ min-height:0; height:auto; padding:2px 0 0; text-align:center; background:none; }
+  .steps input[type=time]::-webkit-date-and-time-value{ text-align:center; }
+  .exadd{ align-items:stretch; } .exadd input,.exadd select{ min-height:44px; }
+  .setrow input{ min-height:40px; }
 </style>
 </head>
 <body>
