@@ -963,6 +963,10 @@
   /* pas de barre de défilement visible */
   html,body,.sheet,.pdfv,*{ scrollbar-width:none; -ms-overflow-style:none; }
   html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{ display:none; width:0; height:0; background:transparent; }
+  .stepg{ max-width:380px; text-align:left; max-height:calc(100vh - 60px); overflow:auto; }
+  .stepg h3{ text-align:center; } .stepg p{ text-align:left; color:var(--muted); }
+  .stepg ol{ margin:0 0 12px; padding-left:20px; font-size:14px; line-height:1.5; } .stepg li{ margin-bottom:6px; }
+  .stepg code{ font-size:12.5px; background:var(--surface-2); padding:1px 5px; border-radius:5px; }
 </style>
 </head>
 <body>

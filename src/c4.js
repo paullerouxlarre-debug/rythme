@@ -41,6 +41,7 @@ V.today=function(){
   <div style="margin-top:12px">${weekDots()}</div>
 
   ${workCard()}
+  ${stepsCard()}
 
   <div class="section-head"><h2 class="section-title">Sport</h2><span class="section-sub">${min} sur ${g} min</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">

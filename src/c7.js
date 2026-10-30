@@ -31,6 +31,12 @@ function sheetInner(){
   <div class="card"><p class="note" style="margin:0 0 10px">Importe un fichier Excel (.xlsx, .xls) ou .csv avec une ligne par jour : <b>Date</b>, <b>Début</b>, <b>Fin</b>, et si tu veux <b>Pause</b> (ou début et fin de pause). Une colonne <b>Heures</b> seule marche aussi. Les jours déjà pointés ne sont pas écrasés.</p>
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
+  <div class="sublabel">Pas (app Santé)</div>
+  <div class="card"><p class="note" style="margin:0 0 10px">Colle les pas copiés par ton raccourci, ou importe tout l'historique depuis l'export de l'app Santé (fichier <b>export.xml</b>, après avoir ouvert le zip dans Fichiers).</p>
+    <div class="form-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="stepsguide">Comment faire</button><button class="btn btn-ghost" data-act="stepspaste">Coller mes pas</button></div>
+    <input id="stx-f" type="file" accept=".xml,text/xml,application/xml" style="margin-top:12px"><div class="form-actions"><button class="btn btn-primary" data-act="stepsxml">Importer export.xml</button></div><p class="note stxp" style="margin:4px 0 0"></p>
+    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
+
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
     <button class="btn btn-primary" style="width:100%" data-act="icspt">Rappels de pointage (lun–ven)</button>
@@ -255,6 +261,13 @@ document.addEventListener('click',e=>{
   if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='icspt'){openIcs('rythme-rappels-pointage.ics',icsPointage());return;}
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
+  if(a==='stepsguide'){showModal(stepsGuide());return;}
+  if(a==='stepspaste'){(async()=>{let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText();}catch(er){}
+      const o=parseStepsText(t);if(Object.keys(o).length){importStepsText(t);}else showModal(stepsPasteBox(t?'Le presse-papiers ne contient pas de pas. Lance d\'abord le raccourci « Pas Rythme », ou colle le texte ici.':''));})();return;}
+  if(a==='stepsok'){importStepsText(val('stp-t'));return;}
+  if(a==='stepsxml'){const f=$('#stx-f')&&$('#stx-f').files[0];if(!f){ui.msg='Choisis le fichier export.xml.';renderSheet();return;}
+    ui.msg='Lecture du fichier…';renderSheet();
+    parseHealthXml(f,p=>{const n=document.querySelector('#sheet .stxp');if(n)n.textContent=Math.round(p*100)+' %';}).then(o=>{const n=mergeSteps(o),k=Object.keys(o).length;save();ui.msg=k?k+' jours de pas importés.':'Aucun pas trouvé dans ce fichier.';renderSheet();render();}).catch(()=>{ui.msg='Lecture impossible.';renderSheet();});return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -422,6 +435,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}

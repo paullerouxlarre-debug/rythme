@@ -60,6 +60,7 @@ function migrate(d){
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
   o.work=Object.assign({days:{},target:35},o.work||{});
   o.maxes=o.maxes||{};
+  o.steps=o.steps||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
   if(!o.proj.monthly&&o.dca)o.proj.monthly=o.dca;
   if(!o.dca&&o.proj&&o.proj.monthly)o.dca=o.proj.monthly;

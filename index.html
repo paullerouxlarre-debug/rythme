@@ -972,6 +972,10 @@
   /* pas de barre de défilement visible */
   html,body,.sheet,.pdfv,*{ scrollbar-width:none; -ms-overflow-style:none; }
   html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{ display:none; width:0; height:0; background:transparent; }
+  .stepg{ max-width:380px; text-align:left; max-height:calc(100vh - 60px); overflow:auto; }
+  .stepg h3{ text-align:center; } .stepg p{ text-align:left; color:var(--muted); }
+  .stepg ol{ margin:0 0 12px; padding-left:20px; font-size:14px; line-height:1.5; } .stepg li{ margin-bottom:6px; }
+  .stepg code{ font-size:12.5px; background:var(--surface-2); padding:1px 5px; border-radius:5px; }
 </style>
 </head>
 <body>
@@ -1032,7 +1036,7 @@ const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 11:54';
+const BUILD='30/10 11:59';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1058,6 +1062,7 @@ function migrate(d){
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
   o.work=Object.assign({days:{},target:35},o.work||{});
   o.maxes=o.maxes||{};
+  o.steps=o.steps||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
   if(!o.proj.monthly&&o.dca)o.proj.monthly=o.dca;
   if(!o.dca&&o.proj&&o.proj.monthly)o.dca=o.proj.monthly;
@@ -1923,6 +1928,7 @@ V.today=function(){
   <div style="margin-top:12px">${weekDots()}</div>
 
   ${workCard()}
+  ${stepsCard()}
 
   <div class="section-head"><h2 class="section-title">Sport</h2><span class="section-sub">${min} sur ${g} min</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
@@ -2044,6 +2050,76 @@ function workStats(){
     <div class="form-actions"><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
   <div class="row-list" style="margin-top:12px">${hist.map(k=>{const r=S.work.days[k];return `<div class="row" style="cursor:pointer" data-act="wsel" data-id="${k}"><div><div class="row-title cap1">${dLong(k)}</div><div class="row-sub">${r.in||'--'} à ${r.out||'--'}${r.lo&&r.li?' · pause '+r.lo+' à '+r.li:''}</div></div><span class="row-value">${fmtH(workDay(k))}</span></div>`;}).join('')||'<div class="empty">Aucun pointage pour le moment.</div>'}</div></div>`;
 }
+
+/* ================= Pas (app Santé) : import local ================= */
+const STEPGOAL=()=>S.stepGoal||10000;
+function parseStepsText(t){
+  const MO={janv:1,jan:1,'févr':2,fev:2,'fév':2,feb:2,mars:3,mar:3,avr:4,apr:4,mai:5,may:5,juin:6,jun:6,juil:7,jul:7,'août':8,aout:8,aug:8,sept:9,sep:9,oct:10,nov:11,'déc':12,dec:12};
+  const out={};
+  String(t||'').split(/\r?\n|;(?=\s*\d{4}-)/).forEach(line=>{
+    const l=line.trim();if(!l)return;let k=null,rest=l;
+    let m=l.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(m){k=m[1]+'-'+pad(+m[2])+'-'+pad(+m[3]);rest=l.replace(m[0],' ');}
+    else if((m=l.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))){let y=+m[3];if(y<100)y+=2000;k=y+'-'+pad(+m[2])+'-'+pad(+m[1]);rest=l.replace(m[0],' ');}
+    else if((m=l.toLowerCase().match(/(\d{1,2})\s+([a-zéû]+)\.?\s+(\d{4})/))){const mo=MO[m[2].slice(0,4)]||MO[m[2].slice(0,3)];if(mo){k=m[3]+'-'+pad(mo)+'-'+pad(+m[1]);rest=l.toLowerCase().replace(m[0],' ');}}
+    if(!k)return;
+    rest=rest.replace(/à\s*\d{1,2}[:h]\d{2}/gi,' ').replace(/\b\d{1,2}:\d{2}(:\d{2})?\b/g,' ');
+    const nums=(rest.match(/\d[\d\s  ]*(?:[.,]\d+)?/g)||[]).map(x=>Math.round(parseFloat(x.replace(/[\s  ]/g,'').replace(',','.')))).filter(n=>n>=0&&n<200000);
+    if(!nums.length)return;const v=Math.max(...nums);
+    out[k]=Math.max(out[k]||0,v);
+  });
+  return out;
+}
+async function parseHealthXml(file,onProg){
+  /* lecture par morceaux : supporte les gros export.xml de l'app Santé sans saturer la mémoire */
+  const per={},CH=4*1024*1024,dec=new TextDecoder();let pos=0,carry='';
+  const re=/<Record type="HKQuantityTypeIdentifierStepCount"[^>]*?sourceName="([^"]*)"[^>]*?startDate="(\d{4}-\d{2}-\d{2})[^"]*"[^>]*?value="([\d.]+)"/g;
+  while(pos<file.size){
+    const buf=await file.slice(pos,pos+CH).arrayBuffer();pos+=CH;
+    let txt=carry+dec.decode(buf,{stream:pos<file.size});
+    const cut=txt.lastIndexOf('<Record');carry=cut>0&&pos<file.size?txt.slice(cut):'';if(carry)txt=txt.slice(0,cut);
+    let m;re.lastIndex=0;while((m=re.exec(txt))){const k=m[2],src=m[1],v=+m[3];(per[k]=per[k]||{})[src]=(per[k][src]||0)+v;}
+    if(onProg)onProg(Math.min(pos/file.size,1));
+  }
+  const out={};Object.keys(per).forEach(k=>{out[k]=Math.round(Math.max(...Object.values(per[k])));});
+  return out;
+}
+function mergeSteps(o){S.steps=S.steps||{};let n=0;Object.entries(o).forEach(([k,v])=>{if(v>0&&S.steps[k]!==v){S.steps[k]=v;n++;}});return n;}
+function stepsCard(){
+  const st=S.steps||{},keys=Object.keys(st).sort();
+  if(!keys.length)return `<div class="section-head"><h2 class="section-title">Pas</h2></div>
+    <div class="card"><p class="note" style="margin:0 0 10px">Relie tes pas de l'app Santé : un raccourci iPhone les copie, Rythme les colle.</p><button class="btn btn-ghost" style="width:100%" data-act="stepsguide">Configurer</button></div>`;
+  const td=todayK(),last=st[td]!=null?td:keys[keys.length-1],v=st[last]||0,g=STEPGOAL();
+  const days=lastDays(7),bars=days.map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:st[k]||0,c:k===last?'var(--tc)':'var(--surface-3)'}));
+  const avg7=Math.round(avg(days.map(k=>st[k]||0).filter(x=>x>0)))||0;
+  return `<div class="section-head"><h2 class="section-title">Pas</h2><span class="section-sub">${last===td?'aujourd\'hui':esc(dShort(last))}</span></div>
+  <div class="card"><div style="display:flex;align-items:center;gap:16px">
+    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--tc)',96,10)}<div class="rc" style="flex-direction:column;font-size:19px;font-weight:700">${fmtN(v)}<small class="muted" style="font-size:11px;font-weight:600">pas</small></div></div>
+    <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:15.5px">${v>=g?'Objectif atteint':'Encore '+fmtN(g-v)+' pas'}</div>
+      <div class="muted" style="font-size:13px;margin:3px 0 10px">Moyenne 7 jours : ${fmtN(avg7)} · objectif ${fmtN(g)}</div>
+      <button class="btn btn-ghost" style="width:100%" data-act="stepspaste">Mettre à jour mes pas</button></div></div>
+    <div style="margin-top:12px">${barChart(bars,{h:80,goal:g})}</div></div>`;
+}
+function stepsGuide(){
+  return `<div class="cfbox stepg" role="dialog" aria-modal="true"><h3>Relier l'app Santé</h3>
+  <p>Une page web ne peut pas lire Santé directement. Un raccourci iPhone copie tes pas, puis Rythme les colle. À créer une seule fois :</p>
+  <ol>
+    <li>Ouvre l'app <b>Raccourcis</b>, touche <b>+</b>, puis nomme le raccourci « Pas Rythme ».</li>
+    <li>Ajoute <b>Rechercher des échantillons de santé</b> : type <b>Nombre de pas</b>, date de début <b>dans les 30 derniers jours</b>, <b>regrouper par jour</b>.</li>
+    <li>Ajoute <b>Répéter avec chacun</b>. Dedans : <b>Formater la date</b> (date de début de l'élément, format personnalisé <code>yyyy-MM-dd</code>), puis <b>Texte</b> : la date formatée, un point-virgule, la <b>valeur</b> de l'élément.</li>
+    <li>Après la boucle : <b>Combiner le texte</b> (retour à la ligne), puis <b>Copier dans le presse-papiers</b>.</li>
+  </ol>
+  <p>Ensuite : lance « Pas Rythme » (widget ou Siri), ouvre Rythme et touche <b>Mettre à jour mes pas</b>. Tu peux aussi importer tout l'historique : dans Santé, ta photo > Exporter toutes les données, ouvre le zip dans Fichiers, puis choisis <b>export.xml</b> dans Réglages.</p>
+  <button class="btn btn-primary" style="width:100%" data-act="stepspaste">Coller mes pas maintenant</button>
+  <button class="btn" style="width:100%;margin-top:8px" data-act="cfno">Fermer</button></div>`;
+}
+function stepsPasteBox(msg){
+  return `<div class="cfbox stepg" role="dialog" aria-modal="true"><h3>Coller mes pas</h3><p>${msg||'Colle ici le texte copié par le raccourci (une ligne par jour).'}</p>
+  <textarea id="stp-t" class="code" rows="6" style="width:100%;font-size:14px" placeholder="2026-10-29;8123"></textarea>
+  <div class="cfrow"><button class="btn" data-act="cfno">Annuler</button><button class="btn cfdel" style="background:var(--clay)" data-act="stepsok">Importer</button></div></div>`;
+}
+function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';}
+function importStepsText(t){const o=parseStepsText(t),n=mergeSteps(o),k=Object.keys(o).length;save();closeConfirm();render();toast(k?k+' jour'+(k>1?'s':'')+' de pas importé'+(k>1?'s':''):'Aucun pas trouvé dans le texte');}
 
 /* ================= Tendance ================= */
 
@@ -2974,6 +3050,12 @@ function sheetInner(){
   <div class="card"><p class="note" style="margin:0 0 10px">Importe un fichier Excel (.xlsx, .xls) ou .csv avec une ligne par jour : <b>Date</b>, <b>Début</b>, <b>Fin</b>, et si tu veux <b>Pause</b> (ou début et fin de pause). Une colonne <b>Heures</b> seule marche aussi. Les jours déjà pointés ne sont pas écrasés.</p>
     <input id="hr-f" type="file" accept=".xlsx,.xls,.csv,.ods"><div class="form-actions"><button class="btn btn-primary" data-act="hrimport">Importer les heures</button></div>${ui.hmsg?`<p class="note" style="color:var(--text);font-weight:600">${esc(ui.hmsg)}</p>`:''}</div>
 
+  <div class="sublabel">Pas (app Santé)</div>
+  <div class="card"><p class="note" style="margin:0 0 10px">Colle les pas copiés par ton raccourci, ou importe tout l'historique depuis l'export de l'app Santé (fichier <b>export.xml</b>, après avoir ouvert le zip dans Fichiers).</p>
+    <div class="form-actions" style="margin-top:0"><button class="btn btn-ghost" data-act="stepsguide">Comment faire</button><button class="btn btn-ghost" data-act="stepspaste">Coller mes pas</button></div>
+    <input id="stx-f" type="file" accept=".xml,text/xml,application/xml" style="margin-top:12px"><div class="form-actions"><button class="btn btn-primary" data-act="stepsxml">Importer export.xml</button></div><p class="note stxp" style="margin:4px 0 0"></p>
+    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
+
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
     <button class="btn btn-primary" style="width:100%" data-act="icspt">Rappels de pointage (lun–ven)</button>
@@ -3198,6 +3280,13 @@ document.addEventListener('click',e=>{
   if(a==='appupd'){toast('Recherche…');const go=()=>location.reload();if(window.__swr)window.__swr.update().then(go,go);else go();return;}
   if(a==='icspt'){openIcs('rythme-rappels-pointage.ics',icsPointage());return;}
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
+  if(a==='stepsguide'){showModal(stepsGuide());return;}
+  if(a==='stepspaste'){(async()=>{let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText();}catch(er){}
+      const o=parseStepsText(t);if(Object.keys(o).length){importStepsText(t);}else showModal(stepsPasteBox(t?'Le presse-papiers ne contient pas de pas. Lance d\'abord le raccourci « Pas Rythme », ou colle le texte ici.':''));})();return;}
+  if(a==='stepsok'){importStepsText(val('stp-t'));return;}
+  if(a==='stepsxml'){const f=$('#stx-f')&&$('#stx-f').files[0];if(!f){ui.msg='Choisis le fichier export.xml.';renderSheet();return;}
+    ui.msg='Lecture du fichier…';renderSheet();
+    parseHealthXml(f,p=>{const n=document.querySelector('#sheet .stxp');if(n)n.textContent=Math.round(p*100)+' %';}).then(o=>{const n=mergeSteps(o),k=Object.keys(o).length;save();ui.msg=k?k+' jours de pas importés.':'Aucun pas trouvé dans ce fichier.';renderSheet();render();}).catch(()=>{ui.msg='Lecture impossible.';renderSheet();});return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -3365,6 +3454,7 @@ function rcUpdate(f){
 }
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}
