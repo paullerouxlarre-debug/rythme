@@ -980,11 +980,20 @@
   .stpb b{ display:block; font-size:14.5px; font-weight:650; } .stpb small{ display:block; font-size:12px; color:var(--muted); margin-top:1px; }
   .stpb>span:nth-child(2){ flex:1; min-width:0; }
   .stpi{ width:36px; height:36px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb,var(--tc) 14%,transparent); color:var(--tc); }
+  #landlock{ display:none; }
+  @media (orientation:landscape) and (max-height:520px){
+    #landlock{ display:flex; position:fixed; inset:0; z-index:400; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:var(--bg); color:var(--text); text-align:center; padding:20px; }
+    #landlock b{ font-family:var(--serif); font-weight:500; font-size:24px; } #landlock span{ color:var(--muted); font-size:14px; }
+    #landlock svg{ color:var(--clay); animation:llrot 2.4s ease-in-out infinite; }
+    body{ overflow:hidden; }
+  }
+  @keyframes llrot{ 0%,30%{ transform:rotate(-90deg); } 60%,100%{ transform:rotate(0); } }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div><div id="ctitle" class="ctitle" data-act="totop"><span></span></div>
 <div id="splash" aria-hidden="true"><div class="spl"><svg class="splogo" viewBox="0 0 1024 1024"><defs><linearGradient id="spp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E9A98F"/><stop offset="1" stop-color="#C96442"/></linearGradient></defs><path class="spr" d="M 268 434 A 268 268 0 0 1 756 434"/><path class="spr" d="M 756 590 A 268 268 0 0 1 268 590"/><path class="spl2" d="M 150 512 H 392 L 446 392 L 528 652 L 590 452 L 624 512 H 874"/></svg><b>Rythme</b></div></div>
+<div id="landlock" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/><path d="M20.5 9a8 8 0 0 0-3-5.5M18 3.2l-.6 1.9 1.9.4"/></svg><b>Tourne ton téléphone</b><span>Rythme s'utilise en mode portrait.</span></div>
 <div class="app">
   <div class="topbar">
     <p class="greeting" id="greeting"></p>
@@ -1040,7 +1049,7 @@ const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 12:35';
+const BUILD='30/10 12:41';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -2822,6 +2831,7 @@ V.food=function(){
 /* ================= v13 : visuel pétillant, cercle d'amis, carte à partager, repos, records ================= */
 /* --- décor --- */
 function visInit(){
+  try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('portrait').catch(()=>{});}catch(e){}
   document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
   const sp=$('#splash');if(sp){setTimeout(()=>sp.classList.add('out'),1000);setTimeout(()=>sp.remove(),1900);}
   addEventListener('resize',placePill);
