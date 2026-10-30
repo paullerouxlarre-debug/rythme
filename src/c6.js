@@ -1,12 +1,11 @@
 
 /* ================= Muscle ================= */
 V.sport=function(){
-  const seg=`<div class="seg">${[['over','Aperçu'],['add','Séance']].map(([k,l])=>`<button class="${ui.sp===k?'on':''}" data-act="sp" data-id="${k}">${l}</button>`).join('')}</div>`;
-  if(ui.sp!=='over'&&ui.sp!=='add')ui.sp='over';
-  if(ui.tl==='max')return SP.max();
+  const seg=`<div class="seg">${[['over','Aperçu'],['add','Séance'],['max','Max']].map(([k,l])=>`<button class="${ui.sp===k?'on':''}" data-act="sp" data-id="${k}">${l}</button>`).join('')}</div>`;
+  if(!['over','add','max'].includes(ui.sp))ui.sp='over';
   if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
   const calcBtn=`<button class="toolrow" style="margin:0 0 12px" data-act="tl" data-id="calc"><span class="tico" style="background:linear-gradient(135deg,#FF9500,#FF2D55)"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M6 21l3-6 3 2 2-5-3-2-3 1M12 17l1 4M16 11l3 2"/></svg></span><span style="flex:1;min-width:0;text-align:left"><b>Calculateur de course</b><small>Allure, temps, distance, passages</small></span><span class="chev">›</span></button>`;
-  return `<h1 class="page">Muscle</h1>${seg}${calcBtn}${SP[ui.sp]()}`;
+  return `<h1 class="page">Muscle</h1>${seg}${SP[ui.sp]()}${ui.sp==='max'?'<div style="margin-top:16px">'+calcBtn+'</div>':''}`;
 };
 function periodDays(){return ui.per==='all'?null:lastDays(+ui.per);}
 function groupStats(days){
@@ -97,8 +96,7 @@ SP.over=function(){
   return `<div class="hero2"><div style="display:flex;align-items:center;gap:16px"><div class="rw" style="width:96px;height:96px;flex:none">${ring(goal?wsess.length/goal:0,'#fff',96,11,'rgba(255,255,255,.28)')}<div class="rc" style="flex-direction:column;font-size:26px;font-weight:800">${wsess.length}<small style="font-size:11px;font-weight:600;opacity:.85">/ ${goal}</small></div></div>
     <div style="flex:1;min-width:0"><div class="sm">Cette semaine</div><div style="font-size:22px;font-weight:800;line-height:1.15;margin:2px 0">${wsess.length>=goal?'Objectif atteint':'Encore '+(goal-wsess.length)+' séance'+(goal-wsess.length>1?'s':'')}</div><div class="sm">${streak()} jour${streak()>1?'s':''} d'affilée</div></div></div>
     <div class="mini3"><div><small>Effort</small><b>${cu(wmin,'h')}</b></div><div><small>Course</small><b>${cu(wkm,'km')}</b></div><div><small>Pas / jour</small><b>${(()=>{const ds=lastDays(7).map(k=>(S.steps||{})[k]||0).filter(x=>x>0);return ds.length?fmtN(Math.round(avg(ds))):'—';})()}</b></div></div></div>
-  ${mxCard()}
-  <div style="height:14px"></div>${per}
+  <div style="height:4px"></div>${per}
   ${bodyCard(gs)}
   <div class="kpis"><div><small>Séances</small><b>${ws.length}</b></div><div><small>Effort</small><b>${fmtH(mins)}</b></div><div><small>Volume</small><b>${fmtN(vol/1000,1)} t</b></div><div><small>Course</small><b>${fmtN(km,0)} km</b></div></div>
   <div class="section-head"><h2 class="section-title">Semaine après semaine</h2><span class="section-sub">minutes</span></div>
@@ -142,20 +140,37 @@ const PROGS=[
   {k:'padelt',n:'Entraînement padel',d:'Technique',t:'padel',min:60,fmt:'Entraînement',ic:'target'},
   {k:'board',n:'Bodyboard',d:'Session',t:'bodyboard',min:120,ic:'moon'}
 ];
-const progName=k=>{const p=PROGS.find(x=>x.k===k);return p?p.n:k;};
+const grpsOf=x=>[...new Set((x||[]).map(([n])=>LIB[n]||'Abdos'))];
+function myProgs(){if(!Array.isArray(S.progs)||!S.progs.length)S.progs=PROGS.map(p=>({k:p.k,n:p.n,d:p.d,t:p.t,min:p.min,groups:p.x?grpsOf(p.x):[],fmt:p.fmt||'',ic:p.ic}));return S.progs;}
+const progName=k=>{const p=(S.progs||PROGS).find(x=>x.k===k)||PROGS.find(x=>x.k===k);return p?p.n:k;};
+const SPIC={muscu:'dumb',course:'run',padel:'target',bodyboard:'moon'};
 const PGRP=[['muscu','Musculation'],['course','Course à pied'],['padel','Padel'],['bodyboard','Glisse']];
 SP.add=function(){
-  const q=ui.qd||(ui.qd={p:null,date:todayK(),min:'',dist:''}),P=PROGS.find(x=>x.k===q.p);
-  const form=P?`<div class="card qform"><div class="qhead"><span class="qico">${IC(P.ic,20)}</span><div style="flex:1;min-width:0"><b>${esc(P.n)}</b><small>${esc(SPORTS[P.t].name)}</small></div><button class="row-del" data-act="qprog" data-id="" aria-label="Changer">×</button></div>
+  const PR=myProgs(),q=ui.qd||(ui.qd={p:null,date:todayK(),min:'',dist:''}),P=PR.find(x=>x.k===q.p);
+  if(ui.pe)return progEditor();
+  const form=P?`<div class="card qform"><div class="qhead"><span class="qico">${IC(P.ic||SPIC[P.t],20)}</span><div style="flex:1;min-width:0"><b>${esc(P.n)}</b><small>${esc(SPORTS[P.t].name)}</small></div><button class="row-del" data-act="qprog" data-id="" aria-label="Changer">×</button></div>
     <div class="form-grid" style="margin-top:12px">
       <div class="field"><label>Date</label><input type="date" data-q="date" value="${esc(q.date)}"></div>
       <div class="field"><label>Durée (min)</label><input type="number" inputmode="numeric" data-q="min" value="${esc(q.min)}" placeholder="${P.min}"></div>
       ${P.t==='course'?`<div class="field wide"><label>Distance (km), facultatif</label><input type="number" inputmode="decimal" step="any" data-q="dist" value="${esc(q.dist)}"></div>`:''}</div>
     <div class="form-actions"><button class="btn btn-primary" style="width:100%" data-act="qsave">Enregistrer la séance</button></div></div>`:'';
-  return `${form}<p class="note" style="margin:${P?'14px':'0'} 4px 6px">Choisis ce que tu as fait : la séance est notée avec sa durée habituelle, modifiable.</p>
-  ${PGRP.map(([t,l])=>`<div class="sublabel">${l}</div><div class="qgrid">${PROGS.filter(p=>p.t===t).map(p=>`<button class="qtile ${q.p===p.k?'on':''}" data-act="qprog" data-id="${p.k}"><span class="qico">${IC(p.ic,18)}</span><b>${esc(p.n)}</b><small>${esc(p.d)} · ${p.min} min</small></button>`).join('')}</div>`).join('')}
+  const ed=!!ui.pedit;
+  return `${form}<div class="qbar"><p class="note" style="margin:0">${ed?'Touche un programme pour le modifier.':'Choisis ce que tu as fait.'}</p><button class="chip ${ed?'on':''}" data-act="pedit">${ed?'Terminé':'Modifier'}</button></div>
+  ${PGRP.map(([t,l])=>{const L=PR.filter(p=>p.t===t);return (L.length||ed)?`<div class="sublabel">${l}</div><div class="qgrid">${L.map(p=>`<button class="qtile ${q.p===p.k&&!ed?'on':''} ${ed?'ed':''}" data-act="${ed?'pe':'qprog'}" data-id="${p.k}"><span class="qico">${IC(p.ic||SPIC[p.t],18)}</span><b>${esc(p.n)}</b><small>${esc(p.d||SPORTS[p.t].name)} · ${p.min} min</small>${ed?'<i class="qed">Modifier</i>':''}</button>`).join('')}${ed?`<button class="qtile qnew" data-act="pe" data-id="new:${t}"><span class="qico">+</span><b>Nouveau</b><small>${l}</small></button>`:''}</div>`:'';}).join('')}
   ${ui.msg&&ui.tab==='sport'?`<p class="note">${esc(ui.msg)}</p>`:''}`;
 };
+function progEditor(){
+  const isNew=ui.pe.startsWith('new'),PR=myProgs(),p=ui.ped||(ui.ped=isNew?{k:'p'+uid(),n:'',d:'',t:ui.pe.split(':')[1]||'muscu',min:60,groups:[],fmt:''}:Object.assign({},PR.find(x=>x.k===ui.pe)||{}));
+  return `<div class="card qform"><div class="qhead"><span class="qico">${IC(SPIC[p.t],20)}</span><div style="flex:1"><b>${isNew?'Nouveau programme':'Modifier le programme'}</b><small>${esc(SPORTS[p.t].name)}</small></div></div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="field wide"><label>Nom</label><input data-pe="n" value="${esc(p.n)}" placeholder="Ex. Push lourd"></div>
+      <div class="field wide"><label>Description</label><input data-pe="d" value="${esc(p.d)}" placeholder="Ex. Pecs et triceps"></div>
+      <div class="field"><label>Sport</label><select data-pe="t">${Object.entries(SPORTS).map(([k,v])=>`<option value="${k}" ${p.t===k?'selected':''}>${v.name}</option>`).join('')}</select></div>
+      <div class="field"><label>Durée habituelle (min)</label><input type="number" inputmode="numeric" data-pe="min" value="${esc(p.min)}"></div></div>
+    ${p.t==='muscu'?`<div class="sublabel">Muscles travaillés</div><div class="chips">${GROUPS.map(g=>`<button class="chip ${(p.groups||[]).includes(g)?'on':''}" data-act="pegrp" data-id="${g}">${g}</button>`).join('')}</div>`:''}
+    <div class="form-actions"><button class="btn btn-primary" data-act="pesave">Enregistrer</button><button class="btn btn-ghost" data-act="pecancel">Annuler</button></div>
+    ${isNew?'':`<button class="btn danger" style="width:100%;margin-top:10px" data-act="pedel">Supprimer ce programme</button>`}</div>`;
+}
 
 /* ---- Calcul de course ---- */
 function rcFinal(){

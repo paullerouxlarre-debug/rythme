@@ -51,7 +51,7 @@ V.today=function(){
     <button class="btn btn-primary" style="width:100%" data-act="gosport">Ajouter une séance</button></div></div>
     <div style="margin-top:12px">${barChart(bars,{h:90,goal:g,goalLabel:g+' min'})}</div></div>
 
-  <div class="card" style="margin-top:12px;display:flex;align-items:center;gap:12px"><div style="width:54px;height:54px;flex:none" class="wmini">${mascot(L.stage,G().skin,'t')}</div><div style="flex:1"><div class="row-title">${av.length?av.length+' objectif'+(av.length>1?'s':'')+' à récupérer':'Rythmo : '+esc(STAGES[L.stage-1].n)}</div><div class="row-sub">${av.length?'+'+sum(av.map(o=>o.pts))+' étoiles pour le faire évoluer':'Niveau '+L.l+', continue comme ça'}</div></div><button class="claim" data-act="tab" data-id="game">Jouer</button></div>`;
+`;
 
 };
 

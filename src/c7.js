@@ -275,10 +275,10 @@ document.addEventListener('click',e=>{
   if(a==='stepsxml'){const f=$('#stx-f')&&$('#stx-f').files[0];if(!f){ui.msg='Choisis le fichier export.xml.';renderSheet();return;}
     ui.msg='Lecture du fichier…';renderSheet();
     parseHealthXml(f,p=>{const n=document.querySelector('#sheet .stxp');if(n)n.textContent=Math.round(p*100)+' %';}).then(o=>{const n=mergeSteps(o),k=Object.keys(o).length;save();ui.msg=k?k+' jours de pas importés.':'Aucun pas trouvé dans ce fichier.';renderSheet();render();}).catch(()=>{ui.msg='Lecture impossible.';renderSheet();});return;}
-  if(a==='qprog'){const p=PROGS.find(x=>x.k===id);ui.qd=Object.assign(ui.qd||{date:todayK()},{p:id||null,min:p?String(p.min):'',dist:''});render();if(p)scrollTop();return;}
-  if(a==='qsave'){const q=ui.qd||{},p=PROGS.find(x=>x.k===q.p);if(!p)return;const mn=num(q.min)>0?num(q.min):p.min;
+  if(a==='qprog'){const p=myProgs().find(x=>x.k===id);ui.qd=Object.assign(ui.qd||{date:todayK()},{p:id||null,min:p?String(p.min):'',dist:''});render();if(p)scrollTop();return;}
+  if(a==='qsave'){const q=ui.qd||{},p=myProgs().find(x=>x.k===q.p);if(!p)return;const mn=num(q.min)>0?num(q.min):p.min;
     const w={id:uid(),date:q.date||td,type:p.t,rpe:6,min:mn,prog:p.k};
-    if(p.x)w.exs=p.x.map(([n,s,r])=>({name:n,group:exLib()[n]||'Abdos',sets:Array.from({length:s},()=>({kg:0,reps:r}))}));
+    if(p.t==='muscu'&&(p.groups||[]).length)w.exs=p.groups.map(g=>({name:g,group:g,sets:Array.from({length:3},()=>({kg:0,reps:10}))}));
     if(p.t==='course'&&num(q.dist)>0)w.dist=num(q.dist);if(p.fmt)w.fmt=p.fmt;
     S.workouts.push(w);evPlanned(w.date).filter(ev=>!ev.sport||ev.sport===p.t).forEach(ev=>{ev.done=ev.done||{};ev.done[w.date]=true;});
     ui.qd=null;ui.sp='over';save();burst(e.clientX,e.clientY,20);toast(p.n+' notée · '+mn+' min');render();scrollTop();return;}
@@ -286,6 +286,13 @@ document.addEventListener('click',e=>{
     S.wlog=S.wlog||[];const ex=S.wlog.find(x=>x.d===d);if(ex)ex.kg=kg;else S.wlog.push({d,kg});S.wlog.sort((a,b)=>a.d<b.d?-1:1);
     if(S.profile)S.profile.weight=S.wlog[S.wlog.length-1].kg;save();toast('Poids noté : '+fmtN(kg,1)+' kg');render();return;}
   if(a==='wdel'){S.wlog=(S.wlog||[]).filter(x=>x.d!==id);save();render();return;}
+  if(a==='pedit'){ui.pedit=!ui.pedit;ui.pe=null;ui.ped=null;render();return;}
+  if(a==='pe'){ui.pe=id;ui.ped=null;render();scrollTop();return;}
+  if(a==='pecancel'){ui.pe=null;ui.ped=null;render();return;}
+  if(a==='pegrp'){const p=ui.ped;if(!p)return;p.groups=p.groups||[];p.groups=p.groups.includes(id)?p.groups.filter(x=>x!==id):p.groups.concat([id]);render();return;}
+  if(a==='pesave'){const p=ui.ped;if(!p)return;if(!String(p.n||'').trim()){toast('Donne un nom au programme');return;}p.min=Math.max(Math.round(num(p.min))||30,5);
+    const PR=myProgs(),i=PR.findIndex(x=>x.k===p.k);if(i>=0)PR[i]=p;else PR.push(p);ui.pe=null;ui.ped=null;save();toast('Programme enregistré');render();return;}
+  if(a==='pedel'){S.progs=myProgs().filter(x=>x.k!==ui.pe);ui.pe=null;ui.ped=null;save();render();return;}
   if(a==='totop'){window.scrollTo({top:0,behavior:'smooth'});return;}
   if(a==='rest'){restStart(+id);return;}
   if(a==='restx'){ui.rest=null;restTick();return;}
@@ -454,9 +461,11 @@ function rcUpdate(f){
 document.addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
+  if(t.dataset.pe&&ui.ped){ui.ped[t.dataset.pe]=t.value;if(t.dataset.pe==='t')render();return;}
   if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
   if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
+  if(t.dataset.padel){S.padel=S.padel||{};S.padel[t.dataset.padel]=t.value.replace(/\D/g,'');S.padel.date=todayK();saveSoon();clearTimeout(ui._pdt);ui._pdt=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.padel;render();if(sel){const n=document.querySelector('[data-padel="'+sel+'"]');if(n){n.focus();}}},700);return;}
   if(t.dataset.mx){const[k,f]=t.dataset.mx.split(':');S.maxes=S.maxes||{};const m=S.maxes[k]||(S.maxes[k]={});let v=t.value;if(f==='t'){v=autoColon(v);if(v!==t.value)t.value=v;}m[f]=v;m.date=todayK();saveSoon();clearTimeout(ui._mxt);ui._mxt=setTimeout(()=>mxRefresh(k),450);return;}
   if(t.dataset.rc){const f=t.dataset.rc;if(f==='t'||f==='p'){const nv=autoColon(t.value);if(nv!==t.value)t.value=nv;}ui.rc[f]=t.value;rcUpdate(f);return;}
   if(t.dataset.evy){S.proj.years=+t.value;const l=$('#evy-l');if(l)l.textContent=S.proj.years+' an'+(S.proj.years>1?'s':'');evUpdate(false);saveSoon();return;}
