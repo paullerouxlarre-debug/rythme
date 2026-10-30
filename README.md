@@ -6,3 +6,5 @@ App perso 100 % locale (argent, sport, nutrition, planning, jeu). Les données r
 - **Sources** : `src/` (CSS dans `b0.html`, script découpé en `c1.js` … `c7.js`)
 - **Construire** : `python3 src/build.py` → met à jour `index.html` (PWA) et `dist/rythme.html` (version Artifact Claude)
 - **Artifact Claude** : https://claude.ai/artifact/4iBXQsjwh3WEh65srsbktf (publier `dist/rythme.html` avec la capacité `downloads`)
+
+- **Cerveau Obsidian** : [`cerveau/`](cerveau/README.md), vision, règles, modules, décisions et journal (ouvrir le dossier comme coffre Obsidian)
