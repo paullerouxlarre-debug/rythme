@@ -18,6 +18,7 @@ Testé sur iPhone 15, Safari, app ajoutée à l'écran d'accueil.
 ## Dynamic Island (iPhone 15 Pro)
 - Barre d'état classique (`default`) : l'heure reste noire et lisible, iOS gère l'encoche. Le haut de page se fond dans la couleur de l'ambiance, que la balise `theme-color` donne aussi à la barre : pas de bande visible.
 - Essayé puis abandonné le 03/11 : `black-translucent` (heure blanche peu lisible sur les ambiances claires). Ce réglage n'est lu par iOS qu'à l'installation de l'app sur l'écran d'accueil.
+- La couleur de la barre d'état suit l'ambiance choisie (fond de l'ambiance) et s'assombrit quand une fenêtre de l'app est ouverte (`syncBar`).
 - En bas : fondu sous la barre d'onglets flottante, marge `env(safe-area-inset-bottom)` (34 px).
 
 Related: [Ma journée](../modules/ma-journee.md) · [Décision pas](../decisions/2026-10-30-pas-gist.md)

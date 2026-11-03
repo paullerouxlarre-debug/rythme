@@ -652,7 +652,7 @@ const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['P
 /* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
 const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='03/11 15:31';
+const BUILD='03/11 15:42';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -714,8 +714,17 @@ function applyPrefs(){
   const sk=SKINS.find(x=>x[0]===(dark?p.skinD:p.skinL))||SKINS[dark?4:0];
   r.style.removeProperty('--accent');
   r.setAttribute('data-theme',dark?'dark':'light');r.setAttribute('data-skin',sk[0]);
-  document.querySelectorAll('meta[name=theme-color]').forEach(m=>{m.setAttribute('content',sk[3]);m.removeAttribute('media');});
+  R._bar=sk[3];syncBar();
 }
+/* couleur de la barre d'état de l'iPhone : celle du fond de l'ambiance, assombrie quand une fenêtre est ouverte */
+function syncBar(){
+  const base=R._bar||'#F2F3F6',dim=!!document.querySelector('#cfm:not(.out)');
+  let c=base;if(dim){const n=parseInt(base.slice(1),16),k=.55;c='#'+[16,8,0].map(s=>Math.round(((n>>s)&255)*k).toString(16).padStart(2,'0')).join('');}
+  let ms=document.querySelectorAll('meta[name=theme-color]');
+  if(!ms.length){const m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);ms=[m];}
+  ms.forEach(m=>{if(m.getAttribute('content')!==c)m.setAttribute('content',c);m.removeAttribute('media');});
+}
+try{new MutationObserver(syncBar).observe(document.body,{childList:true,subtree:false});}catch(e){}
 applyPrefs();
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);}catch(e){}
 function greet(){
@@ -1415,7 +1424,7 @@ function stepsPasteBox(msg){
   <textarea id="stp-t" class="code" rows="6" style="width:100%;font-size:14px" placeholder="2026-10-29;8123"></textarea>
   <div class="cfrow"><button class="btn" data-act="cfno">Annuler</button><button class="btn cfdel" style="background:var(--clay)" data-act="stepsok">Importer</button></div></div>`;
 }
-function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';}
+function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';syncBar();}
 function importStepsText(t){const o=parseStepsText(t),n=mergeSteps(o),k=Object.keys(o).length;save();closeConfirm();render();toast(k?k+' jour'+(k>1?'s':'')+' de pas importé'+(k>1?'s':''):'Aucun pas trouvé dans le texte');}
 
 function stepsBanner(){
@@ -2517,12 +2526,12 @@ function renderSheet(){
 
 /* ================= fichiers ================= */
 function askConfirm(k){ui.cf=k;ui.cfstep=1;renderConfirm();}
-function closeConfirm(){const m=$('#cfm');if(m){m.classList.add('out');setTimeout(()=>m.remove(),250);}ui.cf=null;}
+function closeConfirm(){const m=$('#cfm');if(m){m.classList.add('out');setTimeout(()=>m.remove(),250);}ui.cf=null;syncBar();}
 function renderConfirm(){
   const k=ui.cf,act=R.profiles.find(p=>p.id===R.active),all=k==='wipeall',s2=ui.cfstep===2;
   const n=all?R.profiles.length:1,nw=all?sum(R.profiles.map(p=>((p.data||{}).workouts||[]).length)):S.workouts.length;
   const t=all?(s2?'Vraiment tout effacer ?':'Tout effacer ?'):'Remettre « '+esc(act.name)+' » à zéro ?';
-  const d=all?(s2?'Dernière confirmation. Il n\'y aura aucun moyen de revenir en arrière.':n+' profil'+(n>1?'s':'')+', '+nw+' séance'+(nw>1?'s':'')+', tes placements, revenus, heures, fiches de paie et ta progression dans le jeu seront supprimés.'):nw+' séance'+(nw>1?'s':'')+', placements, revenus, heures et progression du jeu de ce profil seront supprimés. Les autres profils ne bougent pas.';
+  const d=all?(s2?'Dernière confirmation. Il n\'y aura aucun moyen de revenir en arrière.':n+' profil'+(n>1?'s':'')+', '+nw+' séance'+(nw>1?'s':'')+', tes placements, revenus, heures et fiches de paie seront supprimés.'):nw+' séance'+(nw>1?'s':'')+', placements, revenus et heures de ce profil seront supprimés. Les autres profils ne bougent pas.';
   let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}
   m.innerHTML=`<div class="cfbox" role="alertdialog" aria-modal="true" aria-labelledby="cft"><div class="cfi">${IC(s2?'warn':'trash',26)}</div><h3 id="cft">${t}</h3><p>${d}</p>
     <button class="btn btn-ghost" style="width:100%" data-act="backup">Enregistrer une copie d'abord</button>

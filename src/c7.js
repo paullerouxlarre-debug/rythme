@@ -72,12 +72,12 @@ function renderSheet(){
 
 /* ================= fichiers ================= */
 function askConfirm(k){ui.cf=k;ui.cfstep=1;renderConfirm();}
-function closeConfirm(){const m=$('#cfm');if(m){m.classList.add('out');setTimeout(()=>m.remove(),250);}ui.cf=null;}
+function closeConfirm(){const m=$('#cfm');if(m){m.classList.add('out');setTimeout(()=>m.remove(),250);}ui.cf=null;syncBar();}
 function renderConfirm(){
   const k=ui.cf,act=R.profiles.find(p=>p.id===R.active),all=k==='wipeall',s2=ui.cfstep===2;
   const n=all?R.profiles.length:1,nw=all?sum(R.profiles.map(p=>((p.data||{}).workouts||[]).length)):S.workouts.length;
   const t=all?(s2?'Vraiment tout effacer ?':'Tout effacer ?'):'Remettre « '+esc(act.name)+' » à zéro ?';
-  const d=all?(s2?'Dernière confirmation. Il n\'y aura aucun moyen de revenir en arrière.':n+' profil'+(n>1?'s':'')+', '+nw+' séance'+(nw>1?'s':'')+', tes placements, revenus, heures, fiches de paie et ta progression dans le jeu seront supprimés.'):nw+' séance'+(nw>1?'s':'')+', placements, revenus, heures et progression du jeu de ce profil seront supprimés. Les autres profils ne bougent pas.';
+  const d=all?(s2?'Dernière confirmation. Il n\'y aura aucun moyen de revenir en arrière.':n+' profil'+(n>1?'s':'')+', '+nw+' séance'+(nw>1?'s':'')+', tes placements, revenus, heures et fiches de paie seront supprimés.'):nw+' séance'+(nw>1?'s':'')+', placements, revenus et heures de ce profil seront supprimés. Les autres profils ne bougent pas.';
   let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}
   m.innerHTML=`<div class="cfbox" role="alertdialog" aria-modal="true" aria-labelledby="cft"><div class="cfi">${IC(s2?'warn':'trash',26)}</div><h3 id="cft">${t}</h3><p>${d}</p>
     <button class="btn btn-ghost" style="width:100%" data-act="backup">Enregistrer une copie d'abord</button>

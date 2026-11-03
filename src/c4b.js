@@ -71,7 +71,7 @@ function stepsPasteBox(msg){
   <textarea id="stp-t" class="code" rows="6" style="width:100%;font-size:14px" placeholder="2026-10-29;8123"></textarea>
   <div class="cfrow"><button class="btn" data-act="cfno">Annuler</button><button class="btn cfdel" style="background:var(--clay)" data-act="stepsok">Importer</button></div></div>`;
 }
-function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';}
+function showModal(html){let m=$('#cfm');if(!m){m=document.createElement('div');m.id='cfm';m.className='cfm';document.body.appendChild(m);}m.innerHTML=html;ui.cf='steps';syncBar();}
 function importStepsText(t){const o=parseStepsText(t),n=mergeSteps(o),k=Object.keys(o).length;save();closeConfirm();render();toast(k?k+' jour'+(k>1?'s':'')+' de pas importé'+(k>1?'s':''):'Aucun pas trouvé dans le texte');}
 
 function stepsBanner(){

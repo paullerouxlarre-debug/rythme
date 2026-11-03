@@ -98,8 +98,17 @@ function applyPrefs(){
   const sk=SKINS.find(x=>x[0]===(dark?p.skinD:p.skinL))||SKINS[dark?4:0];
   r.style.removeProperty('--accent');
   r.setAttribute('data-theme',dark?'dark':'light');r.setAttribute('data-skin',sk[0]);
-  document.querySelectorAll('meta[name=theme-color]').forEach(m=>{m.setAttribute('content',sk[3]);m.removeAttribute('media');});
+  R._bar=sk[3];syncBar();
 }
+/* couleur de la barre d'état de l'iPhone : celle du fond de l'ambiance, assombrie quand une fenêtre est ouverte */
+function syncBar(){
+  const base=R._bar||'#F2F3F6',dim=!!document.querySelector('#cfm:not(.out)');
+  let c=base;if(dim){const n=parseInt(base.slice(1),16),k=.55;c='#'+[16,8,0].map(s=>Math.round(((n>>s)&255)*k).toString(16).padStart(2,'0')).join('');}
+  let ms=document.querySelectorAll('meta[name=theme-color]');
+  if(!ms.length){const m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);ms=[m];}
+  ms.forEach(m=>{if(m.getAttribute('content')!==c)m.setAttribute('content',c);m.removeAttribute('media');});
+}
+try{new MutationObserver(syncBar).observe(document.body,{childList:true,subtree:false});}catch(e){}
 applyPrefs();
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);}catch(e){}
 function greet(){
