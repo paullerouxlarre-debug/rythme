@@ -10,6 +10,7 @@ Chaque mise en ligne sur GitHub, de la plus récente à la plus ancienne. Le cod
 
 | Date | Version | Changement |
 |---|---|---|
+| 2026-11-03 | [`9e809c5`](https://github.com/paullerouxlarre-debug/rythme/commit/9e809c5) | Nouveau logo « Aube » (soleil levant, trois vagues de verre) |
 | 2026-11-03 | [`fce7f6d`](https://github.com/paullerouxlarre-debug/rythme/commit/fce7f6d) | Animations façon Apple : cartes qui entrent en cascade, anneaux et barres qui se remplissent, chiffres qui défilent, pastille d'onglet qui glisse, appuis en ressort, onde au pointage |
 | 2026-11-03 | [`27c9694`](https://github.com/paullerouxlarre-debug/rythme/commit/27c9694) | Style verre liquide : panneaux translucides, barre d'onglets flottante, 6 ambiances (Lilas, Aube, Lagon, Brume, Minuit, Forêt) au choix dans Réglages |
 | 2026-11-03 | [`bc648b8`](https://github.com/paullerouxlarre-debug/rythme/commit/bc648b8) | Refonte v3 : jeu supprimé, palette accessible (une couleur par domaine), police système, logo, plus d'animation d'ouverture, onglets Aujourd'hui / Sport / Argent, pas actualisés depuis leur carte |
