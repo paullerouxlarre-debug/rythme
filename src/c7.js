@@ -335,6 +335,7 @@ document.addEventListener('click',e=>{
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
   if(a==='wsel'){ui.wd=id;render();return;}
+  if(a==='wfull'){const k=id||ui.wd||td;S.work.days[k]=fullDay();save();toast('Journée complète enregistrée · '+(k===td?'aujourd\'hui':dShort(k)));render();return;}
   if(a==='wclear'){delete S.work.days[ui.wd||td];save();render();return;}
 
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
@@ -490,7 +491,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.goal){S.goals[t.dataset.goal]=Math.max(num(t.value)||1,1);save();renderSheet();render();return;}
   if(t.dataset.wdate){ui.wd=t.value||null;render();return;}
   if(t.dataset.wt){const k=t.dataset.wd||ui.wd||todayK();const r=S.work.days[k]||(S.work.days[k]={});if(t.value)r[t.dataset.wt]=t.value;else delete r[t.dataset.wt];save();render();return;}
-  if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||35,1);save();if(ui.sheet)renderSheet();render();return;}
+  if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||39,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}
   if(t.dataset.dca){S.dca=Math.max(num(t.value)||0,0);save();render();return;}
   if(t.dataset.la){const l=S.lines.find(x=>x.id===t.dataset.la);if(l){l.amt=Math.max(num(t.value)||0,0);syncInit();saveSoon();clearTimeout(ui._lat);ui._lat=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.la,pos=a&&a.selectionStart;render();if(sel){const n=document.querySelector('[data-la="'+sel+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(er){}}}},700);}return;}

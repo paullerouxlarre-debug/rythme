@@ -248,6 +248,8 @@
   .pbtn.done{ background:var(--surface-3); color:var(--muted); box-shadow:none; animation:none; }
   .pbtn::before{ content:""; position:absolute; inset:-10px; border-radius:50%; border:2px solid var(--accent); opacity:.35; animation:ripple 2.6s ease-out infinite; }
   .pbtn.done::before{ display:none; }
+  .leave{ display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--muted); }
+  .leave b{ color:var(--text); }
   .steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:100%; }
   .steps div{ text-align:center; font-size:12px; color:var(--muted); background:var(--surface-2); border-radius:12px; padding:8px 2px; }
   .steps div b{ display:block; font-size:15px; color:var(--text); margin-top:2px; }
@@ -1085,7 +1087,7 @@ const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
 const KEY='rythme_v4';
-const BUILD='30/10 18:50';
+const BUILD='03/11 11:20';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1093,7 +1095,7 @@ const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Act
   incomes:[],sources:['Salaire','Freelance','Dividendes','Autre'],pays:[],
   sim:{prix:300000,apport:30000,taux:3.6,duree:25,assu:0.34,notaire:21000,charges:0},sims:[],
   workouts:[],goals:{dayMin:45,weekSessions:4},profile:null,wlog:[],customEx:[],templates:[],events:[],
-  work:{days:{},target:35},game:blankGame(),imported:0});
+  work:{days:{},target:39,m39:1},game:blankGame(),imported:0});
 
 function migrate(d){
   const o=Object.assign(blank(),d||{});
@@ -1109,7 +1111,8 @@ function migrate(d){
     if(gg.wT>0&&gg.wS>0){o.game.myg.push({id:'w0',type:'weight',from:gg.wS,target:gg.wT,start:dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:w:'+f])cl['og:w0:'+f]=1;});}
     if(gg.dT>0){o.game.myg.push({id:'d0',type:'km',target:gg.dT,start:gg.dFrom||dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:d:'+f])cl['og:d0:'+f]=1;});}}
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
-  o.work=Object.assign({days:{},target:35},o.work||{});
+  o.work=Object.assign({days:{},target:39},o.work||{});
+  if(!o.work.m39){o.work.m39=1;if(o.work.target===35)o.work.target=39;}
   o.maxes=o.maxes||{};
   o.steps=o.steps||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
@@ -1512,6 +1515,14 @@ function workMin(rec,live){
   return Math.max(end-a-lunch,0);
 }
 const workDay=k=>workMin(S.work.days[k],k===todayK());
+const dayTarget=()=>Math.round((S.work.target||39)*60/5);
+const mhm=m=>pad(Math.floor(m/60))+':'+pad(Math.round(m%60));
+/* journée complète : 7:30–12:00 puis 13:00, départ ajusté pour faire l'objectif du jour */
+function fullDay(){const d=dayTarget();if(d<=270)return {in:'07:30',out:mhm(450+d)};return {in:'07:30',lo:'12:00',li:'13:00',out:mhm(780+d-270)};}
+/* heure de départ pour atteindre l'objectif du jour */
+function leaveAt(rec){if(!rec||!rec.in||rec.out)return null;const lunch=rec.lo&&rec.li?Math.max(tmin(rec.li)-tmin(rec.lo),0):60;const t=tmin(rec.in)+dayTarget()+lunch;return t<24*60?mhm(t):null;}
+const workDone=k=>{const r=S.work.days[k];return !!(r&&r.in&&r.out);};
+const isWkday=k=>{const d=new Date(k+'T12:00').getDay();return d>=1&&d<=5;};
 const workWeek=ws=>sum([0,1,2,3,4,5,6].map(i=>workDay(addD(ws,i))));
 
 /* créneaux de pointage habituels (lun-ven) */
@@ -1966,7 +1977,7 @@ V.today=function(){
   const av=objectives().filter(o=>o.done&&!o.claimed);
   const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:moveMin(k),c:k===td?'var(--tc)':'var(--surface-3)'}));
   const L=glevel();
-  const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
+  const wmn=workDay(td),wtg=Math.max((S.work.target||39)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#A9C6E3',c2:'#6A9BCC',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#A9C6E3',c2:'#6A9BCC',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#E08A68',c2:'#C96442',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#E3C17A',c2:'#C9A15E',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
   return `${dueBanner()}${stepsBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
@@ -2059,7 +2070,7 @@ function dueBanner(){
   return `<div class="pdue ${p.st}"><div class="pdi">${IC('clock',20)}</div><div class="pdt"><b>${t}</b><small>${s}</small></div><button class="pdb" data-act="punch">Pointer <span id="pdnow">${hhmm()}</span></button></div>`;
 }
 function workCard(){
-  const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
+  const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||39;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
   if(!dayCtx(td).work&&!rec.in)return '';
   const open=!!ui.open.wk||!!punchDue();
@@ -2070,38 +2081,67 @@ function workCard(){
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
     <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
+    ${leaveAt(rec)?`<div class="leave">${IC('clock',15)}<span>Départ pour ${fmtH(dayTarget())} : <b>${leaveAt(rec)}</b></span></div>`:''}
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
+    <button class="chip" data-act="wfull" data-id="${td}">Journée complète · ${fmtH(dayTarget())}</button>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}
     <div class="progress" style="width:100%;height:10px"><div style="width:${Math.round(pct*100)}%;background:linear-gradient(90deg,var(--tc),var(--tc2))"></div></div>
   </div>
   <details class="card wdet" ${ui.open.wst?'open':''}><summary data-act="togglesum" data-id="wst"><span>Stats et historique</span><span class="muted" style="font-size:13px">${ui.open.wst?'Masquer':'Afficher'}</span></summary>${ui.open.wst?workStats():''}</details>`;
 }
 function workStats(){
-  const td=todayK(),tgt=S.work.target||35,ws=wk(td);
+  const td=todayK(),tgt=S.work.target||39,ws=wk(td),dt=dayTarget();
   const dayItems=[0,1,2,3,4,5,6].map(i=>{const k=addD(ws,i);return {l:['L','M','M','J','V','S','D'][i],v:workDay(k),c:k===td?'var(--tc)':'var(--surface-3)'};});
   const wsList=weeks(8);
   const wkItems=wsList.map(k=>({l:dShort(k).split(' ')[0],v:workWeek(k),c:k===ws?'var(--tc)':'var(--surface-3)'}));
-  const past=Object.keys(S.work.days).filter(k=>k>=addD(td,-28)&&S.work.days[k].in&&S.work.days[k].out);
+  const done=Object.keys(S.work.days).filter(workDone).sort();
+  const past=done.filter(k=>k>=addD(td,-28));
   const avgDay=avg(past.map(workDay));
   const avgIn=avg(past.map(k=>tmin(S.work.days[k].in))),avgOut=avg(past.map(k=>tmin(S.work.days[k].out)));
-  const bal=sum(wsList.filter(k=>k<ws).map(k=>{const v=workWeek(k);return v>0?v-tgt*60:0;}));
-  const hh=m=>pad(Math.floor(m/60))+':'+pad(Math.round(m%60));
+  const lun=past.map(k=>S.work.days[k]).filter(r=>r.lo&&r.li&&r.li>r.lo).map(r=>tmin(r.li)-tmin(r.lo));
+  /* solde : chaque journée complète comparée à l'objectif du jour (week-end : tout compte en plus) */
+  const diff=k=>workDay(k)-(isWkday(k)?dt:0);
+  const bal=sum(done.map(diff));
+  const sg=v=>(v>=0?'+':'−')+fmtH(Math.abs(v));
+  const mk=td.slice(0,7),mDays=done.filter(k=>k.startsWith(mk));
+  const mTot=sum(mDays.map(workDay)),mBal=sum(mDays.map(diff));
+  const wkLeft=tgt*60-workWeek(ws);
+  const long=past.length?past.reduce((a,k)=>workDay(k)>workDay(a)?k:a):null;
+  const dows=[1,2,3,4,5].map(d=>{const ks=done.filter(k=>k>=wsList[0]&&new Date(k+'T12:00').getDay()===d);return {l:['L','M','M','J','V'][d-1],v:ks.length?avg(ks.map(workDay)):0,c:'var(--tc)'};});
+  const months=[5,4,3,2,1,0].map(i=>{const d=new Date(td+'T12:00');d.setDate(1);d.setMonth(d.getMonth()-i);const m=dkey(d).slice(0,7);
+    return {l:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),v:sum(done.filter(k=>k.startsWith(m)).map(workDay)),c:m===mk?'var(--tc)':'var(--surface-3)'};});
   const sd=ui.wd||td,sr=S.work.days[sd]||{};
   const hist=Object.keys(S.work.days).filter(k=>S.work.days[k].in).sort().reverse().slice(0,8);
+  const box=(k,v,s)=>`<div class="stat box"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
   return `<div style="margin-top:14px">
   <div class="sublabel" style="margin-top:0">Cette semaine</div>${barChart(dayItems,{h:120,fy:v=>fmtN(v/60,1)+' h'})}
   <div class="grid2" style="margin-top:12px">
-    <div class="stat box"><div class="k">Moyenne par jour</div><div class="v">${past.length?fmtH(avgDay):'—'}</div></div>
-    <div class="stat box"><div class="k">Solde d'heures</div><div class="v">${bal>=0?'+':'−'}${fmtH(Math.abs(bal))}</div><div class="s">semaines passées vs ${tgt} h</div></div>
-    <div class="stat box"><div class="k">Arrivée moyenne</div><div class="v">${past.length?hh(avgIn):'—'}</div></div>
-    <div class="stat box"><div class="k">Départ moyen</div><div class="v">${past.length?hh(avgOut):'—'}</div></div></div>
+    ${box(wkLeft>0?'Reste cette semaine':'Semaine faite',wkLeft>0?fmtH(wkLeft):sg(-wkLeft),'sur '+tgt+' h')}
+    ${box('Solde d\'heures',done.length?sg(bal):'—',done.length?'depuis le '+dShort(done[0])+' · '+fmtH(dt)+' par jour':'aucune journée complète')}
+  </div>
+  <div class="sublabel">Ce mois-ci</div>
+  <div class="grid2">
+    ${box('Heures travaillées',mDays.length?fmtH(mTot):'—',mDays.length+' jour'+(mDays.length>1?'s':'')+' complet'+(mDays.length>1?'s':''))}
+    ${box('Solde du mois',mDays.length?sg(mBal):'—','vs '+fmtH(dt)+' par jour')}
+  </div>
+  <div class="sublabel">4 dernières semaines</div>
+  <div class="grid2">
+    ${box('Moyenne par jour',past.length?fmtH(avgDay):'—')}
+    ${box('Pause déjeuner',lun.length?fmtH(avg(lun)):'—','en moyenne')}
+    ${box('Arrivée moyenne',past.length?mhm(avgIn):'—')}
+    ${box('Départ moyen',past.length?mhm(avgOut):'—')}
+    ${long?box('Plus longue journée',fmtH(workDay(long)),dLong(long)):''}
+    ${past.length?box('Jours complets',past.length,'sur 4 semaines'):''}
+  </div>
   <div class="sublabel">Heures par semaine</div>${barChart(wkItems,{h:130,goal:tgt*60,goalLabel:tgt+' h',fy:v=>fmtN(v/60,0)})}
+  ${dows.some(d=>d.v>0)?`<div class="sublabel">Moyenne par jour de la semaine</div><div class="note" style="margin:-4px 4px 6px">Pointillés : ${fmtH(dt)}</div>${barChart(dows,{h:120,goal:dt,fy:v=>fmtN(v/60,1)})}`:''}
+  <div class="sublabel">Heures par mois</div>${barChart(months,{h:120,fy:v=>fmtN(v/60,0)})}
   <div class="sublabel">Corriger un autre jour</div>
   <div class="form-panel" style="margin:0"><div class="form-grid">
     <div class="field wide"><label>Date</label><input type="date" value="${sd}" data-wdate="1"></div>
     ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${sr[k]||''}" data-wt="${k}" data-wd="${sd}"></div>`).join('')}
     <div class="field wide"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
-    <div class="form-actions"><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
+    <div class="form-actions"><button class="btn btn-primary" data-act="wfull" data-id="${sd}">Journée complète</button><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
   <div class="row-list" style="margin-top:12px">${hist.map(k=>{const r=S.work.days[k];return `<div class="row" style="cursor:pointer" data-act="wsel" data-id="${k}"><div><div class="row-title cap1">${dLong(k)}</div><div class="row-sub">${r.in||'--'} à ${r.out||'--'}${r.lo&&r.li?' · pause '+r.lo+' à '+r.li:''}</div></div><span class="row-value">${fmtH(workDay(k))}</span></div>`;}).join('')||'<div class="empty">Aucun pointage pour le moment.</div>'}</div></div>`;
 }
 
@@ -3576,6 +3616,7 @@ document.addEventListener('click',e=>{
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
   if(a==='wsel'){ui.wd=id;render();return;}
+  if(a==='wfull'){const k=id||ui.wd||td;S.work.days[k]=fullDay();save();toast('Journée complète enregistrée · '+(k===td?'aujourd\'hui':dShort(k)));render();return;}
   if(a==='wclear'){delete S.work.days[ui.wd||td];save();render();return;}
 
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
@@ -3731,7 +3772,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.goal){S.goals[t.dataset.goal]=Math.max(num(t.value)||1,1);save();renderSheet();render();return;}
   if(t.dataset.wdate){ui.wd=t.value||null;render();return;}
   if(t.dataset.wt){const k=t.dataset.wd||ui.wd||todayK();const r=S.work.days[k]||(S.work.days[k]={});if(t.value)r[t.dataset.wt]=t.value;else delete r[t.dataset.wt];save();render();return;}
-  if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||35,1);save();if(ui.sheet)renderSheet();render();return;}
+  if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||39,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}
   if(t.dataset.dca){S.dca=Math.max(num(t.value)||0,0);save();render();return;}
   if(t.dataset.la){const l=S.lines.find(x=>x.id===t.dataset.la);if(l){l.amt=Math.max(num(t.value)||0,0);syncInit();saveSoon();clearTimeout(ui._lat);ui._lat=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.la,pos=a&&a.selectionStart;render();if(sel){const n=document.querySelector('[data-la="'+sel+'"]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(er){}}}},700);}return;}

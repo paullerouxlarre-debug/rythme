@@ -28,7 +28,7 @@ V.today=function(){
   const av=objectives().filter(o=>o.done&&!o.claimed);
   const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:moveMin(k),c:k===td?'var(--tc)':'var(--surface-3)'}));
   const L=glevel();
-  const wmn=workDay(td),wtg=Math.max((S.work.target||35)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
+  const wmn=workDay(td),wtg=Math.max((S.work.target||39)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
   const r3=ctx.work?{p:wmn/wtg,c1:'#A9C6E3',c2:'#6A9BCC',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#A9C6E3',c2:'#6A9BCC',k:'Planning',v:pld+' / '+pl.length};
   const RG=[{p:g?min/g:0,c1:'#E08A68',c2:'#C96442',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#E3C17A',c2:'#C9A15E',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
   return `${dueBanner()}${stepsBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
@@ -121,7 +121,7 @@ function dueBanner(){
   return `<div class="pdue ${p.st}"><div class="pdi">${IC('clock',20)}</div><div class="pdt"><b>${t}</b><small>${s}</small></div><button class="pdb" data-act="punch">Pointer <span id="pdnow">${hhmm()}</span></button></div>`;
 }
 function workCard(){
-  const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||35;
+  const td=todayK(),rec=S.work.days[td]||{},ns=nextStep(rec),tgt=S.work.target||39;
   const ws=wk(td),wkMin=workWeek(ws),pct=Math.min(wkMin/(tgt*60),1);
   if(!dayCtx(td).work&&!rec.in)return '';
   const open=!!ui.open.wk||!!punchDue();
@@ -132,37 +132,66 @@ function workCard(){
     <div class="muted" style="font-size:13px;margin-top:-8px">travaillées aujourd'hui</div>
     <button class="pbtn ${ns?'':'done'} ${punchDue()?'due':''}" data-act="punch" ${ns?'':'disabled'} aria-label="Pointer"><span>${ns?ns[1]:'Journée finie'}</span><small>${ns?'Appuie pour pointer':'À demain'}</small></button>
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
+    ${leaveAt(rec)?`<div class="leave">${IC('clock',15)}<span>Départ pour ${fmtH(dayTarget())} : <b>${leaveAt(rec)}</b></span></div>`:''}
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
+    <button class="chip" data-act="wfull" data-id="${td}">Journée complète · ${fmtH(dayTarget())}</button>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}
     <div class="progress" style="width:100%;height:10px"><div style="width:${Math.round(pct*100)}%;background:linear-gradient(90deg,var(--tc),var(--tc2))"></div></div>
   </div>
   <details class="card wdet" ${ui.open.wst?'open':''}><summary data-act="togglesum" data-id="wst"><span>Stats et historique</span><span class="muted" style="font-size:13px">${ui.open.wst?'Masquer':'Afficher'}</span></summary>${ui.open.wst?workStats():''}</details>`;
 }
 function workStats(){
-  const td=todayK(),tgt=S.work.target||35,ws=wk(td);
+  const td=todayK(),tgt=S.work.target||39,ws=wk(td),dt=dayTarget();
   const dayItems=[0,1,2,3,4,5,6].map(i=>{const k=addD(ws,i);return {l:['L','M','M','J','V','S','D'][i],v:workDay(k),c:k===td?'var(--tc)':'var(--surface-3)'};});
   const wsList=weeks(8);
   const wkItems=wsList.map(k=>({l:dShort(k).split(' ')[0],v:workWeek(k),c:k===ws?'var(--tc)':'var(--surface-3)'}));
-  const past=Object.keys(S.work.days).filter(k=>k>=addD(td,-28)&&S.work.days[k].in&&S.work.days[k].out);
+  const done=Object.keys(S.work.days).filter(workDone).sort();
+  const past=done.filter(k=>k>=addD(td,-28));
   const avgDay=avg(past.map(workDay));
   const avgIn=avg(past.map(k=>tmin(S.work.days[k].in))),avgOut=avg(past.map(k=>tmin(S.work.days[k].out)));
-  const bal=sum(wsList.filter(k=>k<ws).map(k=>{const v=workWeek(k);return v>0?v-tgt*60:0;}));
-  const hh=m=>pad(Math.floor(m/60))+':'+pad(Math.round(m%60));
+  const lun=past.map(k=>S.work.days[k]).filter(r=>r.lo&&r.li&&r.li>r.lo).map(r=>tmin(r.li)-tmin(r.lo));
+  /* solde : chaque journée complète comparée à l'objectif du jour (week-end : tout compte en plus) */
+  const diff=k=>workDay(k)-(isWkday(k)?dt:0);
+  const bal=sum(done.map(diff));
+  const sg=v=>(v>=0?'+':'−')+fmtH(Math.abs(v));
+  const mk=td.slice(0,7),mDays=done.filter(k=>k.startsWith(mk));
+  const mTot=sum(mDays.map(workDay)),mBal=sum(mDays.map(diff));
+  const wkLeft=tgt*60-workWeek(ws);
+  const long=past.length?past.reduce((a,k)=>workDay(k)>workDay(a)?k:a):null;
+  const dows=[1,2,3,4,5].map(d=>{const ks=done.filter(k=>k>=wsList[0]&&new Date(k+'T12:00').getDay()===d);return {l:['L','M','M','J','V'][d-1],v:ks.length?avg(ks.map(workDay)):0,c:'var(--tc)'};});
+  const months=[5,4,3,2,1,0].map(i=>{const d=new Date(td+'T12:00');d.setDate(1);d.setMonth(d.getMonth()-i);const m=dkey(d).slice(0,7);
+    return {l:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),v:sum(done.filter(k=>k.startsWith(m)).map(workDay)),c:m===mk?'var(--tc)':'var(--surface-3)'};});
   const sd=ui.wd||td,sr=S.work.days[sd]||{};
   const hist=Object.keys(S.work.days).filter(k=>S.work.days[k].in).sort().reverse().slice(0,8);
+  const box=(k,v,s)=>`<div class="stat box"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
   return `<div style="margin-top:14px">
   <div class="sublabel" style="margin-top:0">Cette semaine</div>${barChart(dayItems,{h:120,fy:v=>fmtN(v/60,1)+' h'})}
   <div class="grid2" style="margin-top:12px">
-    <div class="stat box"><div class="k">Moyenne par jour</div><div class="v">${past.length?fmtH(avgDay):'—'}</div></div>
-    <div class="stat box"><div class="k">Solde d'heures</div><div class="v">${bal>=0?'+':'−'}${fmtH(Math.abs(bal))}</div><div class="s">semaines passées vs ${tgt} h</div></div>
-    <div class="stat box"><div class="k">Arrivée moyenne</div><div class="v">${past.length?hh(avgIn):'—'}</div></div>
-    <div class="stat box"><div class="k">Départ moyen</div><div class="v">${past.length?hh(avgOut):'—'}</div></div></div>
+    ${box(wkLeft>0?'Reste cette semaine':'Semaine faite',wkLeft>0?fmtH(wkLeft):sg(-wkLeft),'sur '+tgt+' h')}
+    ${box('Solde d\'heures',done.length?sg(bal):'—',done.length?'depuis le '+dShort(done[0])+' · '+fmtH(dt)+' par jour':'aucune journée complète')}
+  </div>
+  <div class="sublabel">Ce mois-ci</div>
+  <div class="grid2">
+    ${box('Heures travaillées',mDays.length?fmtH(mTot):'—',mDays.length+' jour'+(mDays.length>1?'s':'')+' complet'+(mDays.length>1?'s':''))}
+    ${box('Solde du mois',mDays.length?sg(mBal):'—','vs '+fmtH(dt)+' par jour')}
+  </div>
+  <div class="sublabel">4 dernières semaines</div>
+  <div class="grid2">
+    ${box('Moyenne par jour',past.length?fmtH(avgDay):'—')}
+    ${box('Pause déjeuner',lun.length?fmtH(avg(lun)):'—','en moyenne')}
+    ${box('Arrivée moyenne',past.length?mhm(avgIn):'—')}
+    ${box('Départ moyen',past.length?mhm(avgOut):'—')}
+    ${long?box('Plus longue journée',fmtH(workDay(long)),dLong(long)):''}
+    ${past.length?box('Jours complets',past.length,'sur 4 semaines'):''}
+  </div>
   <div class="sublabel">Heures par semaine</div>${barChart(wkItems,{h:130,goal:tgt*60,goalLabel:tgt+' h',fy:v=>fmtN(v/60,0)})}
+  ${dows.some(d=>d.v>0)?`<div class="sublabel">Moyenne par jour de la semaine</div><div class="note" style="margin:-4px 4px 6px">Pointillés : ${fmtH(dt)}</div>${barChart(dows,{h:120,goal:dt,fy:v=>fmtN(v/60,1)})}`:''}
+  <div class="sublabel">Heures par mois</div>${barChart(months,{h:120,fy:v=>fmtN(v/60,0)})}
   <div class="sublabel">Corriger un autre jour</div>
   <div class="form-panel" style="margin:0"><div class="form-grid">
     <div class="field wide"><label>Date</label><input type="date" value="${sd}" data-wdate="1"></div>
     ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${sr[k]||''}" data-wt="${k}" data-wd="${sd}"></div>`).join('')}
     <div class="field wide"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
-    <div class="form-actions"><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
+    <div class="form-actions"><button class="btn btn-primary" data-act="wfull" data-id="${sd}">Journée complète</button><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
   <div class="row-list" style="margin-top:12px">${hist.map(k=>{const r=S.work.days[k];return `<div class="row" style="cursor:pointer" data-act="wsel" data-id="${k}"><div><div class="row-title cap1">${dLong(k)}</div><div class="row-sub">${r.in||'--'} à ${r.out||'--'}${r.lo&&r.li?' · pause '+r.lo+' à '+r.li:''}</div></div><span class="row-value">${fmtH(workDay(k))}</span></div>`;}).join('')||'<div class="empty">Aucun pointage pour le moment.</div>'}</div></div>`;
 }

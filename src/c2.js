@@ -245,6 +245,14 @@ function workMin(rec,live){
   return Math.max(end-a-lunch,0);
 }
 const workDay=k=>workMin(S.work.days[k],k===todayK());
+const dayTarget=()=>Math.round((S.work.target||39)*60/5);
+const mhm=m=>pad(Math.floor(m/60))+':'+pad(Math.round(m%60));
+/* journée complète : 7:30–12:00 puis 13:00, départ ajusté pour faire l'objectif du jour */
+function fullDay(){const d=dayTarget();if(d<=270)return {in:'07:30',out:mhm(450+d)};return {in:'07:30',lo:'12:00',li:'13:00',out:mhm(780+d-270)};}
+/* heure de départ pour atteindre l'objectif du jour */
+function leaveAt(rec){if(!rec||!rec.in||rec.out)return null;const lunch=rec.lo&&rec.li?Math.max(tmin(rec.li)-tmin(rec.lo),0):60;const t=tmin(rec.in)+dayTarget()+lunch;return t<24*60?mhm(t):null;}
+const workDone=k=>{const r=S.work.days[k];return !!(r&&r.in&&r.out);};
+const isWkday=k=>{const d=new Date(k+'T12:00').getDay();return d>=1&&d<=5;};
 const workWeek=ws=>sum([0,1,2,3,4,5,6].map(i=>workDay(addD(ws,i))));
 
 /* créneaux de pointage habituels (lun-ven) */

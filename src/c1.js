@@ -42,7 +42,7 @@ const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Act
   incomes:[],sources:['Salaire','Freelance','Dividendes','Autre'],pays:[],
   sim:{prix:300000,apport:30000,taux:3.6,duree:25,assu:0.34,notaire:21000,charges:0},sims:[],
   workouts:[],goals:{dayMin:45,weekSessions:4},profile:null,wlog:[],customEx:[],templates:[],events:[],
-  work:{days:{},target:35},game:blankGame(),imported:0});
+  work:{days:{},target:39,m39:1},game:blankGame(),imported:0});
 
 function migrate(d){
   const o=Object.assign(blank(),d||{});
@@ -58,7 +58,8 @@ function migrate(d){
     if(gg.wT>0&&gg.wS>0){o.game.myg.push({id:'w0',type:'weight',from:gg.wS,target:gg.wT,start:dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:w:'+f])cl['og:w0:'+f]=1;});}
     if(gg.dT>0){o.game.myg.push({id:'d0',type:'km',target:gg.dT,start:gg.dFrom||dkey(new Date())});[25,50,75,100].forEach(f=>{if(cl['g:d:'+f])cl['og:d0:'+f]=1;});}}
   o.goalT=Object.assign({target:200000,years:15,init:null,rate:null},o.goalT||{});
-  o.work=Object.assign({days:{},target:35},o.work||{});
+  o.work=Object.assign({days:{},target:39},o.work||{});
+  if(!o.work.m39){o.work.m39=1;if(o.work.target===35)o.work.target=39;}
   o.maxes=o.maxes||{};
   o.steps=o.steps||{};
   o.ci=Object.assign({init:1000,monthly:200,rate:7,years:20,freq:12},o.ci||{});
