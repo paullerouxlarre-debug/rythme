@@ -22,8 +22,8 @@ Un tableau de bord personnel qui me dit, chaque jour, si je suis dans mon rythme
 
 ## Les quatre piliers
 1. [Ma journée](modules/ma-journee.md) : la vue d'ouverture.
-2. [Muscle](modules/muscle.md) et [Nutrition](modules/nutrition.md) : le corps.
-3. [Tendance](modules/tendance.md) : l'argent.
+2. [Sport](modules/muscle.md) et [Nutrition](modules/nutrition.md) : le corps.
+3. [Argent](modules/tendance.md) : l'argent.
 4. [Planning](modules/planning.md) : le temps.
 
 Related: [Règles produit](regles.md) · [Idées](idees.md)

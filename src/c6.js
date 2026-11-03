@@ -3,9 +3,9 @@
 V.sport=function(){
   const seg=`<div class="seg">${[['over','Aperçu'],['add','Séance'],['max','Max']].map(([k,l])=>`<button class="${ui.sp===k?'on':''}" data-act="sp" data-id="${k}">${l}</button>`).join('')}</div>`;
   if(!['over','add','max'].includes(ui.sp))ui.sp='over';
-  if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Muscle</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
+  if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Sport</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
   const calcBtn=`<button class="toolrow" style="margin:0 0 12px" data-act="tl" data-id="calc"><span class="tico" style="background:linear-gradient(135deg,#FF9500,#FF2D55)"><svg viewBox="0 0 24 24"><circle cx="14.5" cy="4.5" r="2"/><path d="M6 21l3-6 3 2 2-5-3-2-3 1M12 17l1 4M16 11l3 2"/></svg></span><span style="flex:1;min-width:0;text-align:left"><b>Calculateur de course</b><small>Allure, temps, distance, passages</small></span><span class="chev">›</span></button>`;
-  return `<h1 class="page">Muscle</h1>${seg}${SP[ui.sp]()}${ui.sp==='max'?'<div style="margin-top:16px">'+calcBtn+'</div>':''}`;
+  return `<h1 class="page">Sport</h1>${seg}${SP[ui.sp]()}${ui.sp==='max'?'<div style="margin-top:16px">'+calcBtn+'</div>':''}`;
 };
 function periodDays(){return ui.per==='all'?null:lastDays(+ui.per);}
 function groupStats(days){

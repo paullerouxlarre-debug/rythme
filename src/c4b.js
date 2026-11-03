@@ -38,14 +38,18 @@ function stepsCard(){
   if(!keys.length)return `<div class="section-head"><h2 class="section-title">Pas</h2></div>
     <div class="card"><p class="note" style="margin:0 0 10px">Relie tes pas de l'app Santé : un raccourci iPhone les copie, Rythme les colle.</p><button class="btn btn-ghost" style="width:100%" data-act="stepsguide">Configurer</button></div>`;
   const td=todayK(),last=st[td]!=null?td:keys[keys.length-1],v=st[last]||0,g=STEPGOAL();
-  const days=lastDays(7),bars=days.map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:st[k]||0,c:k===last?'var(--tc)':'var(--surface-3)'}));
+  const days=lastDays(7),bars=days.map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:st[k]||0,c:k===last?'var(--accent)':'var(--surface-3)'}));
   const avg7=Math.round(avg(days.map(k=>st[k]||0).filter(x=>x>0)))||0;
+  /* pas à actualiser : le bouton passe en principal, au bon endroit (plus de bandeau en haut de page) */
+  const age=Date.now()-(S.stepsAt||0),stale=!gistApi(S.stepsSync)&&!(st[td]!=null&&age<3*3600e3);
+  const ago=S.stepsAt?(age<3600e3?'il y a '+Math.max(1,Math.round(age/60000))+' min':age<864e5?'il y a '+Math.round(age/3600e3)+' h':'le '+dShort(dkey(new Date(S.stepsAt)))):'';
   return `<div class="section-head"><h2 class="section-title">Pas</h2><span class="section-sub">${last===td?'aujourd\'hui':esc(dShort(last))}</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
-    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--tc)',96,10)}<div class="rc" style="flex-direction:column;font-size:19px;font-weight:700">${fmtN(v)}<small class="muted" style="font-size:11px;font-weight:600">pas</small></div></div>
+    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--accent)',96,10)}<div class="rc" style="flex-direction:column;font-size:19px;font-weight:700">${fmtN(v)}<small class="muted" style="font-size:11px;font-weight:600">pas</small></div></div>
     <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:15.5px">${v>=g?'Objectif atteint':'Encore '+fmtN(g-v)+' pas'}</div>
       <div class="muted" style="font-size:13px;margin:3px 0 10px">Moyenne 7 jours : ${fmtN(avg7)} · objectif ${fmtN(g)}</div>
-      <button class="btn btn-ghost" style="width:100%" data-act="stepspaste">Mettre à jour mes pas</button></div></div>
+      ${stale&&ago?`<div class="stale">${IC('clock',14)}Mis à jour ${ago}</div>`:''}
+      <button class="btn ${stale?'btn-primary':'btn-ghost'}" style="width:100%" data-act="stepspaste">Actualiser mes pas</button></div></div>
     <div style="margin-top:12px">${barChart(bars,{h:80,goal:g})}</div></div>`;
 }
 function stepsGuide(){

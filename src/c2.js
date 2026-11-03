@@ -185,7 +185,7 @@ function nutriDay(k){
   const p=S.profile;if(!p)return null;
   const c=dayCtx(k),w=p.weight,h=c.min/60;
   const bmr=10*p.weight+6.25*p.height-5*p.age+(p.sex==='h'?5:-161);
-  let base=bmr*p.base;
+  let base=bmr*(+p.base||1.2);
   if(c.trip)base*=1.04;
   const adj={perte:0.85,maintien:1,prise:1.10}[p.goal]||1;
   const kc=(base+c.kc)*adj;

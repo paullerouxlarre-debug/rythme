@@ -14,45 +14,42 @@ function weekDots(){
     return `<button class="daycell ${k===td?'tod':''}" data-act="gopl" data-id="${k}"><span>${new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')}</span><b>${+k.slice(8)}</b><i>${kinds.map(x=>`<u style="background:${k===td?'#fff':EK[x]}"></u>`).join('')}</i></button>`;}).join('')}</div>`;
 }
 
-/* ---- Jeu ---- */
-V.game=function(){announceBadges();return `<h1 class="page">Progrès</h1>${scene()}<div id="gbody">${gameBody()}</div>`;};
 
 /* ---- Ma journée ---- */
 V.today=function(){
-  if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Ma journée</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
+  if(ui.tl==='calc')return `<button class="back" data-act="tl" data-id="">‹ Aujourd'hui</button><h1 class="page" style="margin-top:0">Calcul de course</h1>${SP.calc()}`;
   const td=todayK(),tm=addD(td,1),ev0=evOn(td),ev1=evOn(tm),w=wOn(td),min=moveMin(td),smin=stepMin(td),g=S.goals.dayMin;
-  const d=new Date(),wd=d.toLocaleDateString('fr-FR',{weekday:'long'}),full=d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const dtxt=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   const ws=wk(td),days=[0,1,2,3,4,5,6].map(i=>addD(ws,i)),wsess=inDays(days);
-  const km=sum(wsess.filter(x=>x.type==='course').map(x=>x.dist||0));
   const ctx=dayCtx(td);
-  const av=objectives().filter(o=>o.done&&!o.claimed);
-  const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:moveMin(k),c:k===td?'var(--tc)':'var(--surface-3)'}));
-  const L=glevel();
-  const wmn=workDay(td),wtg=Math.max((S.work.target||39)*60/5,60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
-  const r3=ctx.work?{p:wmn/wtg,c1:'#A9C6E3',c2:'#6A9BCC',k:'Boulot',v:fmtH(wmn)}:{p:pl.length?pld/pl.length:1,c1:'#A9C6E3',c2:'#6A9BCC',k:'Planning',v:pld+' / '+pl.length};
-  const RG=[{p:g?min/g:0,c1:'#E08A68',c2:'#C96442',k:'Bouger',v:min+'/'+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#E3C17A',c2:'#C9A15E',k:'Semaine',v:wsess.length+' / '+S.goals.weekSessions},r3];
-  return `${dueBanner()}${stepsBanner()}<div class="hero2 tday"><div class="tday-top"><div style="min-width:0"><div class="sm cap1">${full}</div><div class="big cap1">${wd}</div>
-    <div class="chips" style="margin-top:8px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min':''}</span>${streak()?`<span class="chip static">Série ${streak()} j</span>`:''}</div></div>${actRings(RG,118)}</div>
-    <div class="mini3 rleg">${RG.map(r=>`<div><small><i style="background:linear-gradient(135deg,${r.c1},${r.c2})"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div></div>
+  const bars=lastDays(7).map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:moveMin(k),c:k===td?'var(--c-sport)':'var(--surface-3)'}));
+  const wmn=workDay(td),wtg=Math.max(dayTarget(),60),pl=evPlanned(td),pld=pl.filter(e=>e.done&&e.done[td]).length;
+  /* trois anneaux : clairs pour rester lisibles sur la carte colorée */
+  const r3=ctx.work?{p:wmn/wtg,c1:'#FFFFFF',k:'Boulot',v:fmtH(wmn)+' / '+fmtH(wtg)}:{p:pl.length?pld/pl.length:1,c1:'#FFFFFF',k:'Planning',v:pld+' / '+pl.length};
+  const RG=[{p:g?min/g:0,c1:'#FFC078',k:'Bouger',v:min+' / '+g+' min'},{p:S.goals.weekSessions?wsess.length/S.goals.weekSessions:0,c1:'#8CE99A',k:'Séances',v:wsess.length+' / '+S.goals.weekSessions+' cette sem.'},r3];
+  RG.forEach(r=>r.c2=r.c1);
+  return `<h1 class="page">Aujourd'hui</h1><p class="pdate cap1">${dtxt}</p>
+  ${dueBanner()}
+  <div class="hero2 tday"><div class="tday-top"><div class="tsum">${RG.map(r=>`<div><small><i style="background:${r.c1}"></i>${r.k}</small><b>${esc(r.v)}</b></div>`).join('')}</div>${actRings(RG,112)}</div>
+    <div class="chips" style="margin-top:14px"><span class="chip static">${ctx.name}${ctx.min?' · '+ctx.min+' min prévues':''}</span>${streak()?`<span class="chip static">Série de ${streak()} j</span>`:''}</div></div>
 
-  <div class="section-head" style="margin-top:8px"><h2 class="section-title">Planning</h2><a class="section-sub" href="#" data-act="gopl" data-id="${td}">Voir le mois</a></div>
+  ${workCard()}
+
+  <div class="section-head"><h2 class="section-title">Planning</h2><a class="section-sub" href="#" data-act="gopl" data-id="${td}">Voir le mois</a></div>
   <div class="row-list">${ev0.map(e=>evRow(e,td)).join('')||'<div class="empty">Rien de prévu aujourd\'hui.</div>'}</div>
   ${ev1.length?`<div class="sublabel">Demain</div><div class="row-list">${ev1.map(e=>evRow(e,tm)).join('')}</div>`:''}
   <div style="margin-top:12px">${weekDots()}</div>
 
-  ${workCard()}
-  ${stepsCard()}
-
   <div class="section-head"><h2 class="section-title">Sport</h2><span class="section-sub">${min} sur ${g} min</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
-    <div class="rw" style="width:104px;height:104px;flex:none">${ring(g?min/g:0,'var(--tc)')}<div class="rc" style="flex-direction:column;font-size:22px;font-weight:800">${min}<small class="muted" style="font-size:11px;font-weight:500">min</small></div></div>
-    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15.5px">${min>=g?'Objectif atteint':min>0?'Encore '+(g-min)+' min':'Pas encore de séance'}</div>
-    <div class="muted" style="font-size:13px;margin:3px 0 10px">${[w.length?w.map(x=>x.prog?progName(x.prog):SPORTS[x.type].name).join(', '):'',smin?'dont '+smin+' min de pas':''].filter(Boolean).join(' · ')||'Note une séance en deux gestes'}</div>
+    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?min/g:0,'var(--c-sport)',96,10)}<div class="rc" style="flex-direction:column;font-size:22px;font-weight:700">${min}<small class="muted" style="font-size:12px;font-weight:600">min</small></div></div>
+    <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:16px">${min>=g?'Objectif atteint':min>0?'Encore '+(g-min)+' min':'Pas encore de séance'}</div>
+    <div class="muted" style="font-size:14px;margin:3px 0 10px">${[w.length?w.map(x=>x.prog?progName(x.prog):SPORTS[x.type].name).join(', '):'',smin?'dont '+smin+' min de pas':''].filter(Boolean).join(' · ')||'Note une séance en deux gestes'}</div>
     <button class="btn btn-primary" style="width:100%" data-act="gosport">Ajouter une séance</button></div></div>
     <div style="margin-top:12px">${barChart(bars,{h:90,goal:g,goalLabel:g+' min'})}</div></div>
 
+  ${stepsCard()}
 `;
-
 };
 
 /* ---- Planning ---- */
@@ -89,10 +86,10 @@ function planMonth(){
   const up=[];for(let i=0;i<90&&up.length<5;i++){const k=addD(td,i);evOn(k).forEach(e=>{if(!up.find(x=>x.e.id===e.id)&&up.length<5)up.push({k,e});});}
   const nxt=up[0];
   return `
-  <div class="hero2"><div class="sm">Planning</div><div class="big cap1" style="font-size:34px">${new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</div>
-    <div class="sm" style="margin-top:6px">${nxt?'Prochain : '+esc(nxt.e.title)+', '+dShort(nxt.k):'Rien de prévu pour le moment'}</div>
+  <div class="hero2"><div class="sm">Prochain événement</div><div class="big" style="font-size:26px">${nxt?esc(nxt.e.title):'Rien de prévu'}</div>
+    <div class="sm">${nxt?(nxt.k===td?'Aujourd\'hui':dLong(nxt.k))+' · '+hm(nxt.e):'Ajoute un événement plus bas'}</div>
     <div class="mini3"><div><small>Événements</small><b>${list.length}</b></div><div><small>Séances</small><b>${nw}</b></div><div><small>Voyage</small><b>${trips} j</b></div></div></div>
-  <div class="wkhead"><button class="navbtn" data-act="plm" data-id="-1" aria-label="Mois précédent">‹</button><b class="cap1">Naviguer</b><button class="navbtn" data-act="plm" data-id="1" aria-label="Mois suivant">›</button></div>
+  <div class="wkhead"><button class="navbtn" data-act="plm" data-id="-1" aria-label="Mois précédent">‹</button><b class="cap1">${new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</b><button class="navbtn" data-act="plm" data-id="1" aria-label="Mois suivant">›</button></div>
   <div class="mhead">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div>
   <div class="mgrid">${cells.join('')}</div>
   <div class="chips" style="margin-top:12px">${Object.entries(EK).map(([k,c])=>`<span class="lg"><span class="dot" style="background:${c}"></span>${k}</span>`).join('')}</div>
@@ -102,13 +99,8 @@ function planMonth(){
   <div class="row-list">${evs.map(e=>evRow(e,sel,true)).join('')}${ws.map(x=>`<div class="row" style="align-items:stretch;gap:12px"><div class="evbar" style="background:${SPORTS[x.type].col}"></div><div style="flex:1"><div class="row-title">${SPORTS[x.type].name}${x.src==='strava'?'<span class="src">Strava</span>':''}</div><div class="row-sub">Séance enregistrée · ${x.min} min${x.dist?' · '+fmtN(x.dist,1)+' km':''}</div></div></div>`).join('')}${!evs.length&&!ws.length?'<div class="empty">Rien ce jour-là.</div>':''}</div>
   ${form}
 
-  <div class="section-head"><h2 class="section-title">Ce mois-ci</h2></div>
-  <div class="grid2">
-    <div class="stat box"><div class="k">Événements</div><div class="v">${list.length}</div></div>
-    <div class="stat box"><div class="k">Séances faites</div><div class="v">${nw}</div></div>
-    <div class="stat box"><div class="k">Jours de voyage</div><div class="v">${trips}</div></div>
-    <div class="stat box"><div class="k">Anniversaires</div><div class="v">${bds}</div></div></div>
-  <div class="row-list" style="margin-top:12px">${list.map(x=>`<div class="row" style="align-items:stretch;gap:12px;cursor:pointer" data-act="plsel" data-id="${x.days[0]}" data-jump="1"><div class="evbar" style="background:${EK[x.e.kind]}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(x.e.title)}</div><div class="row-sub">${x.days.length>1?dShort(x.days[0])+' au '+dShort(x.days[x.days.length-1]):dShort(x.days[0])} · ${esc(x.e.kind)}</div></div></div>`).join('')||'<div class="empty">Aucun événement ce mois-ci.</div>'}</div>
+  <div class="section-head"><h2 class="section-title">Ce mois-ci</h2><span class="section-sub">${list.length} événement${list.length>1?'s':''}${bds?' · '+bds+' anniversaire'+(bds>1?'s':''):''}</span></div>
+  <div class="row-list">${list.map(x=>`<div class="row" style="align-items:stretch;gap:12px;cursor:pointer" data-act="plsel" data-id="${x.days[0]}" data-jump="1"><div class="evbar" style="background:${EK[x.e.kind]}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(x.e.title)}</div><div class="row-sub">${x.days.length>1?dShort(x.days[0])+' au '+dShort(x.days[x.days.length-1]):dShort(x.days[0])} · ${esc(x.e.kind)}</div></div></div>`).join('')||'<div class="empty">Aucun événement ce mois-ci.</div>'}</div>
   ${up.length?`<div class="section-head"><h2 class="section-title">À venir</h2></div><div class="row-list">${up.map(({k,e})=>`<div class="row" style="align-items:stretch;gap:12px"><div class="evbar" style="background:${EK[e.kind]}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(e.title)}</div><div class="row-sub">${dShort(k)} · ${hm(e)}</div></div></div>`).join('')}</div>`:''}`;
 }
 

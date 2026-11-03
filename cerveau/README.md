@@ -18,7 +18,7 @@ Rythme est mon app perso de suivi de vie : boulot, sport, argent, nutrition, pla
 - [Journal des versions](journal.md) : chaque mise en ligne, datée.
 
 ## L'app, onglet par onglet
-- [Modules](modules/README.md) : Ma journée, Planning, Muscle, Nutrition, Tendance, Progrès.
+- [Modules](modules/README.md) : Aujourd'hui, Planning, Sport, Nutrition, Argent.
 
 ## Sous le capot
 - [Technique](technique/README.md) : architecture, données, déploiement, contraintes iOS, modèles de calcul.

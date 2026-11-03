@@ -1,6 +1,6 @@
 ---
 title: Règles produit
-date: 2026-10-30
+date: 2026-11-03
 tags: [rythme, regles]
 ---
 
@@ -22,8 +22,11 @@ Les règles que toute évolution doit respecter. Si une demande les contredit, l
 - Rien les week-ends et les jours de congé. Fenêtre pop-up et bandeau cliquable pendant les créneaux.
 
 ## Style
-- Mature et pro ; palette crème `#F5F4EE`, terracotta `#C96442`, titres en Source Serif 4.
-- Icônes au trait, pas d'emojis. Pas de bulles flottantes.
+- Sobre et lisible (v3, 03/11) : fond gris clair `#F2F3F6` (sombre `#0D0E11`), cartes blanches, accent cobalt `#3B5BDB`, police système (SF Pro sur iPhone).
+- **Une couleur par domaine** : Aujourd'hui = accent, Planning pétrole `#0C8599`, Sport orange `#E8590C`, Nutrition vert `#2F9E44`, Argent violet `#7048E8`. Chaque onglet a une carte de résumé de sa couleur.
+- Accessibilité : texte de base 16 px, rien sous 12 px, contrastes AA, cibles tactiles de 44 px minimum.
+- Mouvement : court (moins de 250 ms), sans rebond ; pas d'écran de démarrage animé, pas de confettis.
+- Icônes au trait, pas d'emojis. Pas de bulles flottantes. Pas de jeu.
 - **Textes courts.**
 - Comportement d'app native : pas de zoom, pas de rebond, pas de barre de défilement, portrait uniquement.
 

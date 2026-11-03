@@ -11,10 +11,11 @@ L'app est **un fichier HTML** (CSS + JS) servi comme PWA. Les sources sont déco
 
 | Fichier | Rôle |
 |---|---|
-| `b0.html` | Squelette HTML et tout le CSS |
+| `b0.html` | Squelette HTML et tout le CSS (design système v3, réécrit le 03/11) |
+| `icon.svg` | Logo source ; les `icon-*.png` en sont rendus |
 | `c1.js` | État `ui`, couleurs, `migrate()` des données, numéro de version |
 | `c2.js` | Dates, import Excel des heures, congés, créneaux de pointage |
-| `c3.js` | Icônes, emblème, Progrès, boucle `gLive` (mise à jour chaque minute) |
+| `c3.js` | Toast, icônes au trait, boucle `gLive` (pointage en direct) |
 | `c4.js` / `c4b.js` | Ma journée, carte Boulot, pas, synchro Gist, fenêtre de pointage |
 | `c5.js` / `c5b.js` | Tendance : placements, fiches de paie |
 | `c6.js` | Muscle (séances, programmes), Nutrition, poids |

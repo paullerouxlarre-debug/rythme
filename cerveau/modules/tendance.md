@@ -1,10 +1,10 @@
 ---
-title: Tendance
+title: Argent
 date: 2026-10-30
 tags: [rythme, module, argent]
 ---
 
-# Tendance
+# Argent
 
 L'argent. Un hub qui mène aux sous-pages.
 

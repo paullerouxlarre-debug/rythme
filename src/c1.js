@@ -32,7 +32,7 @@ const CCOL={ETF:'#5E9C80',Actions:'#D97757',Crypto:'#9A7BC0'};
 const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculation',col:'#0A84FF'},padel:{name:'Padel',col:'#FFCC00'},bodyboard:{name:'Bodyboard',col:'#32ADE6'}};
 const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA8',Congé:'#C9A15E',Perso:'#9A7BC0',Santé:'#4FA39A',Détente:'#7E9459'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
-const ACCENTS=[['Vert','#1F9D55'],['Bleu','#0A7AFF'],['Violet','#AF52DE'],['Orange','#F57C00'],['Rose','#E91E63'],['Turquoise','#16A5B8']];
+const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['Prune','#7B3FA0'],['Brique','#B8461B'],['Ardoise','#475569']];
 const KEY='rythme_v4';
 const BUILD='__BUILD__';
 
@@ -81,6 +81,7 @@ try{
   else if(v3){const o=JSON.parse(v3);R.profiles=o.profiles||[];R.active=o.active;}
 }catch(e){}
 R.prefs=Object.assign({accent:ACCENTS[0][1],theme:'auto'},R.prefs||{});
+if(!R.prefs.v3){R.prefs.v3=1;R.prefs.accent=ACCENTS[0][1];} /* nouvelle palette : couleur par défaut */
 if(!R.profiles||!R.profiles.length)R.profiles=[{id:uid(),name:'Moi',data:blank()}];
 if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
@@ -97,7 +98,7 @@ applyPrefs();
 function greet(){
   const n=new Date(),h=n.getHours(),sl=h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   const a=R.profiles.find(p=>p.id===R.active);
-  $('#greeting').innerHTML='<svg class="lg-pulse" viewBox="0 0 28 12" width="28" height="12" aria-hidden="true"><path d="M1 6h6l2-4 3 8 3-6 2 2h10"/></svg>'+esc(sl+', '+a.name);$('#profBtn').textContent=a.name.slice(0,1).toUpperCase();
+  $('#greeting').textContent=sl+', '+a.name;$('#profBtn').textContent=a.name.slice(0,1).toUpperCase();
 }
 
 /* ================= charts (inline SVG) ================= */

@@ -4,11 +4,9 @@
 function visInit(){
   try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('portrait').catch(()=>{});}catch(e){}
   document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
-  const sp=$('#splash');if(sp){setTimeout(()=>sp.classList.add('out'),1000);setTimeout(()=>sp.remove(),1900);}
   addEventListener('resize',placePill);
   setInterval(restTick,500);
   addEventListener('scroll',onScroll,{passive:true});swipeInit();scrubInit();
-  if(moodNow()==='sleepy'&&G().wb!==todayK()){G().wb=todayK();saveSoon();setTimeout(()=>toast('Content de te revoir · 10 min suffisent pour relancer'),2600);}
   setTimeout(placePill,300);
   setTimeout(()=>syncSteps(true),1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncSteps(false);});
 }
@@ -18,14 +16,11 @@ function placePill(){
   p.style.width=(r.width-6)+'px';p.style.transform='translateX('+(r.left-i.left+3)+'px)';p.style.opacity=1;
 }
 function decorate(){
-  document.querySelectorAll('#main .hero2:not(.hb-done)').forEach(h=>{h.classList.add('hb-done');h.insertAdjacentHTML('afterbegin','<span class="hsh"></span>');});
-  const n=objectives().filter(o=>o.done&&!o.claimed).length,t=document.querySelector('.tab[data-id=game]');
-  if(t){let b=t.querySelector('.tbdg');if(n>0){if(!b){b=document.createElement('i');b.className='tbdg';t.appendChild(b);}if(b.textContent!==String(n)){b.textContent=n;b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');}}else if(b)b.remove();}
   const tt=document.querySelector('.tab[data-id=today]');if(tt)tt.classList.toggle('due',!!punchDue());
   onScroll();
 }
 /* --- titre compact façon iOS --- */
-const TABT={game:'Progrès',today:'Ma journée',plan:'Planning',sport:'Muscle',food:'Nutrition',money:'Tendance'};
+const TABT={today:'Aujourd\'hui',plan:'Planning',sport:'Sport',food:'Nutrition',money:'Argent'};
 function onScroll(){
   const c=$('#ctitle');if(!c)return;
   const h=document.querySelector('#main h1.page'),lim=h?h.getBoundingClientRect().bottom<44:scrollY>150;
@@ -94,37 +89,4 @@ function prCheck(exs){
     if(b&&best[x.name]>0&&b.v>best[x.name]+0.01)out.push({name:x.name,kg:b.kg,reps:b.reps});});
   return out;
 }
-/* --- carte de stats à partager --- */
-function shareBtnCard(){
-  return `<button class="toolrow" style="margin:0" data-act="sharecard"><span class="tico" style="background:linear-gradient(135deg,#8A4BFF,#FF4FA3)"><svg viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6"/></svg></span><span style="flex:1;min-width:0;text-align:left"><b>Ma carte de stats</b><small>Une image souvenir de ta progression</small></span><span class="chev">›</span></button>`;
-}
-function makeCard(){
-  return new Promise((res,rej)=>{
-    const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-    const L=glevel(),st=STAGES[L.stage-1],b=myBoard();
-    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,st.sky[0]);g.addColorStop(.45,st.sky[1]);g.addColorStop(.8,st.sky[2]);g.addColorStop(1,st.sky[3]);
-    x.fillStyle=g;x.fillRect(0,0,W,H);
-    for(let i=0;i<46;i++){const r=6+Math.random()*30;x.beginPath();x.arc(Math.random()*W,Math.random()*H,r,0,7);x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;x.stroke();x.fillStyle='rgba(255,255,255,.07)';x.fill();}
-    x.fillStyle='#fff';x.font='800 64px -apple-system,Inter,sans-serif';x.fillText('Rythme',70,125);
-    x.font='600 34px -apple-system,Inter,sans-serif';x.fillStyle='rgba(255,255,255,.8)';x.fillText(new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),70,175);
-    const svg=mascot(L.stage,G().skin,'card').replace('<svg','<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640"');
-    const img=new Image();
-    img.onload=()=>{
-      x.drawImage(img,220,220,640,640);
-      x.textAlign='center';x.fillStyle='#fff';x.font='800 92px -apple-system,Inter,sans-serif';x.fillText(b.n,W/2,960);
-      x.font='600 44px -apple-system,Inter,sans-serif';x.fillStyle='rgba(255,255,255,.85)';x.fillText('Niveau '+L.l+' · '+st.n,W/2,1025);
-      const T=[['Étoiles',fmtN(G().life)],['Série',b.st+' j'],['Séances',String(b.ws)],['Km',fmtN(b.km,1)]];
-      T.forEach((t,i)=>{const bx=70+i*250,by=1090,bw=230,bh=190;x.fillStyle='rgba(255,255,255,.18)';x.beginPath();x.roundRect?x.roundRect(bx,by,bw,bh,36):x.rect(bx,by,bw,bh);x.fill();
-        x.fillStyle='#fff';x.font='800 58px -apple-system,Inter,sans-serif';x.fillText(t[1],bx+bw/2,by+92);x.font='600 30px -apple-system,Inter,sans-serif';x.fillStyle='rgba(255,255,255,.8)';x.fillText(t[0],bx+bw/2,by+142);});
-      x.textAlign='left';
-      c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png');
-    };
-    img.onerror=()=>rej(new Error('img'));
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-  });
-}
-async function shareCard(){
-  try{const bl=await makeCard();await saveFile('rythme-carte.png',bl);toast('Carte prête');}
-  catch(e){if(!e||e.code!=='declined')toast('Impossible de créer la carte');}
-}
-window._dbg={makeCard};
+

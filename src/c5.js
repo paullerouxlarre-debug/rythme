@@ -7,8 +7,8 @@ const cu=(v,f)=>`<span class="cu" data-v="${Math.round(v*100)/100}" data-f="${f}
 const MT={alloc:'Placements',inc:'Revenus',evol:'Évolution',ci:'Intérêts composés',goal:'Objectif d\'épargne',immo:'Achat immobilier'};
 V.money=function(){
   const k=MT[ui.money]?ui.money:'hub';
-  if(k==='hub')return `<h1 class="page">Tendance</h1>${M.hub()}`;
-  return `<button class="back" data-act="money" data-id="hub">‹ Tendance</button><h1 class="page" style="margin-top:0">${MT[k]}</h1>${M[k]()}`;
+  if(k==='hub')return `<h1 class="page">Argent</h1>${M.hub()}`;
+  return `<button class="back" data-act="money" data-id="hub">‹ Argent</button><h1 class="page" style="margin-top:0">${MT[k]}</h1>${M[k]()}`;
 };
 function miniDonut(segs,sz){
   const tot=sum(segs.map(s=>s.v)),r=21,C=2*Math.PI*r;let off=0;

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Rythme : un petit histogramme de semaine, hauteurs irrégulières. Pas de dégradé, pas de texte. -->
+  <rect width="1024" height="1024" fill="#3B5BDB"/>
+  <g fill="#FFFFFF">
+    <rect x="232" y="452" width="116" height="320" rx="58"/>
+    <rect x="390" y="292" width="116" height="480" rx="58"/>
+    <rect x="548" y="532" width="116" height="240" rx="58"/>
+    <rect x="706" y="382" width="116" height="390" rx="58" fill-opacity=".6"/>
+  </g>
+</svg>

@@ -1,10 +1,10 @@
 ---
-title: Muscle
+title: Sport
 date: 2026-10-30
 tags: [rythme, module, sport]
 ---
 
-# Muscle
+# Sport
 
 Trois segments : **Aperçu**, **Séance**, **Max**.
 

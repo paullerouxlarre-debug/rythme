@@ -1,19 +1,21 @@
 ---
-title: Ma journée
+title: Aujourd'hui
 date: 2026-11-03
 tags: [rythme, module]
 ---
 
-# Ma journée
+# Aujourd'hui
 
-L'onglet qui s'ouvre au lancement.
+L'onglet qui s'ouvre au lancement (anciennement « Ma journée »).
 
 ## Contenu
-- **Bandeaux** en haut : pointage (pendant les créneaux) et actualisation des pas.
-- **Carte du jour** : date, type de journée (boulot, repos, congé, voyage), trois anneaux : *Bouger* (minutes de sport + part des pas), *Semaine* (séances), *Boulot* (heures).
-- **Planning** du jour et des 7 prochains jours.
-- **Boulot** : voir [Pointage](#pointage).
-- **Pas** : nombre du jour, synchro avec l'app Santé.
+Dans l'ordre, du plus urgent au moins urgent :
+1. **Bandeau de pointage** (pendant un créneau seulement).
+2. **Carte du jour** (couleur d'accent) : Bouger, Séances de la semaine, Boulot, avec trois anneaux ; type de journée et série.
+3. **Boulot** : voir [Pointage](#pointage).
+4. **Planning** du jour, de demain et des 7 prochains jours.
+5. **Sport** du jour.
+6. **Pas** : nombre du jour, bouton « Actualiser mes pas » (principal si les pas datent de plus de 3 h).
 
 ## Pointage
 - 4 étapes : arrivée, départ déjeuner, retour, départ.

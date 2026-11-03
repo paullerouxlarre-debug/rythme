@@ -17,5 +17,6 @@ Une note par choix structurant : ce qui a été décidé, et pourquoi. Nom de fi
 - [Âge physiologique sur les seuls max](2026-10-30-age-sur-max.md) : 2026-10-30
 - [Pointage seulement pendant les créneaux](2026-10-30-pointage-creneaux.md) : 2026-10-30
 - [Journée complète à 7 h 48](2026-11-03-journee-complete-39h.md) : 2026-11-03
+- [Refonte v3, sans jeu](2026-11-03-refonte-v3.md) : 2026-11-03
 
 Up: [Accueil](../README.md)
