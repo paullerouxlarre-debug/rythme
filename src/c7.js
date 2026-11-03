@@ -13,7 +13,7 @@ function sheetInner(){
     ${R.profiles.length>1?`<button class="btn btn-ghost danger" style="width:100%;margin-top:12px" data-act="delprof">${ui.open.delp?'Confirmer la suppression de « '+esc(act.name)+' »':'Supprimer le profil actif'}</button>`:''}</div>
 
   <div class="sublabel">Apparence</div>
-  <div class="card"><div class="field"><label>Couleur de l'app</label><div class="swatches">${ACCENTS.map(([n,c])=>`<button class="sw ${pf.accent===c?'on':''}" style="background:${c}" data-act="accent" data-id="${c}" aria-label="${n}"></button>`).join('')}</div></div>
+  <div class="card">${[[0,'Ambiance claire',pf.skinL],[1,'Ambiance sombre',pf.skinD]].map(([d,l,cur])=>`<div class="field" style="margin-bottom:14px"><label>${l}</label><div class="skins">${SKINS.filter(x=>x[4]===d).map(([id,n,h,b])=>`<button class="skin ${cur===id?'on':''}" data-act="skin" data-id="${id}" aria-pressed="${cur===id}"><i style="background:radial-gradient(circle at 30% 30%,${h} 0,transparent 70%),${b}"></i><span>${n}</span></button>`).join('')}</div></div>`).join('')}
     <div class="field" style="margin-top:14px"><label>Mode</label><div class="seg" style="margin:0">${[['auto','Auto'],['light','Clair'],['dark','Sombre']].map(([k,l])=>`<button class="${pf.theme===k?'on':''}" data-act="theme" data-id="${k}">${l}</button>`).join('')}</div></div></div>
 
   <div class="sublabel">Objectifs</div>
@@ -222,6 +222,7 @@ document.addEventListener('click',e=>{
   /* réglages */
   if(a==='settings'){ui.sheet=true;ui.msg='';renderSheet();return;}
   if(a==='closeset'){ui.sheet=false;ui.open.delp=false;ui.msg='';renderSheet();return;}
+  if(a==='skin'){const sk=SKINS.find(x=>x[0]===id);if(!sk)return;if(sk[4])R.prefs.skinD=id;else R.prefs.skinL=id;if(R.prefs.theme!=='auto')R.prefs.theme=sk[4]?'dark':'light';applyPrefs();save();renderSheet();render();return;}
   if(a==='accent'){R.prefs.accent=id;applyPrefs();save();renderSheet();render();return;}
   if(a==='theme'){R.prefs.theme=id;applyPrefs();save();renderSheet();return;}
   if(a==='switchprof'){R.active=id;afterProfile();return;}

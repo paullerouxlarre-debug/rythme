@@ -33,6 +33,8 @@ const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculat
 const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA8',Congé:'#C9A15E',Perso:'#9A7BC0',Santé:'#4FA39A',Détente:'#7E9459'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['Prune','#7B3FA0'],['Brique','#B8461B'],['Ardoise','#475569']];
+/* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
+const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
 const BUILD='__BUILD__';
 
@@ -81,7 +83,8 @@ try{
   else if(v3){const o=JSON.parse(v3);R.profiles=o.profiles||[];R.active=o.active;}
 }catch(e){}
 R.prefs=Object.assign({accent:ACCENTS[0][1],theme:'auto'},R.prefs||{});
-if(!R.prefs.v3){R.prefs.v3=1;R.prefs.accent=ACCENTS[0][1];} /* nouvelle palette : couleur par défaut */
+if(!R.prefs.v3){R.prefs.v3=1;R.prefs.accent=ACCENTS[0][1];}
+R.prefs=Object.assign({skinL:'lilas',skinD:'minuit'},R.prefs);
 if(!R.profiles||!R.profiles.length)R.profiles=[{id:uid(),name:'Moi',data:blank()}];
 if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
@@ -91,10 +94,14 @@ const ui={tab:'today',gt:'quest',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over
 
 function applyPrefs(){
   const r=document.documentElement,p=R.prefs;
-  r.style.setProperty('--accent',p.accent);
-  if(p.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',p.theme);
+  const dark=p.theme==='dark'||(p.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  const sk=SKINS.find(x=>x[0]===(dark?p.skinD:p.skinL))||SKINS[dark?4:0];
+  r.style.removeProperty('--accent');
+  r.setAttribute('data-theme',dark?'dark':'light');r.setAttribute('data-skin',sk[0]);
+  document.querySelectorAll('meta[name=theme-color]').forEach(m=>{m.setAttribute('content',sk[3]);m.removeAttribute('media');});
 }
 applyPrefs();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);}catch(e){}
 function greet(){
   const n=new Date(),h=n.getHours(),sl=h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   const a=R.profiles.find(p=>p.id===R.active);

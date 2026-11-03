@@ -451,9 +451,81 @@ nav.tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:50; background:co
 @keyframes toast{ 0%{ opacity:0; transform:translate(-50%,8px); } 8%,88%{ opacity:1; transform:translate(-50%,0); } 100%{ opacity:0; transform:translate(-50%,0); } }
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ transition:none!important; animation:none!important; } }
 @media (max-width:360px){ h1.page{ font-size:28px; } .hero2 .big{ font-size:30px; } .kpis{ grid-template-columns:repeat(2,1fr); } }
+
+/* =====================================================================
+   v4 : « Verre liquide ». Panneaux translucides flous sur un fond à halos.
+   Six ambiances (data-skin), choisies dans Réglages ; data-theme suit l'ambiance.
+   ===================================================================== */
+:root{
+  --base:#EEF0F7; --b1:#C9B8FF; --b2:#FFB38A; --b3:#8FD3FF;
+  --glass:rgba(255,255,255,.58); --glass-hi:rgba(255,255,255,.78); --edge:rgba(255,255,255,.85); --panel:rgba(255,255,255,.94);
+  --r1:#FF2D55; --r2:#30D158; --r3:#0A84FF; --deep:#4F46E5;
+  --blur:blur(22px) saturate(180%);
+}
+:root[data-skin]{ --bg:var(--base); --surface:var(--glass-hi); --border:var(--edge); --shadow:0 8px 28px rgba(30,30,60,.08); --c-plan:var(--r3); --c-sport:var(--r1); --c-food:var(--r2); --c-money:var(--deep); --h-plan:var(--deep); --h-sport:var(--deep); --h-food:var(--deep); --h-money:var(--deep); }
+:root[data-skin=lilas]{ --base:#EEF0F7; --b1:#C9B8FF; --b2:#FFB38A; --b3:#8FD3FF; --text:#16161A; --muted:#44444F; --faint:#6E6E7A; --sep:rgba(22,22,26,.08); --surface-2:rgba(22,22,26,.05); --surface-3:rgba(22,22,26,.09); --accent:#4F46E5; --accent-ink:#4338CA; --deep:#4F46E5; --r1:#FF2D55; --r2:#30D158; --r3:#0A84FF; }
+:root[data-skin=aube]{ --base:#FFF3EE; --b1:#FFB4A2; --b2:#FFD6A5; --b3:#F7A8C8; --text:#2A1712; --muted:#6B4A40; --faint:#94766C; --sep:rgba(42,23,18,.09); --surface-2:rgba(42,23,18,.05); --surface-3:rgba(42,23,18,.09); --accent:#C2410C; --accent-ink:#B43A0A; --deep:#B8432A; --r1:#F0502E; --r2:#E8930C; --r3:#D6336C; }
+:root[data-skin=lagon]{ --base:#EAF7F5; --b1:#8EE3D0; --b2:#9BD5FF; --b3:#C8F2A6; --text:#0E2A2A; --muted:#3F5E5C; --faint:#6E8A88; --sep:rgba(14,42,42,.09); --surface-2:rgba(14,42,42,.05); --surface-3:rgba(14,42,42,.09); --accent:#0B7A6A; --accent-ink:#0A6B5D; --deep:#0B6E63; --r1:#00A88F; --r2:#F59F00; --r3:#2F6FED; }
+:root[data-skin=brume]{ --base:#F1F2F4; --b1:#D6DCE8; --b2:#E6E8ED; --b3:#C7D3EA; --text:#14161B; --muted:#4D525C; --faint:#7A808B; --sep:rgba(20,22,27,.08); --surface-2:rgba(20,22,27,.05); --surface-3:rgba(20,22,27,.09); --accent:#3B5BDB; --accent-ink:#3451C4; --deep:#3B5BDB; --r1:#3B5BDB; --r2:#5C7CFA; --r3:#91A7FF; }
+:root[data-skin=minuit]{ --base:#0B0D1A; --b1:#4C2BB8; --b2:#0E4D92; --b3:#8A2B6E; --text:#F4F5FA; --muted:#B0B5CA; --faint:#7E839A; --sep:rgba(255,255,255,.09); --surface-2:rgba(255,255,255,.07); --surface-3:rgba(255,255,255,.12); --accent:#6E5BFF; --accent-ink:#B3A8FF; --deep:#4B3BC9; --r1:#FF375F; --r2:#32D74B; --r3:#64D2FF;
+  --glass:rgba(255,255,255,.08); --glass-hi:rgba(255,255,255,.12); --edge:rgba(255,255,255,.14); --panel:rgba(24,26,44,.96); --shadow:none; --positive:#51CF66; --negative:#FF6B6B; --warning:#FFA94D; }
+:root[data-skin=foret]{ --base:#0C1612; --b1:#1F6B4E; --b2:#2C4F7A; --b3:#6B5B1F; --text:#EEF5F0; --muted:#A9BDB2; --faint:#7A8F84; --sep:rgba(255,255,255,.09); --surface-2:rgba(255,255,255,.07); --surface-3:rgba(255,255,255,.12); --accent:#1B7D58; --accent-ink:#6FE0AE; --deep:#1E5A43; --r1:#FFB020; --r2:#3DDC97; --r3:#6CB8FF;
+  --glass:rgba(255,255,255,.08); --glass-hi:rgba(255,255,255,.12); --edge:rgba(255,255,255,.14); --panel:rgba(20,32,27,.96); --shadow:none; --positive:#51CF66; --negative:#FF6B6B; --warning:#FFA94D; }
+:root[data-skin]{ --accent-soft:color-mix(in srgb,var(--accent) 16%,transparent); --bgimg:radial-gradient(circle at 12% 8%,var(--b1) 0,transparent 46%),radial-gradient(circle at 96% 42%,var(--b2) 0,transparent 42%),radial-gradient(circle at 24% 92%,var(--b3) 0,transparent 48%),var(--base); }
+body[data-tab=today]{ --tc:var(--r3); } body[data-tab=plan]{ --tc:var(--r3); } body[data-tab=sport]{ --tc:var(--r1); } body[data-tab=food]{ --tc:var(--r2); } body[data-tab=money]{ --tc:var(--accent); }
+body[data-tab]{ --hero:color-mix(in srgb,var(--deep) 84%,transparent); }
+
+/* fond à halos, fixe sous le contenu */
+body{ background:var(--base); }
+.bgfx{ position:fixed; inset:0; z-index:0; pointer-events:none; background:var(--bgimg); }
+.app{ position:relative; z-index:1; }
+body::before{ background:transparent; }
+
+/* panneaux en verre */
+.card,.row-list,.form-panel,.stat.box,.toolrow,.kpis>div,.pdue,.stpb,.mxpan,.qtile,.tile,.daycell,.mday{ background:var(--glass); border:1px solid var(--edge); box-shadow:var(--shadow); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+.daycell,.mday{ -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:none; }
+.card{ border-radius:26px; } .row-list{ border-radius:24px; } .stat.box{ border-radius:20px; } .toolrow{ border-radius:22px; } .form-panel{ border-radius:24px; }
+.pdue{ border:1.5px solid var(--accent); }
+.mday.out{ background:transparent; border-color:transparent; }
+.hero2{ border-radius:30px; background:var(--hero); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border:1px solid rgba(255,255,255,.22); box-shadow:0 14px 34px color-mix(in srgb,var(--deep) 28%,transparent); }
+.btn{ border-radius:999px; }
+.btn-primary,.pdb{ background:var(--accent); color:#fff; }
+.btn-ghost{ background:var(--accent-soft); color:var(--accent-ink); }
+.chip{ background:var(--glass-hi); border-color:var(--edge); }
+.iconbtn,.navbtn,.avbtn,.mxs{ background:var(--glass-hi); border-color:var(--edge); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+.seg{ background:var(--surface-3); border-radius:999px; } .seg button{ border-radius:999px; }
+.seg button.on{ background:var(--panel); }
+.field input,.field select,.inl,.plain,.mini,.wform input,.mxin input,textarea.code{ background:var(--surface-2); }
+.field input:focus,.field select:focus,.wform input:focus,.mxin input:focus{ background:var(--glass-hi); }
+.pbtn{ background:var(--accent); box-shadow:0 16px 40px color-mix(in srgb,var(--accent) 35%,transparent); }
+.pbtn.due{ box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 24%,transparent),0 16px 40px color-mix(in srgb,var(--accent) 35%,transparent); }
+.bcard{ background:rgba(14,15,22,.86); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border-radius:28px; }
+.mtile{ background:color-mix(in srgb,var(--c1) 62%,#000); border-radius:24px; }
+.tico{ background:color-mix(in srgb,var(--tc) 14%,transparent)!important; }
+
+/* barre d'onglets flottante */
+nav.tabbar{ left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); padding:0; border-radius:999px; border:1px solid var(--edge); background:color-mix(in srgb,var(--panel) 78%,transparent); box-shadow:0 10px 30px rgba(0,0,0,.14); max-width:536px; margin:0 auto; }
+.tabbar-inner{ padding:4px 6px; }
+.tab{ min-height:52px; border-radius:999px; }
+.tab.on{ background:var(--accent-soft); }
+.ctitle{ background:color-mix(in srgb,var(--base) 70%,transparent); }
+
+/* fenêtres */
+.sheet{ background:var(--bgimg); }
+.cfbox{ background:var(--panel); border:1px solid var(--edge); border-radius:28px; }
+.toast{ background:var(--panel); color:var(--text); border:1px solid var(--edge); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border-radius:999px; }
+.restp{ background:var(--panel); color:var(--text); border:1px solid var(--edge); }
+.sctip{ background:var(--text); color:var(--base); }
+
+/* choix d'ambiance */
+.skins{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.skin{ border:none; background:none; padding:0; display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--text); font-size:13.5px; font-weight:600; }
+.skin i{ width:100%; aspect-ratio:1; max-width:64px; border-radius:20px; border:1px solid var(--sep); }
+.skin.on i{ box-shadow:0 0 0 2.5px var(--accent-ink); }
 </style>
 </head>
 <body>
+<div class="bgfx" aria-hidden="true"></div>
 <div id="ctitle" class="ctitle" data-act="totop"><span></span></div>
 <div id="landlock" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><b>Tourne ton téléphone</b><span>Rythme s'utilise en mode portrait.</span></div>
 <div class="app">
@@ -509,8 +581,10 @@ const SPORTS={course:{name:'Course à pied',col:'#FF9500'},muscu:{name:'Musculat
 const EK={Voyage:'#6A9BCC',Sport:'#D97757',Anniversaire:'#C2483A',Boulot:'#5E5CA8',Congé:'#C9A15E',Perso:'#9A7BC0',Santé:'#4FA39A',Détente:'#7E9459'};
 const SRC_COL=['#34C759','#0A84FF','#FF9500','#AF52DE','#FF2D55','#32ADE6','#FFCC00','#8E8E93'];
 const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['Prune','#7B3FA0'],['Brique','#B8461B'],['Ardoise','#475569']];
+/* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
+const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='03/11 11:34';
+const BUILD='03/11 14:37';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -557,7 +631,8 @@ try{
   else if(v3){const o=JSON.parse(v3);R.profiles=o.profiles||[];R.active=o.active;}
 }catch(e){}
 R.prefs=Object.assign({accent:ACCENTS[0][1],theme:'auto'},R.prefs||{});
-if(!R.prefs.v3){R.prefs.v3=1;R.prefs.accent=ACCENTS[0][1];} /* nouvelle palette : couleur par défaut */
+if(!R.prefs.v3){R.prefs.v3=1;R.prefs.accent=ACCENTS[0][1];}
+R.prefs=Object.assign({skinL:'lilas',skinD:'minuit'},R.prefs);
 if(!R.profiles||!R.profiles.length)R.profiles=[{id:uid(),name:'Moi',data:blank()}];
 if(!R.profiles.find(p=>p.id===R.active))R.active=R.profiles[0].id;
 function useProfile(){const p=R.profiles.find(p=>p.id===R.active);p.data=migrate(p.data);S=p.data;}
@@ -567,10 +642,14 @@ const ui={tab:'today',gt:'quest',qs:'d',bv:'f',tl:'',_dir:0,money:'hub',sp:'over
 
 function applyPrefs(){
   const r=document.documentElement,p=R.prefs;
-  r.style.setProperty('--accent',p.accent);
-  if(p.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',p.theme);
+  const dark=p.theme==='dark'||(p.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  const sk=SKINS.find(x=>x[0]===(dark?p.skinD:p.skinL))||SKINS[dark?4:0];
+  r.style.removeProperty('--accent');
+  r.setAttribute('data-theme',dark?'dark':'light');r.setAttribute('data-skin',sk[0]);
+  document.querySelectorAll('meta[name=theme-color]').forEach(m=>{m.setAttribute('content',sk[3]);m.removeAttribute('media');});
 }
 applyPrefs();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);}catch(e){}
 function greet(){
   const n=new Date(),h=n.getHours(),sl=h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   const a=R.profiles.find(p=>p.id===R.active);
@@ -2304,7 +2383,7 @@ function sheetInner(){
     ${R.profiles.length>1?`<button class="btn btn-ghost danger" style="width:100%;margin-top:12px" data-act="delprof">${ui.open.delp?'Confirmer la suppression de « '+esc(act.name)+' »':'Supprimer le profil actif'}</button>`:''}</div>
 
   <div class="sublabel">Apparence</div>
-  <div class="card"><div class="field"><label>Couleur de l'app</label><div class="swatches">${ACCENTS.map(([n,c])=>`<button class="sw ${pf.accent===c?'on':''}" style="background:${c}" data-act="accent" data-id="${c}" aria-label="${n}"></button>`).join('')}</div></div>
+  <div class="card">${[[0,'Ambiance claire',pf.skinL],[1,'Ambiance sombre',pf.skinD]].map(([d,l,cur])=>`<div class="field" style="margin-bottom:14px"><label>${l}</label><div class="skins">${SKINS.filter(x=>x[4]===d).map(([id,n,h,b])=>`<button class="skin ${cur===id?'on':''}" data-act="skin" data-id="${id}" aria-pressed="${cur===id}"><i style="background:radial-gradient(circle at 30% 30%,${h} 0,transparent 70%),${b}"></i><span>${n}</span></button>`).join('')}</div></div>`).join('')}
     <div class="field" style="margin-top:14px"><label>Mode</label><div class="seg" style="margin:0">${[['auto','Auto'],['light','Clair'],['dark','Sombre']].map(([k,l])=>`<button class="${pf.theme===k?'on':''}" data-act="theme" data-id="${k}">${l}</button>`).join('')}</div></div></div>
 
   <div class="sublabel">Objectifs</div>
@@ -2513,6 +2592,7 @@ document.addEventListener('click',e=>{
   /* réglages */
   if(a==='settings'){ui.sheet=true;ui.msg='';renderSheet();return;}
   if(a==='closeset'){ui.sheet=false;ui.open.delp=false;ui.msg='';renderSheet();return;}
+  if(a==='skin'){const sk=SKINS.find(x=>x[0]===id);if(!sk)return;if(sk[4])R.prefs.skinD=id;else R.prefs.skinL=id;if(R.prefs.theme!=='auto')R.prefs.theme=sk[4]?'dark':'light';applyPrefs();save();renderSheet();render();return;}
   if(a==='accent'){R.prefs.accent=id;applyPrefs();save();renderSheet();render();return;}
   if(a==='theme'){R.prefs.theme=id;applyPrefs();save();renderSheet();return;}
   if(a==='switchprof'){R.active=id;afterProfile();return;}

@@ -22,8 +22,9 @@ Les règles que toute évolution doit respecter. Si une demande les contredit, l
 - Rien les week-ends et les jours de congé. Fenêtre pop-up et bandeau cliquable pendant les créneaux.
 
 ## Style
-- Sobre et lisible (v3, 03/11) : fond gris clair `#F2F3F6` (sombre `#0D0E11`), cartes blanches, accent cobalt `#3B5BDB`, police système (SF Pro sur iPhone).
-- **Une couleur par domaine** : Aujourd'hui = accent, Planning pétrole `#0C8599`, Sport orange `#E8590C`, Nutrition vert `#2F9E44`, Argent violet `#7048E8`. Chaque onglet a une carte de résumé de sa couleur.
+- **Verre liquide** (v4, 03/11) : panneaux translucides flous sur un fond à halos de couleur, coins très ronds, barre d'onglets flottante, police système (SF Pro sur iPhone).
+- **Six ambiances** au choix dans Réglages : claires Lilas, Aube, Lagon, Brume ; sombres Minuit, Forêt. En mode Auto, l'ambiance claire le jour et la sombre le soir, selon l'iPhone.
+- Chaque ambiance a trois couleurs d'anneaux (Bouger, Séances, Boulot) et une couleur profonde pour les cartes de résumé et les boutons.
 - Accessibilité : texte de base 16 px, rien sous 12 px, contrastes AA, cibles tactiles de 44 px minimum.
 - Mouvement : court (moins de 250 ms), sans rebond ; pas d'écran de démarrage animé, pas de confettis.
 - Icônes au trait, pas d'emojis. Pas de bulles flottantes. Pas de jeu.
