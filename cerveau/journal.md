@@ -10,6 +10,7 @@ Chaque mise en ligne sur GitHub, de la plus récente à la plus ancienne. Le cod
 
 | Date | Version | Changement |
 |---|---|---|
+| 2026-11-03 | [`f7167a3`](https://github.com/paullerouxlarre-debug/rythme/commit/f7167a3) | iPhone 15 Pro : l'app passe sous la Dynamic Island avec une bande lisible ; bulles de confirmation à la largeur du texte |
 | 2026-11-03 | [`9e809c5`](https://github.com/paullerouxlarre-debug/rythme/commit/9e809c5) | Nouveau logo « Aube » (soleil levant, trois vagues de verre) |
 | 2026-11-03 | [`fce7f6d`](https://github.com/paullerouxlarre-debug/rythme/commit/fce7f6d) | Animations façon Apple : cartes qui entrent en cascade, anneaux et barres qui se remplissent, chiffres qui défilent, pastille d'onglet qui glisse, appuis en ressort, onde au pointage |
 | 2026-11-03 | [`27c9694`](https://github.com/paullerouxlarre-debug/rythme/commit/27c9694) | Style verre liquide : panneaux translucides, barre d'onglets flottante, 6 ambiances (Lilas, Aube, Lagon, Brume, Minuit, Forêt) au choix dans Réglages |
