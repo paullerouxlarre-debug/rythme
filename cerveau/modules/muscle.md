@@ -15,6 +15,9 @@ Minutes de la semaine, régularité, dernières séances.
 - Programmes prédéfinis et modifiables (renommer, changer les groupes, supprimer) : Push, Pull, Legs, Full body, Haut du corps, Abdos & gainage, Footing, Sortie longue, Fractionné, Course officielle.
 - On note **qu'on a fait la séance**, pas les séries.
 
+## Bibliothèque d'exercices
+84 exercices classiques rangés par groupe (Pectoraux 14, Dos 15, Jambes 20, Épaules 10, Bras 16, Abdos 9), plus les exercices perso. Le choix « Ajouter un exercice » les présente par groupe.
+
 ## Max
 - Exercices : développé couché, squat, soulevé de terre, développé militaire, rowing, tractions, pompes, 400 m, 5 km, 10 km, semi, marathon, + exercices perso.
 - Historique de chaque max avec courbe d'évolution.
