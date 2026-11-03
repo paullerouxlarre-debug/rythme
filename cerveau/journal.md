@@ -10,6 +10,7 @@ Chaque mise en ligne sur GitHub, de la plus récente à la plus ancienne. Le cod
 
 | Date | Version | Changement |
 |---|---|---|
+| 2026-11-03 | [`bc648b8`](https://github.com/paullerouxlarre-debug/rythme/commit/bc648b8) | Refonte v3 : jeu supprimé, palette accessible (une couleur par domaine), police système, logo, plus d'animation d'ouverture, onglets Aujourd'hui / Sport / Argent, pas actualisés depuis leur carte |
 | 2026-11-03 | [`18f9b3c`](https://github.com/paullerouxlarre-debug/rythme/commit/18f9b3c) | Boulot : bouton Journée complète (7 h 48), départ conseillé, stats détaillées (solde, mois, pauses, jours de la semaine) |
 | 2026-10-30 | [`8261662`](https://github.com/paullerouxlarre-debug/rythme/commit/8261662) | Pointage : visible seulement pendant les créneaux des jours travaillés |
 | 2026-10-30 | [`55ca898`](https://github.com/paullerouxlarre-debug/rythme/commit/55ca898) | Analyse fondée uniquement sur les max ; âge physiologique par rang d'âge |
