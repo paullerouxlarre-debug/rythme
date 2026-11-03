@@ -21,7 +21,7 @@ os.makedirs(os.path.join(R,'dist'), exist_ok=True)
 open(os.path.join(R,'dist','rythme.html'),'w',encoding='utf-8').write(html)
 head = '''<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Rythme">
 <meta name="theme-color" content="#F2F3F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D0E11" media="(prefers-color-scheme: dark)">

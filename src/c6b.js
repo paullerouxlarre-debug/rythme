@@ -13,7 +13,7 @@ function visInit(){
 function placePill(){
   const t=document.querySelector('.tab.on'),p=$('#tabpill');if(!t||!p)return;
   const i=t.parentElement.getBoundingClientRect(),r=t.getBoundingClientRect();
-  p.style.width=(r.width-6)+'px';p.style.transform='translateX('+(r.left-i.left+3)+'px)';p.style.opacity=1;
+  p.style.width=(r.width-4)+'px';p.style.transform='translateX('+(r.left-i.left+2)+'px)';p.style.opacity=1;
 }
 function decorate(){
   const tt=document.querySelector('.tab[data-id=today]');if(tt)tt.classList.toggle('due',!!punchDue());

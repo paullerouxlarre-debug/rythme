@@ -568,6 +568,18 @@ body::before{ height:calc(env(safe-area-inset-top,0px) * 1.25); background:var(-
 .ctitle{ padding-top:calc(env(safe-area-inset-top,0px) + 12px); }
 /* bulle de confirmation : largeur réelle du texte, une ou deux lignes au plus */
 .toast{ width:max-content; max-width:calc(100vw - 40px); border-radius:18px; padding:12px 18px; line-height:1.35; text-align:center; }
+
+/* =====================================================================
+   v4.3 : corrections vues sur l'iPhone.
+   - Barre d'état classique (heure en noir) : le haut de page se fond dans
+     sa couleur, plus de bande claire.
+   - Fondu en bas sous la barre d'onglets flottante : le contenu ne dépasse plus.
+   - Onglet « Aujourd'hui » plus large : son libellé tient dans la pastille.
+   ===================================================================== */
+.bgfx,.sheet{ background:linear-gradient(180deg,var(--base) 0,color-mix(in srgb,var(--base) 0%,transparent) 180px),var(--bgimg); }
+body::after{ content:""; position:fixed; left:0; right:0; bottom:0; height:calc(env(safe-area-inset-bottom,0px) + 96px); z-index:49; pointer-events:none; background:linear-gradient(0deg,var(--base) 0,color-mix(in srgb,var(--base) 88%,transparent) 45%,color-mix(in srgb,var(--base) 0%,transparent) 100%); }
+.tab[data-id=today]{ flex:1.35; }
+.tab span{ font-size:10.5px; letter-spacing:-.01em; }
 </style>
 </head>
 <body>
