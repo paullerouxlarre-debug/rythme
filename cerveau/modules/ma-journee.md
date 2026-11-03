@@ -22,7 +22,7 @@ Dans l'ordre, du plus urgent au moins urgent :
 - Pendant un créneau d'un jour travaillé : fenêtre « Pointer maintenant · hh:mm » (une fois par étape) + bandeau + grand bouton.
 - Hors créneau : petite carte avec les heures du jour et « Détails › » pour corriger.
 - Week-end et congé : rien.
-- **Journée complète** : un bouton (sur la carte du jour et dans « Corriger un autre jour ») enregistre 7:30–12:00 / 13:00–16:18, soit 7 h 48 pour 39 h par semaine.
+- **Modifier une journée** (dans Stats et historique) : on choisit la date, on saisit les heures à la main ou on touche « Journée complète · 7 h 48 » qui préremplit 7:30–12:00 / 13:00–16:18. Rien n'est enregistré avant « Valider » (Annuler possible). Sert surtout aux jours de congé, comptés 39 h / 5.
 - **Départ pour 7 h 48** : après l'arrivée, l'heure de départ à viser (pause d'1 h comptée si elle n'est pas encore pointée).
 
 ### Stats et historique

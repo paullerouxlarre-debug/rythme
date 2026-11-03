@@ -300,9 +300,11 @@ document.addEventListener('click',e=>{
   if(a==='punchpop'){closeConfirm();const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(innerWidth/2,innerHeight/2,14);render();return;}
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
-  if(a==='wsel'){ui.wd=id;render();return;}
-  if(a==='wfull'){const k=id||ui.wd||td;S.work.days[k]=fullDay();save();toast('Journée complète enregistrée · '+(k===td?'aujourd\'hui':dShort(k)));render();return;}
-  if(a==='wclear'){delete S.work.days[ui.wd||td];save();render();return;}
+  if(a==='wsel'){ui.wd=id;ui.wdraft=null;render();return;}
+  if(a==='wfull'){const k=id||ui.wd||td;ui.wdraft=Object.assign({k},fullDay());render();return;}
+  if(a==='wdsave'){const d=ui.wdraft;if(!d)return;const r={};PSTEPS.forEach(([s])=>{if(d[s])r[s]=d[s];});if(Object.keys(r).length)S.work.days[d.k]=r;else delete S.work.days[d.k];ui.wdraft=null;save();toast('Heures enregistrées · '+(d.k===td?'aujourd\'hui':dShort(d.k))+' · '+fmtH(workMin(r,false)));render();return;}
+  if(a==='wdcancel'){ui.wdraft=null;render();return;}
+  if(a==='wclear'){delete S.work.days[ui.wd||td];ui.wdraft=null;save();toast('Journée effacée');render();return;}
 
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
   if(a==='rcneg'){ui.rc.neg=!ui.rc.neg;const o=$('#rcout');if(o)o.innerHTML=rcResult();return;}
@@ -455,7 +457,8 @@ document.addEventListener('change',e=>{
   if(t.dataset.d&&ui.draft){ui.draft[t.dataset.d]=t.value;if(t.dataset.d==='min'||t.dataset.d==='dist')render();return;}
   if(t.dataset.s&&ui.draft){render();return;}
   if(t.dataset.goal){S.goals[t.dataset.goal]=Math.max(num(t.value)||1,1);save();renderSheet();render();return;}
-  if(t.dataset.wdate){ui.wd=t.value||null;render();return;}
+  if(t.dataset.wdate){ui.wd=t.value||null;ui.wdraft=null;render();return;}
+  if(t.dataset.wdr){const k=t.dataset.wd;if(!ui.wdraft||ui.wdraft.k!==k)ui.wdraft=Object.assign({k},S.work.days[k]||{});if(t.value)ui.wdraft[t.dataset.wdr]=t.value;else delete ui.wdraft[t.dataset.wdr];render();return;}
   if(t.dataset.wt){const k=t.dataset.wd||ui.wd||todayK();const r=S.work.days[k]||(S.work.days[k]={});if(t.value)r[t.dataset.wt]=t.value;else delete r[t.dataset.wt];save();render();return;}
   if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||39,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}

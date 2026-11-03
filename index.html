@@ -640,7 +640,7 @@ const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['P
 /* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
 const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='03/11 15:18';
+const BUILD='03/11 15:24';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1266,7 +1266,6 @@ function workCard(){
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
     ${leaveAt(rec)?`<div class="leave">${IC('clock',15)}<span>Départ pour ${fmtH(dayTarget())} : <b>${leaveAt(rec)}</b></span></div>`:''}
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
-    <button class="chip" data-act="wfull" data-id="${td}">Journée complète · ${fmtH(dayTarget())}</button>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}
     <div class="progress" style="width:100%;height:10px"><div style="width:${Math.round(pct*100)}%;background:linear-gradient(90deg,var(--tc),var(--tc2))"></div></div>
   </div>
@@ -1294,6 +1293,8 @@ function workStats(){
   const months=[5,4,3,2,1,0].map(i=>{const d=new Date(td+'T12:00');d.setDate(1);d.setMonth(d.getMonth()-i);const m=dkey(d).slice(0,7);
     return {l:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),v:sum(done.filter(k=>k.startsWith(m)).map(workDay)),c:m===mk?'var(--tc)':'var(--surface-3)'};});
   const sd=ui.wd||td,sr=S.work.days[sd]||{};
+  /* saisie d'un jour : brouillon jusqu'à « Valider » */
+  const dr=ui.wdraft&&ui.wdraft.k===sd?ui.wdraft:null,fv=dr||sr,dmin=dr?workMin(dr,false):0;
   const hist=Object.keys(S.work.days).filter(k=>S.work.days[k].in).sort().reverse().slice(0,8);
   const box=(k,v,s)=>`<div class="stat box"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
   return `<div style="margin-top:14px">
@@ -1319,12 +1320,14 @@ function workStats(){
   <div class="sublabel">Heures par semaine</div>${barChart(wkItems,{h:130,goal:tgt*60,goalLabel:tgt+' h',fy:v=>fmtN(v/60,0)})}
   ${dows.some(d=>d.v>0)?`<div class="sublabel">Moyenne par jour de la semaine</div><div class="note" style="margin:-4px 4px 6px">Pointillés : ${fmtH(dt)}</div>${barChart(dows,{h:120,goal:dt,fy:v=>fmtN(v/60,1)})}`:''}
   <div class="sublabel">Heures par mois</div>${barChart(months,{h:120,fy:v=>fmtN(v/60,0)})}
-  <div class="sublabel">Corriger un autre jour</div>
+  <div class="sublabel">Modifier une journée</div>
   <div class="form-panel" style="margin:0"><div class="form-grid">
     <div class="field wide"><label>Date</label><input type="date" value="${sd}" data-wdate="1"></div>
-    ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${sr[k]||''}" data-wt="${k}" data-wd="${sd}"></div>`).join('')}
-    <div class="field wide"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="wfull" data-id="${sd}">Journée complète</button><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
+    ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${fv[k]||''}" data-wdr="${k}" data-wd="${sd}"></div>`).join('')}</div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" data-act="wfull" data-id="${sd}">Journée complète · ${fmtH(dt)}</button>
+    <p class="note" style="margin:8px 2px 0">${dr?'Total : <b>'+fmtH(dmin)+'</b> · pas encore enregistré.':'Saisis tes heures, ou remplis une journée complète (congé compté 39 h / 5), puis valide.'}</p>
+    <div class="form-actions"><button class="btn btn-primary" data-act="wdsave" ${dr?'':'disabled'}>Valider</button>${dr?'<button class="btn" data-act="wdcancel">Annuler</button>':''}<button class="btn btn-ghost danger" data-act="wclear">Effacer</button></div></div>
+  <div class="form-panel" style="margin:12px 0 0"><div class="field"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
   <div class="row-list" style="margin-top:12px">${hist.map(k=>{const r=S.work.days[k];return `<div class="row" style="cursor:pointer" data-act="wsel" data-id="${k}"><div><div class="row-title cap1">${dLong(k)}</div><div class="row-sub">${r.in||'--'} à ${r.out||'--'}${r.lo&&r.li?' · pause '+r.lo+' à '+r.li:''}</div></div><span class="row-value">${fmtH(workDay(k))}</span></div>`;}).join('')||'<div class="empty">Aucun pointage pour le moment.</div>'}</div></div>`;
 }
 
@@ -2730,9 +2733,11 @@ document.addEventListener('click',e=>{
   if(a==='punchpop'){closeConfirm();const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(innerWidth/2,innerHeight/2,14);render();return;}
   if(a==='punch'){const rec=S.work.days[td]||(S.work.days[td]={}),ns=nextStep(rec);if(!ns)return;rec[ns[0]]=hhmm();save();toast(ns[1]+' à '+rec[ns[0]]);burst(e.clientX,e.clientY,ns[0]==='out'?30:14);render();return;}
   if(a==='nolunch'){const rec=S.work.days[td];if(!rec)return;const t=hhmm();rec.lo=t;rec.li=t;save();render();return;}
-  if(a==='wsel'){ui.wd=id;render();return;}
-  if(a==='wfull'){const k=id||ui.wd||td;S.work.days[k]=fullDay();save();toast('Journée complète enregistrée · '+(k===td?'aujourd\'hui':dShort(k)));render();return;}
-  if(a==='wclear'){delete S.work.days[ui.wd||td];save();render();return;}
+  if(a==='wsel'){ui.wd=id;ui.wdraft=null;render();return;}
+  if(a==='wfull'){const k=id||ui.wd||td;ui.wdraft=Object.assign({k},fullDay());render();return;}
+  if(a==='wdsave'){const d=ui.wdraft;if(!d)return;const r={};PSTEPS.forEach(([s])=>{if(d[s])r[s]=d[s];});if(Object.keys(r).length)S.work.days[d.k]=r;else delete S.work.days[d.k];ui.wdraft=null;save();toast('Heures enregistrées · '+(d.k===td?'aujourd\'hui':dShort(d.k))+' · '+fmtH(workMin(r,false)));render();return;}
+  if(a==='wdcancel'){ui.wdraft=null;render();return;}
+  if(a==='wclear'){delete S.work.days[ui.wd||td];ui.wdraft=null;save();toast('Journée effacée');render();return;}
 
   if(a==='ciport'){const bl=blended();S.ci.init=S.proj.init||0;S.ci.monthly=S.dca||0;S.ci.rate=Math.round(bl.r*10)/10;S.ci.years=S.proj.years||20;save();render();return;}
   if(a==='rcneg'){ui.rc.neg=!ui.rc.neg;const o=$('#rcout');if(o)o.innerHTML=rcResult();return;}
@@ -2885,7 +2890,8 @@ document.addEventListener('change',e=>{
   if(t.dataset.d&&ui.draft){ui.draft[t.dataset.d]=t.value;if(t.dataset.d==='min'||t.dataset.d==='dist')render();return;}
   if(t.dataset.s&&ui.draft){render();return;}
   if(t.dataset.goal){S.goals[t.dataset.goal]=Math.max(num(t.value)||1,1);save();renderSheet();render();return;}
-  if(t.dataset.wdate){ui.wd=t.value||null;render();return;}
+  if(t.dataset.wdate){ui.wd=t.value||null;ui.wdraft=null;render();return;}
+  if(t.dataset.wdr){const k=t.dataset.wd;if(!ui.wdraft||ui.wdraft.k!==k)ui.wdraft=Object.assign({k},S.work.days[k]||{});if(t.value)ui.wdraft[t.dataset.wdr]=t.value;else delete ui.wdraft[t.dataset.wdr];render();return;}
   if(t.dataset.wt){const k=t.dataset.wd||ui.wd||todayK();const r=S.work.days[k]||(S.work.days[k]={});if(t.value)r[t.dataset.wt]=t.value;else delete r[t.dataset.wt];save();render();return;}
   if(t.dataset.wtarget){S.work.target=Math.max(num(t.value)||39,1);save();if(ui.sheet)renderSheet();render();return;}
   if(t.dataset.ci==='freq'){S.ci.freq=+t.value;ciUpdate();save();return;}

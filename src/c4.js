@@ -126,7 +126,6 @@ function workCard(){
     <div class="steps">${PSTEPS.map(([k,l])=>`<label class="${rec[k]?'on':''}">${l}<input type="time" value="${rec[k]||''}" data-wt="${k}" data-wd="${td}" aria-label="Modifier ${l}"></label>`).join('')}</div>
     ${leaveAt(rec)?`<div class="leave">${IC('clock',15)}<span>Départ pour ${fmtH(dayTarget())} : <b>${leaveAt(rec)}</b></span></div>`:''}
     <div class="muted" style="font-size:12px">Touche une heure pour la modifier.</div>
-    <button class="chip" data-act="wfull" data-id="${td}">Journée complète · ${fmtH(dayTarget())}</button>
     ${ns&&ns[0]==='lo'?'<button class="chip" data-act="nolunch">Pas de pause aujourd\'hui</button>':''}
     <div class="progress" style="width:100%;height:10px"><div style="width:${Math.round(pct*100)}%;background:linear-gradient(90deg,var(--tc),var(--tc2))"></div></div>
   </div>
@@ -154,6 +153,8 @@ function workStats(){
   const months=[5,4,3,2,1,0].map(i=>{const d=new Date(td+'T12:00');d.setDate(1);d.setMonth(d.getMonth()-i);const m=dkey(d).slice(0,7);
     return {l:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),v:sum(done.filter(k=>k.startsWith(m)).map(workDay)),c:m===mk?'var(--tc)':'var(--surface-3)'};});
   const sd=ui.wd||td,sr=S.work.days[sd]||{};
+  /* saisie d'un jour : brouillon jusqu'à « Valider » */
+  const dr=ui.wdraft&&ui.wdraft.k===sd?ui.wdraft:null,fv=dr||sr,dmin=dr?workMin(dr,false):0;
   const hist=Object.keys(S.work.days).filter(k=>S.work.days[k].in).sort().reverse().slice(0,8);
   const box=(k,v,s)=>`<div class="stat box"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
   return `<div style="margin-top:14px">
@@ -179,11 +180,13 @@ function workStats(){
   <div class="sublabel">Heures par semaine</div>${barChart(wkItems,{h:130,goal:tgt*60,goalLabel:tgt+' h',fy:v=>fmtN(v/60,0)})}
   ${dows.some(d=>d.v>0)?`<div class="sublabel">Moyenne par jour de la semaine</div><div class="note" style="margin:-4px 4px 6px">Pointillés : ${fmtH(dt)}</div>${barChart(dows,{h:120,goal:dt,fy:v=>fmtN(v/60,1)})}`:''}
   <div class="sublabel">Heures par mois</div>${barChart(months,{h:120,fy:v=>fmtN(v/60,0)})}
-  <div class="sublabel">Corriger un autre jour</div>
+  <div class="sublabel">Modifier une journée</div>
   <div class="form-panel" style="margin:0"><div class="form-grid">
     <div class="field wide"><label>Date</label><input type="date" value="${sd}" data-wdate="1"></div>
-    ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${sr[k]||''}" data-wt="${k}" data-wd="${sd}"></div>`).join('')}
-    <div class="field wide"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="wfull" data-id="${sd}">Journée complète</button><button class="btn btn-ghost danger" data-act="wclear">Effacer ce jour</button></div></div>
+    ${PSTEPS.map(([k,l])=>`<div class="field"><label>${l}</label><input type="time" value="${fv[k]||''}" data-wdr="${k}" data-wd="${sd}"></div>`).join('')}</div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" data-act="wfull" data-id="${sd}">Journée complète · ${fmtH(dt)}</button>
+    <p class="note" style="margin:8px 2px 0">${dr?'Total : <b>'+fmtH(dmin)+'</b> · pas encore enregistré.':'Saisis tes heures, ou remplis une journée complète (congé compté 39 h / 5), puis valide.'}</p>
+    <div class="form-actions"><button class="btn btn-primary" data-act="wdsave" ${dr?'':'disabled'}>Valider</button>${dr?'<button class="btn" data-act="wdcancel">Annuler</button>':''}<button class="btn btn-ghost danger" data-act="wclear">Effacer</button></div></div>
+  <div class="form-panel" style="margin:12px 0 0"><div class="field"><label>Objectif hebdomadaire (heures)</label><input type="number" inputmode="decimal" value="${tgt}" data-wtarget="1"></div></div>
   <div class="row-list" style="margin-top:12px">${hist.map(k=>{const r=S.work.days[k];return `<div class="row" style="cursor:pointer" data-act="wsel" data-id="${k}"><div><div class="row-title cap1">${dLong(k)}</div><div class="row-sub">${r.in||'--'} à ${r.out||'--'}${r.lo&&r.li?' · pause '+r.lo+' à '+r.li:''}</div></div><span class="row-value">${fmtH(workDay(k))}</span></div>`;}).join('')||'<div class="empty">Aucun pointage pour le moment.</div>'}</div></div>`;
 }

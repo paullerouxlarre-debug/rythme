@@ -11,6 +11,8 @@ Contrat à 39 h : objectif par défaut 39 h, soit 7 h 48 par jour. Le bouton « 
 
 Le solde d'heures compare désormais chaque journée complète (arrivée et départ renseignés) à 7 h 48 ; les jours sans pointage n'entrent pas dans le calcul.
 
+Mise à jour : le bouton n'apparaît plus sur la carte du jour, seulement dans « Modifier une journée » ; il préremplit le formulaire, et la saisie s'enregistre avec « Valider ».
+
 ## Pourquoi
 Saisir quatre heures pour une journée normale prenait trop de temps, et le solde par semaine pénalisait les semaines avec un congé.
 
