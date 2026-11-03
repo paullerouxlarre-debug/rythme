@@ -138,7 +138,7 @@ function barChart(items,o={}){
   const mx=Math.max(o.max||0,...items.map(i=>i.v),1e-9),bw=(W-pl-pr)/n,w=Math.min(bw*.62,34);
   const Y=v=>pt+(H-pt-pb)*(1-v/mx);
   const bars=items.map((it,i)=>{const x=pl+bw*i+(bw-w)/2,y=Y(it.v),h=Math.max(H-pb-y,it.v>0?2:0);
-    return `<rect x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
+    return `<rect class="bar" style="animation-delay:${i*28}ms" x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
     ${it.v>0&&n<=12?`<text x="${(x+w/2).toFixed(1)}" y="${(H-pb-h-5).toFixed(1)}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${(o.fy||fmtN)(it.v)}</text>`:''}
     <text x="${(x+w/2).toFixed(1)}" y="${H-6}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${it.l}</text>`;}).join('');
   const goal=o.goal?`<line x1="${pl}" x2="${W-pr}" y1="${Y(o.goal)}" y2="${Y(o.goal)}" stroke-dasharray="4 4" style="stroke:var(--muted)" opacity=".7"/><text x="${W-pr}" y="${Y(o.goal)-4}" font-size="9.5" text-anchor="end" style="fill:var(--muted)">${o.goalLabel||''}</text>`:'';
@@ -174,7 +174,7 @@ function donut(segs,center){
 }
 function ring(p,col,size=104,sw=10,track){
   const r=40,C=2*Math.PI*r,v=Math.max(Math.min(p,1),0);
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="${r}" fill="none" style="stroke:${track||'var(--surface-3)'}" stroke-width="${sw}"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${v*C} ${C}" transform="rotate(-90 50 50)"/></svg>`;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="${r}" fill="none" style="stroke:${track||'var(--surface-3)'}" stroke-width="${sw}"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${v*C} ${C}" transform="rotate(-90 50 50)" class="rg"/></svg>`;
 }
 function radar(labels,vals,col){
   const W=300,H=240,cx=W/2,cy=H/2+4,R0=82,n=labels.length;

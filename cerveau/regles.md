@@ -26,7 +26,7 @@ Les règles que toute évolution doit respecter. Si une demande les contredit, l
 - **Six ambiances** au choix dans Réglages : claires Lilas, Aube, Lagon, Brume ; sombres Minuit, Forêt. En mode Auto, l'ambiance claire le jour et la sombre le soir, selon l'iPhone.
 - Chaque ambiance a trois couleurs d'anneaux (Bouger, Séances, Boulot) et une couleur profonde pour les cartes de résumé et les boutons.
 - Accessibilité : texte de base 16 px, rien sous 12 px, contrastes AA, cibles tactiles de 44 px minimum.
-- Mouvement : court (moins de 250 ms), sans rebond ; pas d'écran de démarrage animé, pas de confettis.
+- Mouvement façon Apple (v4.1) : ressorts courts, entrées de cartes échelonnées, anneaux et barres qui se remplissent, chiffres qui défilent, pastille d'onglet qui glisse, feuilles qui montent. Toujours moins d'une seconde, jamais d'écran de démarrage ni de confettis, et tout s'arrête si l'iPhone demande de réduire les animations.
 - Icônes au trait, pas d'emojis. Pas de bulles flottantes. Pas de jeu.
 - **Textes courts.**
 - Comportement d'app native : pas de zoom, pas de rebond, pas de barre de défilement, portrait uniquement.

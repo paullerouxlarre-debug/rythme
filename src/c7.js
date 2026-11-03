@@ -165,8 +165,8 @@ async function showPdf(blob,p){
 let lastKey='',_en=null;
 function animateCounts(){
   const els=document.querySelectorAll('#main .cu');if(!els.length)return;
-  const t0=performance.now(),D=900;
-  const step=now=>{const k=Math.min((now-t0)/D,1),e=1-Math.pow(1-k,3);
+  const t0=performance.now(),D=650;
+  const step=now=>{const k=Math.min((now-t0)/D,1),e=1-Math.pow(1-k,5);
     els.forEach(el=>{const v=+el.dataset.v,f=CUF[el.dataset.f];if(f)el.textContent=f(v*e);});
     if(k<1)requestAnimationFrame(step);else els.forEach(el=>{const f=CUF[el.dataset.f];if(f)el.textContent=f(+el.dataset.v);});};
   requestAnimationFrame(step);
@@ -188,8 +188,8 @@ function render(){
   document.body.setAttribute('data-tab',ui.tab);
   const chg=key!==lastKey;
   main.className=chg?'enter':'';ui._dir=0;
-  if(chg){clearTimeout(_en);_en=setTimeout(()=>{main.className='';},260);}
-  document.querySelectorAll('#main .cu').forEach(el=>{const f=CUF[el.dataset.f];if(f)el.textContent=f(+el.dataset.v);});
+  if(chg){clearTimeout(_en);_en=setTimeout(()=>{main.className='';},1200);}
+  if(chg&&!matchMedia('(prefers-reduced-motion: reduce)').matches)animateCounts();
   lastKey=key;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.id===ui.tab));
   if(ui.tab==='money'&&ui.money==='immo')simUpdate();

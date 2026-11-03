@@ -1,6 +1,10 @@
 
 /* ================= retours visuels ================= */
-function burst(){}  /* plus de confettis : la confirmation passe par le toast */
+function burst(x,y){ /* onde discrète depuis le point touché, façon iOS */
+  const fx=$('#fx');if(!fx||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(x==null){x=innerWidth/2;y=innerHeight/2;}
+  const r=document.createElement('i');r.className='pring';r.style.left=x+'px';r.style.top=y+'px';fx.appendChild(r);setTimeout(()=>r.remove(),700);
+}
 function toast(msg){
   const fx=$('#fx');if(!fx)return;
   fx.querySelectorAll('.toast').forEach(t=>t.remove());
