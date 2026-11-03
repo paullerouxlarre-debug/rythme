@@ -10,6 +10,7 @@ Chaque mise en ligne sur GitHub, de la plus récente à la plus ancienne. Le cod
 
 | Date | Version | Changement |
 |---|---|---|
+| 2026-11-03 | [`dfa4b1a`](https://github.com/paullerouxlarre-debug/rythme/commit/dfa4b1a) | Icône « Aube » en glyphe sur noir ; barre d'état de la couleur de chaque ambiance, assombrie quand une fenêtre est ouverte |
 | 2026-11-03 | [`3fd3b01`](https://github.com/paullerouxlarre-debug/rythme/commit/3fd3b01) | Corrections iPhone : plus de bande claire en haut, contenu masqué sous la barre d'onglets, libellé « Aujourd'hui » dans sa pastille |
 | 2026-11-03 | [`aec6956`](https://github.com/paullerouxlarre-debug/rythme/commit/aec6956) | Modifier une journée : brouillon, bouton « Journée complète » qui préremplit, puis Valider ; plus de bouton sur la carte du jour |
 | 2026-11-03 | [`f7167a3`](https://github.com/paullerouxlarre-debug/rythme/commit/f7167a3) | iPhone 15 Pro : l'app passe sous la Dynamic Island avec une bande lisible ; bulles de confirmation à la largeur du texte |
