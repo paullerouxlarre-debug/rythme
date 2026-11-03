@@ -556,6 +556,18 @@ nav.tabbar{ left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom
 .ctitle{ transition:opacity .25s var(--spring); }
 details.wdet[open] summary ~ *{ animation:rise .4s var(--spring) both; }
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ transition:none!important; animation:none!important; } }
+
+/* =====================================================================
+   v4.2 : iPhone 15 Pro. L'app passe sous la Dynamic Island (barre d'état
+   translucide) ; une bande teintée et floutée garde l'heure et la batterie
+   lisibles, au-dessus de tout, même des Réglages.
+   ===================================================================== */
+:root[data-skin]{ --sbar:linear-gradient(180deg,color-mix(in srgb,var(--deep) 68%,transparent) 0,color-mix(in srgb,var(--deep) 52%,transparent) 72%,transparent 100%); }
+:root[data-skin=minuit],:root[data-skin=foret]{ --sbar:linear-gradient(180deg,color-mix(in srgb,var(--base) 80%,transparent) 0,color-mix(in srgb,var(--base) 70%,transparent) 72%,transparent 100%); }
+body::before{ height:calc(env(safe-area-inset-top,0px) * 1.25); background:var(--sbar); -webkit-backdrop-filter:blur(16px) saturate(160%); backdrop-filter:blur(16px) saturate(160%); -webkit-mask-image:linear-gradient(180deg,#000 72%,transparent); mask-image:linear-gradient(180deg,#000 72%,transparent); z-index:150; pointer-events:none; }
+.ctitle{ padding-top:calc(env(safe-area-inset-top,0px) + 12px); }
+/* bulle de confirmation : largeur réelle du texte, une ou deux lignes au plus */
+.toast{ width:max-content; max-width:calc(100vw - 40px); border-radius:18px; padding:12px 18px; line-height:1.35; text-align:center; }
 </style>
 </head>
 <body>

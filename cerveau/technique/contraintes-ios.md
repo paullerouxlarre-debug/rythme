@@ -15,6 +15,11 @@ tags: [rythme, technique, ios]
 
 Testé sur iPhone 15, Safari, app ajoutée à l'écran d'accueil.
 
+## Dynamic Island (iPhone 15 Pro)
+- Barre d'état `black-translucent` : l'app passe sous la Dynamic Island, le contenu est décalé de `env(safe-area-inset-top)` (59 px) et la barre d'onglets de `env(safe-area-inset-bottom)` (34 px).
+- L'heure et la batterie restent blanches : une bande teintée (couleur profonde de l'ambiance) et floutée, au-dessus de tout, les garde lisibles.
+- Testé en simulant 393 × 852 avec ces marges.
+
 Related: [Ma journée](../modules/ma-journee.md) · [Décision pas](../decisions/2026-10-30-pas-gist.md)
 
 Up: [Technique](README.md)
