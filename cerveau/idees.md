@@ -13,13 +13,13 @@ Le backlog. Coche quand c'est fait, ajoute tes idées en bas ; Claude relit cett
 - [ ] Vérifier la synchro automatique des pas après une semaine d'usage.
 
 ## Idées
-- [ ] Choisir le nouveau logo parmi les 5 pistes (canevas Moodboards, page Logo), puis l'appliquer à l'icône.
 - [ ] Pointage automatique à l'ouverture pendant un créneau, avec puce NFC ou automatisation Raccourcis (à tester : le raccourci ouvre-t-il l'app installée ou Safari ?).
 - [ ] Rapport hebdomadaire du dimanche (heures, sport, dépenses) en une carte.
 - [ ] Objectifs de max (ex. 15 tractions) avec date cible.
 - [ ] Export de sauvegarde automatique mensuel.
 
 ## Fait récemment
+- [x] Nouveau logo « Aube » (03/11).
 - [x] Refonte v3 : jeu supprimé, nouveau style et logo (03/11).
 - [x] Bouton « Journée complète » (7 h 48) et stats boulot détaillées (03/11).
 - [x] Pointage visible seulement pendant les créneaux (30/10).

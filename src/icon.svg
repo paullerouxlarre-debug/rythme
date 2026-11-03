@@ -1,10 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Rythme : un petit histogramme de semaine, hauteurs irrégulières. Pas de dégradé, pas de texte. -->
-  <rect width="1024" height="1024" fill="#3B5BDB"/>
-  <g fill="#FFFFFF">
-    <rect x="232" y="452" width="116" height="320" rx="58"/>
-    <rect x="390" y="292" width="116" height="480" rx="58"/>
-    <rect x="548" y="532" width="116" height="240" rx="58"/>
-    <rect x="706" y="382" width="116" height="390" rx="58" fill-opacity=".6"/>
-  </g>
+  <!-- Rythme · logo « Aube » : soleil levant et trois vagues de verre. Pleine page : iOS arrondit lui-même les coins. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD2B8"/><stop offset="1" stop-color="#FF9E8A"/></linearGradient>
+    <radialGradient id="sun" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFC24D"/></radialGradient>
+    <linearGradient id="w1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A7A" stop-opacity="0.75"/><stop offset="1" stop-color="#FF8A7A" stop-opacity="0.35"/></linearGradient>
+    <linearGradient id="w2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8577A" stop-opacity="0.85"/><stop offset="1" stop-color="#E8577A" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="w3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7B3FA0" stop-opacity="0.95"/><stop offset="1" stop-color="#7B3FA0"/></linearGradient>
+    <filter id="halo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="700" cy="330" r="170" fill="#FFC24D" fill-opacity="0.55" filter="url(#halo)"/>
+  <circle cx="700" cy="330" r="118" fill="url(#sun)"/>
+  <path d="M0 560 C200 470 360 650 560 560 C740 480 900 470 1024 540 V1024 H0 Z" fill="url(#w1)"/>
+  <path d="M0 560 C200 470 360 650 560 560 C740 480 900 470 1024 540" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="8"/>
+  <path d="M0 670 C220 590 400 750 610 665 C790 595 910 610 1024 650 V1024 H0 Z" fill="url(#w2)"/>
+  <path d="M0 670 C220 590 400 750 610 665 C790 595 910 610 1024 650" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="8"/>
+  <path d="M0 780 C200 725 420 850 630 778 C810 718 920 735 1024 765 V1024 H0 Z" fill="url(#w3)"/>
+  <path d="M0 780 C200 725 420 850 630 778 C810 718 920 735 1024 765" fill="none" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="8"/>
 </svg>
