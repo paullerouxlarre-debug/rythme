@@ -20,5 +20,6 @@ Une note par choix structurant : ce qui a été décidé, et pourquoi. Nom de fi
 - [Refonte v3, sans jeu](2026-11-03-refonte-v3.md) : 2026-11-03
 - [Verre liquide et six ambiances](2026-11-03-verre-liquide.md) : 2026-11-03
 - [Logo « Aube »](2026-11-03-logo-aube.md) : 2026-11-03
+- [Planning façon Outlook](2026-11-05-planning-outlook.md) : 2026-11-05
 
 Up: [Accueil](../README.md)

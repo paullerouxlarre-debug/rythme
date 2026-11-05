@@ -590,6 +590,21 @@ body::before{ height:calc(env(safe-area-inset-top,0px) * 1.25); background:var(-
 body::after{ content:""; position:fixed; left:0; right:0; bottom:0; height:calc(env(safe-area-inset-bottom,0px) + 96px); z-index:49; pointer-events:none; background:linear-gradient(0deg,var(--base) 0,color-mix(in srgb,var(--base) 88%,transparent) 45%,color-mix(in srgb,var(--base) 0%,transparent) 100%); }
 .tab[data-id=today]{ flex:1.35; }
 .tab span{ font-size:10.5px; letter-spacing:-.01em; }
+
+/* ===== v4.4 : planning façon Outlook ===== */
+.plq{ flex-wrap:nowrap; overflow-x:auto; margin:0 -16px 12px; padding:2px 16px; scrollbar-width:none; }
+.plq .chip{ flex:none; }
+.plhint{ margin:-4px 2px 10px; }
+.mgrid{ touch-action:pan-y; -webkit-user-select:none; user-select:none; }
+.mday.rng{ background:color-mix(in srgb,var(--tc) 22%,var(--glass))!important; border-color:color-mix(in srgb,var(--tc) 45%,transparent); color:var(--text); }
+.mday.rs,.mday.re{ background:var(--tc)!important; color:#fff; border-color:transparent; }
+.mday.rs i u,.mday.re i u{ background:#fff!important; }
+.qadd-h{ display:flex; flex-direction:column; gap:2px; margin-bottom:12px; }
+.qadd-h b{ font-size:18px; font-weight:700; } .qadd-h span{ font-size:14px; color:var(--muted); }
+.qk{ flex-wrap:nowrap; overflow-x:auto; margin:0 -16px; padding:2px 16px; scrollbar-width:none; } .qk .chip{ flex:none; }
+.chip .dot{ width:9px; height:9px; }
+.chip.on .dot{ box-shadow:0 0 0 2px var(--bg); }
+.row[data-act=edite]{ cursor:pointer; }
 </style>
 </head>
 <body>
@@ -652,7 +667,7 @@ const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['P
 /* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
 const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='03/11 15:53';
+const BUILD='05/11 21:01';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1165,7 +1180,7 @@ const V={},M={},SP={};
 const evPlanned=k=>evOn(k).filter(e=>e.kind==='Sport'&&!e.end);
 function evRow(e,k,full){
   const dn=e.done&&e.done[k];
-  return `<div class="row" style="align-items:stretch;gap:12px"><div class="evbar" style="background:${EK[e.kind]||EK.Perso}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(e.title)}${dn?' <span class="tag pos">fait</span>':''}</div><div class="row-sub">${hm(e)} · ${esc(e.kind)}${e.rep==='w'?' · chaque semaine':e.rep==='y'?' · chaque année':''}</div></div>
+  return `<div class="row" style="align-items:stretch;gap:12px" ${full?`data-act="edite" data-id="${e.id}"`:''}><div class="evbar" style="background:${EK[e.kind]||EK.Perso}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(e.title)}${dn?' <span class="tag pos">fait</span>':''}</div><div class="row-sub">${hm(e)} · ${esc(e.kind)}${e.rep==='w'?' · chaque semaine':e.rep==='y'?' · chaque année':''}</div></div>
   <div style="display:flex;gap:6px;align-items:center;flex:none">${e.kind==='Sport'&&!e.end&&!dn&&k<=todayK()?`<button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="evdone" data-id="${e.id}" data-k="${k}">Valider</button>`:''}${full?`<button class="row-del" data-act="dele" data-id="${e.id}" aria-label="Supprimer l'événement">×</button>`:''}</div></div>`;
 }
 function weekDots(){
@@ -1225,7 +1240,8 @@ function planMonth(){
     const dt=new Date(y,m,1-lead+i),k=dkey(dt),out=dt.getMonth()!==m,ev=evOn(k),hasW=wOn(k).length>0;
     const kinds=[...new Set(ev.map(e=>e.kind).concat(hasW?['Sport']:[]))].slice(0,4);
     const trip=ev.find(e=>e.end&&e.date<=k&&k<=e.end);
-    cells.push(`<button class="mday ${out?'out':''} ${ui.sel===k?'sel':''} ${k===td?'tod':''}" ${ui.sel!==k&&(ev.length||hasW)?`style="background:color-mix(in srgb,${EK[(trip||ev[0]||{kind:'Sport'}).kind]} ${trip?26:14}%,var(--surface))"`:''} data-act="plsel" data-id="${k}"><b>${dt.getDate()}</b><i>${kinds.map(x=>`<u style="background:${ui.sel===k?'#fff':EK[x]}"></u>`).join('')}</i></button>`);
+    const inR=ui.rs&&ui.re&&k>=ui.rs&&k<=ui.re,rcls=inR?' rng'+(k===ui.rs?' rs':'')+(k===ui.re?' re':''):'';
+    cells.push(`<button class="mday ${out?'out':''} ${ui.sel===k&&!inR?'sel':''} ${k===td?'tod':''}${rcls}" data-k="${k}" ${ui.sel!==k&&(ev.length||hasW)?`style="background:color-mix(in srgb,${EK[(trip||ev[0]||{kind:'Sport'}).kind]} ${trip?26:14}%,var(--surface))"`:''} data-act="plsel" data-id="${k}"><b>${dt.getDate()}</b><i>${kinds.map(x=>`<u style="background:${ui.sel===k?'#fff':EK[x]}"></u>`).join('')}</i></button>`);
   }
   const mp=`${y}-${pad(m+1)}`,occ={};
   for(let d=1;d<=dim;d++){const k=`${mp}-${pad(d)}`;evOn(k).forEach(e=>{(occ[e.id]||(occ[e.id]={e,days:[]})).days.push(k);});}
@@ -1234,15 +1250,23 @@ function planMonth(){
   const trips=sum(list.filter(x=>x.e.kind==='Voyage').map(x=>x.days.length));
   const bds=list.filter(x=>x.e.kind==='Anniversaire').length;
   const sel=ui.sel,evs=evOn(sel),ws=wOn(sel);
-  const d=ui.edraft,f=(l,k,attr,cls='')=>`<div class="field ${cls}"><label>${l}</label><input data-e="${k}" value="${esc(d[k])}" ${attr}></div>`;
-  const form=ui.open.fe&&d?`<div class="form-panel" style="margin-top:12px"><div class="form-grid">
-    ${f('Titre','title','placeholder="Week-end à Lisbonne, anniversaire de Léa…"','wide')}
-    <div class="field"><label>Type</label><select data-e="kind">${Object.keys(EK).map(x=>`<option ${d.kind===x?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div class="field"><label>Répétition</label><select data-e="rep"><option value="" ${!d.rep?'selected':''}>Aucune</option><option value="w" ${d.rep==='w'?'selected':''}>Chaque semaine</option><option value="y" ${d.rep==='y'?'selected':''}>Chaque année</option></select></div>
-    ${f('Date','date','type="date"')}${f('Jusqu\'au (voyage, vacances)','end','type="date"')}
-    ${f('Heure','time','type="time"')}${f('Durée (min)','dur','type="number" inputmode="numeric"')}
-    ${d.kind==='Sport'?`<div class="field wide"><label>Sport</label><select data-e="sport">${Object.entries(SPORTS).map(([k,v])=>`<option value="${k}" ${d.sport===k?'selected':''}>${v.name}</option>`).join('')}</select></div>`:''}</div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="adde">Ajouter au planning</button><button class="btn btn-ghost" data-act="toggle" data-id="fe">Annuler</button></div></div>`
+  const d=ui.edraft,f=(l,k,attr,cls='')=>`<div class="field ${cls}"><label>${l}</label><input data-e="${k}" value="${esc(d[k]||'')}" ${attr}></div>`;
+  const ch=(k,v,l)=>`<button class="chip ${String(d[k]||'')===String(v)?'on':''}" data-act="eset" data-k="${k}" data-v="${v}">${l}</button>`;
+  const ndays=d&&d.end&&d.end>d.date?Math.round((new Date(d.end+'T12:00')-new Date(d.date+'T12:00'))/864e5)+1:1;
+  const form=ui.open.fe&&d?`<div class="form-panel qadd" style="margin-top:12px">
+    <div class="qadd-h"><b>${d.id?'Modifier l\'événement':'Nouvel événement'}</b><span>${d.date?(ndays>1?'Du '+dShort(d.date)+' au '+dShort(d.end)+' · '+ndays+' jours':dLong(d.date)):''}</span></div>
+    <div class="chips qk">${Object.keys(EK).map(x=>`<button class="chip ${d.kind===x?'on':''}" data-act="eset" data-k="kind" data-v="${x}"><span class="dot" style="background:${EK[x]}"></span>${x}</button>`).join('')}</div>
+    <div class="form-grid" style="margin-top:12px">
+    ${f('Titre','title','placeholder="'+(EVT[d.kind]||'Titre')+'"','wide')}
+    ${f('Du','date','type="date"')}${f('Au','end','type="date"')}</div>
+    <div class="sublabel" style="margin:14px 2px 8px">Heure</div>
+    <div class="chips">${ch('time','','Toute la journée')}${ch('time','08:00','8:00')}${ch('time','12:30','12:30')}${ch('time','18:00','18:00')}${ch('time','19:00','19:00')}</div>
+    ${d.time?`<div class="form-grid" style="margin-top:10px">${f('Heure précise','time','type="time"')}${f('Durée (min)','dur','type="number" inputmode="numeric"')}</div>
+    <div class="chips" style="margin-top:8px">${ch('dur','30','30 min')}${ch('dur','60','1 h')}${ch('dur','90','1 h 30')}${ch('dur','120','2 h')}</div>`:''}
+    <div class="sublabel" style="margin:14px 2px 8px">Répétition</div>
+    <div class="chips">${ch('rep','','Aucune')}${ch('rep','w','Chaque semaine')}${ch('rep','y','Chaque année')}</div>
+    ${d.kind==='Sport'?`<div class="field" style="margin-top:12px"><label>Sport</label><select data-e="sport">${Object.entries(SPORTS).map(([k,v])=>`<option value="${k}" ${d.sport===k?'selected':''}>${v.name}</option>`).join('')}</select></div>`:''}
+    <div class="form-actions"><button class="btn btn-primary" data-act="adde">${d.id?'Enregistrer':'Ajouter'+(ndays>1?' sur '+ndays+' jours':'')}</button><button class="btn" data-act="toggle" data-id="fe">Annuler</button>${d.id?`<button class="btn btn-ghost" data-act="evdup" data-id="${d.id}">Dupliquer</button><button class="btn btn-ghost danger" data-act="dele" data-id="${d.id}">Supprimer</button>`:''}</div></div>`
     :`<button class="btn btn-primary" style="width:100%;margin-top:12px" data-act="newev">Ajouter un événement</button>`;
   const up=[];for(let i=0;i<90&&up.length<5;i++){const k=addD(td,i);evOn(k).forEach(e=>{if(!up.find(x=>x.e.id===e.id)&&up.length<5)up.push({k,e});});}
   const nxt=up[0];
@@ -1251,6 +1275,8 @@ function planMonth(){
     <div class="sm">${nxt?(nxt.k===td?'Aujourd\'hui':dLong(nxt.k))+' · '+hm(nxt.e):'Ajoute un événement plus bas'}</div>
     <div class="mini3"><div><small>Événements</small><b>${list.length}</b></div><div><small>Séances</small><b>${nw}</b></div><div><small>Voyage</small><b>${trips} j</b></div></div></div>
   <div class="wkhead"><button class="navbtn" data-act="plm" data-id="-1" aria-label="Mois précédent">‹</button><b class="cap1">${new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</b><button class="navbtn" data-act="plm" data-id="1" aria-label="Mois suivant">›</button></div>
+  <div class="chips plq">${ui.pm!==0||ui.sel!==td?'<button class="chip" data-act="pltoday">Aujourd\'hui</button>':''}<button class="chip ${ui.rmode?'on':''}" data-act="plmulti">${IC('cal',15)}Plusieurs jours</button><button class="chip" data-act="newev">+ Événement</button><button class="chip" data-act="plquick" data-id="Congé"><span class="dot" style="background:${EK['Congé']}"></span>Congé</button><button class="chip" data-act="plquick" data-id="Voyage"><span class="dot" style="background:${EK.Voyage}"></span>Voyage</button></div>
+  ${ui.rmode?`<p class="note plhint">${ui.rpick?'Touche le dernier jour.':'Touche le premier jour, puis le dernier.'} Astuce : appui long sur un jour puis glisse.</p>`:''}
   <div class="mhead">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div>
   <div class="mgrid">${cells.join('')}</div>
   <div class="chips" style="margin-top:12px">${Object.entries(EK).map(([k,c])=>`<span class="lg"><span class="dot" style="background:${c}"></span>${k}</span>`).join('')}</div>
@@ -2651,8 +2677,12 @@ function render(){
 }
 const val=id=>{const e=$('#'+id);return e?e.value:'';};
 function scrollTop(){window.scrollTo({top:0});}
-function resetUi(){ui.open={};ui.draft=null;ui.sel=null;ui.pm=0;ui.edraft=null;ui.msg='';ui.hmsg='';ui.grp=null;ui.wd=null;}
-const newEv=()=>({title:'',kind:'Perso',date:ui.sel||todayK(),end:'',time:'',dur:'',rep:'',sport:'course'});
+function resetUi(){ui.open={};ui.draft=null;ui.sel=null;ui.pm=0;ui.edraft=null;ui.rs=ui.re=null;ui.rmode=false;ui.rpick=null;ui.msg='';ui.hmsg='';ui.grp=null;ui.wd=null;}
+const newEv=(o)=>Object.assign({title:'',kind:'Perso',date:ui.sel||todayK(),end:'',time:'',dur:'',rep:'',sport:'course'},o||{});
+const EVT={Voyage:'Voyage',Sport:'Séance',Anniversaire:'Anniversaire de …',Boulot:'Boulot',Congé:'Congé',Perso:'Titre',Santé:'Rendez-vous',Détente:'Détente'};
+/* ouvre la saisie rapide sur la plage choisie (ou le jour sélectionné) */
+function openQuick(o){const r=ui.rs&&ui.re?{date:ui.rs,end:ui.re>ui.rs?ui.re:''}:{};ui.open.fe=true;ui.edraft=newEv(Object.assign(r,o||{}));render();setTimeout(()=>{const p=$('.qadd');if(p)p.scrollIntoView({behavior:'smooth',block:'center'});qkFocus();},60);}
+const qkFocus=()=>{const c=$('.qk .chip.on'),r=c&&c.parentElement;if(r)r.scrollLeft=c.offsetLeft-r.clientWidth/2+c.offsetWidth/2;};
 const monthOff=k=>{const t=new Date(),d=new Date(k+'T12:00');return (d.getFullYear()-t.getFullYear())*12+d.getMonth()-t.getMonth();};
 function afterProfile(){useProfile();resetUi();save();renderSheet();render();}
 
@@ -2671,7 +2701,7 @@ document.addEventListener('click',e=>{
   if(a==='grp'){ui.grp=ui.grp===id?null:id;if(ui.grp==='Dos')ui.bv='b';else if(ui.grp==='Pectoraux'||ui.grp==='Abdos')ui.bv='f';render();return;}
   if(a==='gosport'){ui.tab='sport';ui.sp='add';ui.draft=newDraft();ui.open.tn=false;ui.msg='';render();scrollTop();return;}
   if(a==='gopl'){e.preventDefault();if(id){ui.sel=id;ui.pm=monthOff(id);}ui.tab='plan';ui.plan='month';render();scrollTop();return;}
-  if(a==='toggle'){ui.open[id]=!ui.open[id];ui.msg='';if(id==='fe')ui.edraft=null;if(id==='goal'||id==='tn'||id==='fl'||id==='pf'){render();return;}render();return;}
+  if(a==='toggle'){ui.open[id]=!ui.open[id];ui.msg='';if(id==='fe'){ui.edraft=null;ui.rs=ui.re=null;}if(id==='goal'||id==='tn'||id==='fl'||id==='pf'){render();return;}render();return;}
 
   /* réglages */
   if(a==='settings'){ui.sheet=true;ui.msg='';renderSheet();return;}
@@ -2798,15 +2828,26 @@ document.addEventListener('click',e=>{
   if(a==='delsim'){S.sims=S.sims.filter(x=>x.id!==id);save();render();return;}
 
   /* planning */
-  if(a==='plsel'){e.preventDefault();ui.sel=id;ui.open.fe=false;ui.edraft=null;if(el.dataset.jump)ui.pm=monthOff(id);render();return;}
+  if(a==='plsel'){e.preventDefault();if(Date.now()-(ui._drag||0)<500)return;
+    if(ui.rmode){if(!ui.rpick){ui.rpick=id;ui.rs=ui.re=id;render();return;}const s=[ui.rpick,id].sort();ui.rs=s[0];ui.re=s[1];ui.rmode=false;ui.rpick=null;ui.sel=s[0];openQuick();return;}
+    if(id===ui.sel&&!el.dataset.jump&&!ui.rs&&!ui.open.fe){openQuick({date:id});return;}
+    ui.sel=id;ui.rs=ui.re=null;ui.open.fe=false;ui.edraft=null;if(el.dataset.jump)ui.pm=monthOff(id);render();return;}
+  if(a==='plmulti'){ui.rmode=!ui.rmode;ui.rpick=null;if(ui.rmode){ui.rs=ui.re=null;ui.open.fe=false;}render();return;}
+  if(a==='pltoday'){ui.pm=0;ui.sel=todayK();ui.rs=ui.re=null;render();return;}
+  if(a==='plquick'){openQuick({kind:id});return;}
+  if(a==='eset'){const d=ui.edraft;if(!d)return;const k=el.dataset.k,v=el.dataset.v;d[k]=v;if(k==='time'&&!v)d.dur='';if(k==='time'&&v&&!d.dur)d.dur=d.kind==='Sport'?'60':'';const sl=($('.qk')||{}).scrollLeft;render();const q=$('.qk');if(q&&sl!=null)q.scrollLeft=sl;return;}
+  if(a==='edite'){const ev=S.events.find(x=>x.id===id);if(!ev)return;ui.rs=ui.re=null;ui.open.fe=true;ui.edraft=newEv(Object.assign({},ev,{end:ev.end||'',time:ev.time||'',dur:ev.dur?String(ev.dur):'',rep:ev.rep||'',sport:ev.sport||'course'}));render();setTimeout(()=>{const p=$('.qadd');if(p)p.scrollIntoView({behavior:'smooth',block:'center'});},60);return;}
+  if(a==='evdup'){const ev=S.events.find(x=>x.id===id);if(!ev)return;const c=Object.assign({},ev,{id:uid()});delete c.done;S.events.push(c);ui.open.fe=false;ui.edraft=null;save();toast('Événement dupliqué');render();return;}
   if(a==='plm'){ui.pm=id==='0'?0:ui.pm+Number(id);render();return;}
   if(a==='newev'){ui.open.fe=true;ui.edraft=newEv();render();return;}
   if(a==='adde'){
-    const d=ui.edraft;if(!d||!d.title.trim()||!d.date)return;
-    const ev={id:uid(),title:d.title.trim(),kind:d.kind,date:d.date,time:d.time||'',dur:num(d.dur)||0,rep:d.rep||''};
+    const d=ui.edraft;if(!d||!d.date)return;
+    const title=(d.title||'').trim()||(EVT[d.kind]&&!/…|Titre/.test(EVT[d.kind])?EVT[d.kind]:d.kind);
+    const ev={id:d.id||uid(),title,kind:d.kind,date:d.date,time:d.time||'',dur:d.time?(num(d.dur)||0):0,rep:d.rep||''};
     if(d.end&&d.end>d.date)ev.end=d.end;if(d.kind==='Sport')ev.sport=d.sport;
-    S.events.push(ev);ui.sel=d.date;ui.pm=monthOff(d.date);ui.open.fe=false;ui.edraft=null;save();render();return;}
-  if(a==='dele'){S.events=S.events.filter(x=>x.id!==id);save();render();return;}
+    const i=d.id?S.events.findIndex(x=>x.id===d.id):-1;if(i>=0){ev.done=S.events[i].done;S.events[i]=ev;}else S.events.push(ev);
+    ui.sel=d.date;ui.pm=monthOff(d.date);ui.open.fe=false;ui.edraft=null;ui.rs=ui.re=null;save();toast(i>=0?'Événement modifié':(ev.end?'Ajouté du '+dShort(ev.date)+' au '+dShort(ev.end):'Ajouté au planning'));render();return;}
+  if(a==='dele'){S.events=S.events.filter(x=>x.id!==id);if(ui.edraft&&ui.edraft.id===id){ui.open.fe=false;ui.edraft=null;}save();toast('Événement supprimé');render();return;}
   if(a==='evdone'){const ev=S.events.find(x=>x.id===id);if(!ev)return;
     ui.tab='sport';ui.sp='add';ui.draft=newDraft();ui.draft.type=ev.sport||'course';ui.draft.date=k||td;if(ev.dur)ui.draft.min=ev.dur;render();scrollTop();return;}
 
@@ -2907,7 +2948,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
-  if(t.dataset.e&&ui.edraft){ui.edraft[t.dataset.e]=t.value;if(t.dataset.e==='kind')render();return;}
+  if(t.dataset.e&&ui.edraft){ui.edraft[t.dataset.e]=t.value;if(['kind','date','end','time'].includes(t.dataset.e))render();return;}
   if(t.dataset.d&&ui.draft){ui.draft[t.dataset.d]=t.value;if(t.dataset.d==='min'||t.dataset.d==='dist')render();return;}
   if(t.dataset.s&&ui.draft){render();return;}
   if(t.dataset.goal){S.goals[t.dataset.goal]=Math.max(num(t.value)||1,1);save();renderSheet();render();return;}
@@ -2936,6 +2977,26 @@ visInit();
   window.addEventListener('pagehide',save);
 })();
 
+
+/* ===== Planning : gestes façon Outlook =====
+   Appui long sur un jour puis glisser : sélection de plusieurs jours, la saisie rapide s'ouvre au lâcher.
+   Balayage horizontal sur la grille : mois précédent / suivant. */
+(function(){
+  let tm=null,st=null,ranging=false;
+  const paint=()=>document.querySelectorAll('.mgrid .mday').forEach(c=>{const k=c.dataset.k,on=ui.rs&&k>=ui.rs&&k<=ui.re;c.classList.toggle('rng',!!on);c.classList.toggle('rs',on&&k===ui.rs);c.classList.toggle('re',on&&k===ui.re);});
+  const keyAt=(x,y)=>{const el=document.elementFromPoint(x,y);const c=el&&el.closest('.mgrid .mday');return c?c.dataset.k:null;};
+  document.addEventListener('pointerdown',e=>{const c=e.target.closest('.mgrid .mday');if(!c)return;st={x:e.clientX,y:e.clientY,k:c.dataset.k};
+    clearTimeout(tm);tm=setTimeout(()=>{ranging=true;ui.anchor=st.k;ui.rs=ui.re=st.k;ui.rmode=false;ui.rpick=null;paint();try{navigator.vibrate&&navigator.vibrate(8);}catch(_){}},380);},{passive:true});
+  document.addEventListener('pointermove',e=>{if(!st)return;
+    if(!ranging){if(Math.abs(e.clientX-st.x)>8||Math.abs(e.clientY-st.y)>8)clearTimeout(tm);return;}
+    const k=keyAt(e.clientX,e.clientY);if(!k)return;const s=[ui.anchor,k].sort();if(s[0]!==ui.rs||s[1]!==ui.re){ui.rs=s[0];ui.re=s[1];paint();}},{passive:true});
+  document.addEventListener('touchmove',e=>{if(ranging)e.preventDefault();},{passive:false});
+  const end=e=>{clearTimeout(tm);if(!st)return;const s0=st;st=null;
+    if(ranging){ranging=false;ui._drag=Date.now();ui.sel=ui.rs;openQuick();return;}
+    const dx=e.clientX-s0.x,dy=e.clientY-s0.y;
+    if(e.type==='pointerup'&&Math.abs(dx)>70&&Math.abs(dy)<45){ui._drag=Date.now();ui._dir=dx<0?1:-1;ui.pm+=dx<0?1:-1;render();}};
+  document.addEventListener('pointerup',end,{passive:true});document.addEventListener('pointercancel',end,{passive:true});
+})();
 
 })();
 

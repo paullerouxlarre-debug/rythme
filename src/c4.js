@@ -4,7 +4,7 @@ const V={},M={},SP={};
 const evPlanned=k=>evOn(k).filter(e=>e.kind==='Sport'&&!e.end);
 function evRow(e,k,full){
   const dn=e.done&&e.done[k];
-  return `<div class="row" style="align-items:stretch;gap:12px"><div class="evbar" style="background:${EK[e.kind]||EK.Perso}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(e.title)}${dn?' <span class="tag pos">fait</span>':''}</div><div class="row-sub">${hm(e)} · ${esc(e.kind)}${e.rep==='w'?' · chaque semaine':e.rep==='y'?' · chaque année':''}</div></div>
+  return `<div class="row" style="align-items:stretch;gap:12px" ${full?`data-act="edite" data-id="${e.id}"`:''}><div class="evbar" style="background:${EK[e.kind]||EK.Perso}"></div><div style="flex:1;min-width:0"><div class="row-title">${esc(e.title)}${dn?' <span class="tag pos">fait</span>':''}</div><div class="row-sub">${hm(e)} · ${esc(e.kind)}${e.rep==='w'?' · chaque semaine':e.rep==='y'?' · chaque année':''}</div></div>
   <div style="display:flex;gap:6px;align-items:center;flex:none">${e.kind==='Sport'&&!e.end&&!dn&&k<=todayK()?`<button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" data-act="evdone" data-id="${e.id}" data-k="${k}">Valider</button>`:''}${full?`<button class="row-del" data-act="dele" data-id="${e.id}" aria-label="Supprimer l'événement">×</button>`:''}</div></div>`;
 }
 function weekDots(){
@@ -64,7 +64,8 @@ function planMonth(){
     const dt=new Date(y,m,1-lead+i),k=dkey(dt),out=dt.getMonth()!==m,ev=evOn(k),hasW=wOn(k).length>0;
     const kinds=[...new Set(ev.map(e=>e.kind).concat(hasW?['Sport']:[]))].slice(0,4);
     const trip=ev.find(e=>e.end&&e.date<=k&&k<=e.end);
-    cells.push(`<button class="mday ${out?'out':''} ${ui.sel===k?'sel':''} ${k===td?'tod':''}" ${ui.sel!==k&&(ev.length||hasW)?`style="background:color-mix(in srgb,${EK[(trip||ev[0]||{kind:'Sport'}).kind]} ${trip?26:14}%,var(--surface))"`:''} data-act="plsel" data-id="${k}"><b>${dt.getDate()}</b><i>${kinds.map(x=>`<u style="background:${ui.sel===k?'#fff':EK[x]}"></u>`).join('')}</i></button>`);
+    const inR=ui.rs&&ui.re&&k>=ui.rs&&k<=ui.re,rcls=inR?' rng'+(k===ui.rs?' rs':'')+(k===ui.re?' re':''):'';
+    cells.push(`<button class="mday ${out?'out':''} ${ui.sel===k&&!inR?'sel':''} ${k===td?'tod':''}${rcls}" data-k="${k}" ${ui.sel!==k&&(ev.length||hasW)?`style="background:color-mix(in srgb,${EK[(trip||ev[0]||{kind:'Sport'}).kind]} ${trip?26:14}%,var(--surface))"`:''} data-act="plsel" data-id="${k}"><b>${dt.getDate()}</b><i>${kinds.map(x=>`<u style="background:${ui.sel===k?'#fff':EK[x]}"></u>`).join('')}</i></button>`);
   }
   const mp=`${y}-${pad(m+1)}`,occ={};
   for(let d=1;d<=dim;d++){const k=`${mp}-${pad(d)}`;evOn(k).forEach(e=>{(occ[e.id]||(occ[e.id]={e,days:[]})).days.push(k);});}
@@ -73,15 +74,23 @@ function planMonth(){
   const trips=sum(list.filter(x=>x.e.kind==='Voyage').map(x=>x.days.length));
   const bds=list.filter(x=>x.e.kind==='Anniversaire').length;
   const sel=ui.sel,evs=evOn(sel),ws=wOn(sel);
-  const d=ui.edraft,f=(l,k,attr,cls='')=>`<div class="field ${cls}"><label>${l}</label><input data-e="${k}" value="${esc(d[k])}" ${attr}></div>`;
-  const form=ui.open.fe&&d?`<div class="form-panel" style="margin-top:12px"><div class="form-grid">
-    ${f('Titre','title','placeholder="Week-end à Lisbonne, anniversaire de Léa…"','wide')}
-    <div class="field"><label>Type</label><select data-e="kind">${Object.keys(EK).map(x=>`<option ${d.kind===x?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div class="field"><label>Répétition</label><select data-e="rep"><option value="" ${!d.rep?'selected':''}>Aucune</option><option value="w" ${d.rep==='w'?'selected':''}>Chaque semaine</option><option value="y" ${d.rep==='y'?'selected':''}>Chaque année</option></select></div>
-    ${f('Date','date','type="date"')}${f('Jusqu\'au (voyage, vacances)','end','type="date"')}
-    ${f('Heure','time','type="time"')}${f('Durée (min)','dur','type="number" inputmode="numeric"')}
-    ${d.kind==='Sport'?`<div class="field wide"><label>Sport</label><select data-e="sport">${Object.entries(SPORTS).map(([k,v])=>`<option value="${k}" ${d.sport===k?'selected':''}>${v.name}</option>`).join('')}</select></div>`:''}</div>
-    <div class="form-actions"><button class="btn btn-primary" data-act="adde">Ajouter au planning</button><button class="btn btn-ghost" data-act="toggle" data-id="fe">Annuler</button></div></div>`
+  const d=ui.edraft,f=(l,k,attr,cls='')=>`<div class="field ${cls}"><label>${l}</label><input data-e="${k}" value="${esc(d[k]||'')}" ${attr}></div>`;
+  const ch=(k,v,l)=>`<button class="chip ${String(d[k]||'')===String(v)?'on':''}" data-act="eset" data-k="${k}" data-v="${v}">${l}</button>`;
+  const ndays=d&&d.end&&d.end>d.date?Math.round((new Date(d.end+'T12:00')-new Date(d.date+'T12:00'))/864e5)+1:1;
+  const form=ui.open.fe&&d?`<div class="form-panel qadd" style="margin-top:12px">
+    <div class="qadd-h"><b>${d.id?'Modifier l\'événement':'Nouvel événement'}</b><span>${d.date?(ndays>1?'Du '+dShort(d.date)+' au '+dShort(d.end)+' · '+ndays+' jours':dLong(d.date)):''}</span></div>
+    <div class="chips qk">${Object.keys(EK).map(x=>`<button class="chip ${d.kind===x?'on':''}" data-act="eset" data-k="kind" data-v="${x}"><span class="dot" style="background:${EK[x]}"></span>${x}</button>`).join('')}</div>
+    <div class="form-grid" style="margin-top:12px">
+    ${f('Titre','title','placeholder="'+(EVT[d.kind]||'Titre')+'"','wide')}
+    ${f('Du','date','type="date"')}${f('Au','end','type="date"')}</div>
+    <div class="sublabel" style="margin:14px 2px 8px">Heure</div>
+    <div class="chips">${ch('time','','Toute la journée')}${ch('time','08:00','8:00')}${ch('time','12:30','12:30')}${ch('time','18:00','18:00')}${ch('time','19:00','19:00')}</div>
+    ${d.time?`<div class="form-grid" style="margin-top:10px">${f('Heure précise','time','type="time"')}${f('Durée (min)','dur','type="number" inputmode="numeric"')}</div>
+    <div class="chips" style="margin-top:8px">${ch('dur','30','30 min')}${ch('dur','60','1 h')}${ch('dur','90','1 h 30')}${ch('dur','120','2 h')}</div>`:''}
+    <div class="sublabel" style="margin:14px 2px 8px">Répétition</div>
+    <div class="chips">${ch('rep','','Aucune')}${ch('rep','w','Chaque semaine')}${ch('rep','y','Chaque année')}</div>
+    ${d.kind==='Sport'?`<div class="field" style="margin-top:12px"><label>Sport</label><select data-e="sport">${Object.entries(SPORTS).map(([k,v])=>`<option value="${k}" ${d.sport===k?'selected':''}>${v.name}</option>`).join('')}</select></div>`:''}
+    <div class="form-actions"><button class="btn btn-primary" data-act="adde">${d.id?'Enregistrer':'Ajouter'+(ndays>1?' sur '+ndays+' jours':'')}</button><button class="btn" data-act="toggle" data-id="fe">Annuler</button>${d.id?`<button class="btn btn-ghost" data-act="evdup" data-id="${d.id}">Dupliquer</button><button class="btn btn-ghost danger" data-act="dele" data-id="${d.id}">Supprimer</button>`:''}</div></div>`
     :`<button class="btn btn-primary" style="width:100%;margin-top:12px" data-act="newev">Ajouter un événement</button>`;
   const up=[];for(let i=0;i<90&&up.length<5;i++){const k=addD(td,i);evOn(k).forEach(e=>{if(!up.find(x=>x.e.id===e.id)&&up.length<5)up.push({k,e});});}
   const nxt=up[0];
@@ -90,6 +99,8 @@ function planMonth(){
     <div class="sm">${nxt?(nxt.k===td?'Aujourd\'hui':dLong(nxt.k))+' · '+hm(nxt.e):'Ajoute un événement plus bas'}</div>
     <div class="mini3"><div><small>Événements</small><b>${list.length}</b></div><div><small>Séances</small><b>${nw}</b></div><div><small>Voyage</small><b>${trips} j</b></div></div></div>
   <div class="wkhead"><button class="navbtn" data-act="plm" data-id="-1" aria-label="Mois précédent">‹</button><b class="cap1">${new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</b><button class="navbtn" data-act="plm" data-id="1" aria-label="Mois suivant">›</button></div>
+  <div class="chips plq">${ui.pm!==0||ui.sel!==td?'<button class="chip" data-act="pltoday">Aujourd\'hui</button>':''}<button class="chip ${ui.rmode?'on':''}" data-act="plmulti">${IC('cal',15)}Plusieurs jours</button><button class="chip" data-act="newev">+ Événement</button><button class="chip" data-act="plquick" data-id="Congé"><span class="dot" style="background:${EK['Congé']}"></span>Congé</button><button class="chip" data-act="plquick" data-id="Voyage"><span class="dot" style="background:${EK.Voyage}"></span>Voyage</button></div>
+  ${ui.rmode?`<p class="note plhint">${ui.rpick?'Touche le dernier jour.':'Touche le premier jour, puis le dernier.'} Astuce : appui long sur un jour puis glisse.</p>`:''}
   <div class="mhead">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div>
   <div class="mgrid">${cells.join('')}</div>
   <div class="chips" style="margin-top:12px">${Object.entries(EK).map(([k,c])=>`<span class="lg"><span class="dot" style="background:${c}"></span>${k}</span>`).join('')}</div>
