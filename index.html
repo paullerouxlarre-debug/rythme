@@ -684,7 +684,7 @@ const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['P
 /* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
 const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='05/11 22:56';
+const BUILD='05/11 23:01';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -1431,12 +1431,15 @@ async function parseHealthXml(file,onProg){
   return out;
 }
 function mergeSteps(o){S.steps=S.steps||{};if(Object.keys(o).length)S.stepsAt=Date.now();let n=0;Object.entries(o).forEach(([k,v])=>{if(v>0&&S.steps[k]!==v){S.steps[k]=v;n++;}});return n;}
-/* pas des courses : l'iPhone ne les compte pas quand il reste à la maison. Estimation : 1 km ≈ 1 250 pas (foulée ~0,8 m), sinon 165 pas/min */
-const RUN_SPK=1250,RUN_CAD=165;
-const runAdd=()=>S.runSteps!==false;
-function runSteps(k){if(!runAdd())return 0;return Math.round(sum(wOn(k).filter(w=>w.type==='course').map(w=>num(w.dist)>0?num(w.dist)*RUN_SPK:(num(w.min)>0?num(w.min)*RUN_CAD:0))));}
+/* pas des courses. Par défaut l'iPhone est sur soi : la course est déjà dans les pas Santé, on l'isole pour ne pas la compter deux fois.
+   Mode « add » : course faite sans iPhone, on ajoute l'estimation. Estimation : 160 pas/min, sinon 900 pas/km. */
+const RUN_CAD=160,RUN_SPK=900;
+const runMode=()=>S.runMode==='add'?'add':'in';
+function runEst(k){return Math.round(sum(wOn(k).filter(w=>w.type==='course').map(w=>num(w.min)>0?num(w.min)*RUN_CAD:(num(w.dist)>0?num(w.dist)*RUN_SPK:0))));}
 /* total du jour : null si aucune donnée (une valeur vide n'est jamais un 0) */
-function daySteps(k){const h=(S.steps||{})[k],r=runSteps(k);if(!(h>0)&&!(r>0))return null;return (h>0?h:0)+r;}
+function daySteps(k){const h=(S.steps||{})[k],r=runEst(k);if(runMode()==='add')return (h>0||r>0)?(h>0?h:0)+r:null;return h>0?h:(r>0?r:null);}
+function runSteps(k){const r=runEst(k);if(!(r>0))return 0;const t=daySteps(k);return runMode()==='add'?r:Math.min(r,t||0);}
+const walkSteps=k=>{const t=daySteps(k);return t==null?null:Math.max(0,t-runSteps(k));};
 function stepStats(){
   const td=todayK(),g=STEPGOAL(),d30=lastDays(30),vals=d30.map(k=>[k,daySteps(k)]).filter(x=>x[1]!=null);
   const v7=lastDays(7).map(daySteps).filter(x=>x!=null),p7=lastDays(14).slice(0,7).map(daySteps).filter(x=>x!=null);
@@ -1466,11 +1469,11 @@ function stepsCard(){
         <div><small>Meilleur jour</small><b>${S7.best?fmtN(S7.best[1]):'–'}</b><em>${S7.best?esc(dShort(S7.best[0])):''}</em></div>
         <div><small>Objectif atteint</small><b>${S7.hit} j</b><em>sur ${S7.n} · série ${S7.streak} j</em></div>
         <div><small>Distance 30 j</small><b>${fmtN(S7.km30,0)} km</b><em>à 0,75 m le pas</em></div>
-        <div><small>Pas de course 30 j</small><b>${runAdd()?fmtN(S7.run30):'–'}</b><em>${runAdd()?'estimés':'désactivés'}</em></div>
+        <div><small>Pas de course 30 j</small><b>${fmtN(S7.run30)}</b><em>${runMode()==='add'?'ajoutés (sans iPhone)':'compris dans tes pas'}</em></div>
       </div>
       <div class="sublabel" style="margin:14px 0 4px">30 derniers jours</div>
-      ${stackBars(S7.d30.map((k,i)=>({l:i%5===4||i===29?String(+k.slice(8)):'',parts:[{v:(st[k]>0?st[k]:0),c:'var(--accent)'},{v:runSteps(k),c:'color-mix(in srgb,var(--accent) 38%,transparent)'}]})),{h:110})}
-      <div class="stxl"><span><i style="background:var(--accent)"></i>App Santé</span><span><i style="background:color-mix(in srgb,var(--accent) 38%,transparent)"></i>Courses (estimé)</span></div>
+      ${stackBars(S7.d30.map((k,i)=>({l:i%5===4||i===29?String(+k.slice(8)):'',parts:[{v:walkSteps(k)||0,c:'var(--accent)'},{v:runSteps(k),c:'color-mix(in srgb,var(--accent) 38%,transparent)'}]})),{h:110})}
+      <div class="stxl"><span><i style="background:var(--accent)"></i>Marche</span><span><i style="background:color-mix(in srgb,var(--accent) 38%,transparent)"></i>Course</span></div>
       <div class="sublabel" style="margin:14px 0 4px">Moyenne par jour de la semaine</div>
       ${barChart(S7.dw,{h:100,goal:g,goalLabel:fmtN(g/1000,0)+' k',fy:x=>fmtN(x/1000,1)+'k'})}
     </div>`:'';
@@ -1478,7 +1481,7 @@ function stepsCard(){
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
     <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--accent)',96,10)}<div class="rc" style="flex-direction:column;font-size:${fs}px;font-weight:700;letter-spacing:-.02em">${big}<small class="muted" style="font-size:11px;font-weight:600;letter-spacing:0">pas</small></div></div>
     <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:15.5px">${v>=g?'Objectif atteint':'Encore '+fmtN(g-v)+' pas'}</div>
-      <div class="muted" style="font-size:13px;margin:3px 0 8px">${r>0?fmtN(h)+' Santé + '+fmtN(r)+' course':'Moyenne 7 j : '+(S7.a7!=null?fmtN(Math.round(S7.a7)):'–')+' · objectif '+fmtN(g)}</div>
+      <div class="muted" style="font-size:13px;margin:3px 0 8px">${r>0?(runMode()==='add'?fmtN(h)+' Santé + '+fmtN(r)+' course':'dont ~'+fmtN(Math.round(r/100)*100)+' en course · ~'+fmtN(Math.round((v-r)/100)*100)+' de marche'):'Moyenne 7 j : '+(S7.a7!=null?fmtN(Math.round(S7.a7)):'–')+' · objectif '+fmtN(g)}</div>
       ${gist?`<button class="stsync" data-act="stepsync">${IC('clock',14)}<span>Synchro auto${ago?' · '+ago:''}</span></button>`:`${stale&&ago?`<div class="stale">${IC('clock',14)}Mis à jour ${ago}</div>`:''}<button class="btn ${stale?'btn-primary':'btn-ghost'}" style="width:100%" data-act="stepspaste">Actualiser mes pas</button>`}</div></div>
     <div style="margin-top:12px">${barChart(bars,{h:100,goal:g,fy:x=>x>=1000?fmtN(x/1000,1)+'k':fmtN(x)})}</div>
     ${stats}
@@ -1532,7 +1535,7 @@ async function syncSteps(force){
 
 /* les pas comptent pour une part de l'objectif sport du jour */
 const stepPct=()=>S.stepPct==null?30:+S.stepPct;
-function stepMin(k){/* les courses comptent déjà en minutes de sport : seuls les pas Santé remplissent la part pas */const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
+function stepMin(k){/* seule la marche remplit la part pas : la course compte déjà en minutes de sport */const v=walkSteps(k);if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
 const moveMin=k=>sum(wOn(k).map(w=>w.min))+stepMin(k);
 
 /* fenêtre de pointage qui s'ouvre d'elle-même pendant les créneaux (une fois par étape et par jour) */
@@ -2573,7 +2576,7 @@ function sheetInner(){
     ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
     <div class="field" style="margin-top:10px"><label>Part des pas dans l'objectif sport (%)</label><input type="number" inputmode="numeric" value="${stepPct()}" data-steppct="1"></div><p class="note" style="margin:4px 0 0">Atteindre ton objectif de pas remplit ce pourcentage de tes ${S.goals.dayMin} min de sport du jour.</p>
     <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div>
-    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runsteps="1"><option value="1"${S.runSteps!==false?' selected':''}>Ajouter aux pas du jour</option><option value="0"${S.runSteps===false?' selected':''}>Déjà comptés par l'iPhone</option></select></div><p class="note" style="margin:4px 0 0">Estimation : 1 250 pas par km, ou 165 pas par minute sans distance. Choisis « déjà comptés » si tu cours avec ton iPhone.</p></div>
+    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runmode="1"><option value="in"${runMode()==='in'?' selected':''}>Je cours avec mon iPhone</option><option value="add"${runMode()==='add'?' selected':''}>Je cours sans iPhone : les ajouter</option></select></div><p class="note" style="margin:4px 0 0">Avec l'iPhone, Rythme isole la course dans tes pas (environ 160 pas par minute) : seule la marche remplit la part pas de ton objectif sport. Sans iPhone, l'estimation s'ajoute à tes pas du jour.</p></div>
 
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
@@ -2984,7 +2987,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
   if(t.dataset.pe&&ui.ped){ui.ped[t.dataset.pe]=t.value;if(t.dataset.pe==='t')render();return;}
   if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
-  if(t.dataset.runsteps){S.runSteps=t.value==='1';save();render();return;}
+  if(t.dataset.runmode){S.runMode=t.value;save();render();return;}
   if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.padel){S.padel=S.padel||{};S.padel[t.dataset.padel]=t.value.replace(/\D/g,'');S.padel.date=todayK();saveSoon();clearTimeout(ui._pdt);ui._pdt=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.padel;render();if(sel){const n=document.querySelector('[data-padel="'+sel+'"]');if(n){n.focus();}}},700);return;}

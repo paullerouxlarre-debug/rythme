@@ -40,7 +40,7 @@ function sheetInner(){
     ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
     <div class="field" style="margin-top:10px"><label>Part des pas dans l'objectif sport (%)</label><input type="number" inputmode="numeric" value="${stepPct()}" data-steppct="1"></div><p class="note" style="margin:4px 0 0">Atteindre ton objectif de pas remplit ce pourcentage de tes ${S.goals.dayMin} min de sport du jour.</p>
     <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div>
-    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runsteps="1"><option value="1"${S.runSteps!==false?' selected':''}>Ajouter aux pas du jour</option><option value="0"${S.runSteps===false?' selected':''}>Déjà comptés par l'iPhone</option></select></div><p class="note" style="margin:4px 0 0">Estimation : 1 250 pas par km, ou 165 pas par minute sans distance. Choisis « déjà comptés » si tu cours avec ton iPhone.</p></div>
+    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runmode="1"><option value="in"${runMode()==='in'?' selected':''}>Je cours avec mon iPhone</option><option value="add"${runMode()==='add'?' selected':''}>Je cours sans iPhone : les ajouter</option></select></div><p class="note" style="margin:4px 0 0">Avec l'iPhone, Rythme isole la course dans tes pas (environ 160 pas par minute) : seule la marche remplit la part pas de ton objectif sport. Sans iPhone, l'estimation s'ajoute à tes pas du jour.</p></div>
 
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
@@ -451,7 +451,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
   if(t.dataset.pe&&ui.ped){ui.ped[t.dataset.pe]=t.value;if(t.dataset.pe==='t')render();return;}
   if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
-  if(t.dataset.runsteps){S.runSteps=t.value==='1';save();render();return;}
+  if(t.dataset.runmode){S.runMode=t.value;save();render();return;}
   if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.padel){S.padel=S.padel||{};S.padel[t.dataset.padel]=t.value.replace(/\D/g,'');S.padel.date=todayK();saveSoon();clearTimeout(ui._pdt);ui._pdt=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.padel;render();if(sel){const n=document.querySelector('[data-padel="'+sel+'"]');if(n){n.focus();}}},700);return;}
