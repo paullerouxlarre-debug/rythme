@@ -605,6 +605,23 @@ body::after{ content:""; position:fixed; left:0; right:0; bottom:0; height:calc(
 .chip .dot{ width:9px; height:9px; }
 .chip.on .dot{ box-shadow:0 0 0 2px var(--bg); }
 .row[data-act=edite]{ cursor:pointer; }
+
+/* v4.5 · pas : stats et synchro */
+.stsync{ display:inline-flex; align-items:center; gap:6px; border:0; background:var(--glass-hi); color:var(--muted); font-family:inherit; font-size:13px; font-weight:600; line-height:1; border-radius:999px; padding:8px 12px; }
+.stsync svg{ color:var(--positive); }
+.stmore{ width:100%; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:6px; border:0; background:none; color:var(--accent); font-family:inherit; font-size:14px; font-weight:600; padding:8px 0 2px; }
+.stmore .chev{ display:inline-block; transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+.stx{ margin-top:14px; padding-top:14px; border-top:1px solid var(--sep); animation:stxin .35s cubic-bezier(.2,.8,.2,1); }
+@keyframes stxin{ from{ opacity:0; transform:translateY(-6px);} }
+.stxg{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stxg>div{ background:var(--glass-hi); border-radius:14px; padding:10px 12px; min-width:0; }
+.stxg small{ display:block; font-size:12px; color:var(--muted); font-weight:600; }
+.stxg b{ display:block; font-size:20px; font-weight:700; letter-spacing:-.02em; margin:2px 0 1px; font-variant-numeric:tabular-nums; }
+.stxg em{ display:block; font-style:normal; font-size:12px; color:var(--muted); }
+.stxg em.up{ color:var(--positive); } .stxg em.dn{ color:var(--negative); }
+.stxl{ display:flex; gap:14px; justify-content:center; font-size:12px; color:var(--muted); margin-top:2px; }
+.stxl i{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+@media (prefers-reduced-motion:reduce){ .stx{ animation:none; } }
 </style>
 </head>
 <body>
@@ -667,7 +684,7 @@ const ACCENTS=[['Cobalt','#3B5BDB'],['Pin','#0B7A5C'],['Pétrole','#0E7490'],['P
 /* ambiances « verre liquide » : [id, nom, halo, fond, sombre] */
 const SKINS=[['lilas','Lilas','#C9B8FF','#EEF0F7',0],['aube','Aube','#FFB4A2','#FFF3EE',0],['lagon','Lagon','#8EE3D0','#EAF7F5',0],['brume','Brume','#D6DCE8','#F1F2F4',0],['minuit','Minuit','#4C2BB8','#0B0D1A',1],['foret','Forêt','#1F6B4E','#0C1612',1]];
 const KEY='rythme_v4';
-const BUILD='05/11 21:01';
+const BUILD='05/11 22:56';
 
 const blankGame=()=>({pts:0,life:0,taps:0,skin:0,skins:[0],claimed:{},myg:[],mig:0,chest:{last:'',streak:0,best:0},own:[],eq:{head:'',face:'',bg:''},badges:{},circle:0,wb:'',sprint:{day:'',plays:0,best:0},goal:{wT:'',wS:'',dT:'',dFrom:''}});
 const blank=()=>({lines:[],ret:{ETF:6.5,Actions:8,Crypto:12},spread:{ETF:2.5,Actions:3.5,Crypto:8},dca:0,scen:null,
@@ -774,14 +791,16 @@ function lineChart(pts,fy){
 }
 function barChart(items,o={}){
   if(!items.length)return '';
-  const W=340,H=o.h||150,pl=6,pr=6,pt=18,pb=22,n=items.length;
-  const mx=Math.max(o.max||0,...items.map(i=>i.v),1e-9),bw=(W-pl-pr)/n,w=Math.min(bw*.62,34);
-  const Y=v=>pt+(H-pt-pb)*(1-v/mx);
-  const bars=items.map((it,i)=>{const x=pl+bw*i+(bw-w)/2,y=Y(it.v),h=Math.max(H-pb-y,it.v>0?2:0);
-    return `<rect class="bar" style="animation-delay:${i*28}ms" x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
-    ${it.v>0&&n<=12?`<text x="${(x+w/2).toFixed(1)}" y="${(H-pb-h-5).toFixed(1)}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${(o.fy||fmtN)(it.v)}</text>`:''}
+  /* étiquette d'objectif dans une marge à droite, et valeurs écartées de la ligne pointillée pour ne jamais se chevaucher */
+  const gl=o.goal&&o.goalLabel?String(o.goalLabel):'',W=340,H=o.h||150,pl=6,pr=gl?Math.max(30,gl.length*5.6+10):6,pt=18,pb=22,n=items.length;
+  const mx=Math.max(o.max||0,o.goal||0,...items.map(i=>i.v),1e-9),bw=(W-pl-pr)/n,w=Math.min(bw*.62,34);
+  const Y=v=>pt+(H-pt-pb)*(1-v/mx),gy=o.goal?Y(o.goal):null;
+  const bars=items.map((it,i)=>{const x=pl+bw*i+(bw-w)/2,y=Y(it.v),h=Math.max(H-pb-y,it.v>0?2:0),top=H-pb-h;
+    let ly=top-5;if(gy!=null&&gy>ly-10&&gy<ly+3)ly=gy+10<=top-2?gy+10:gy-4;
+    return `<rect class="bar" style="animation-delay:${i*28}ms" x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
+    ${it.v>0&&n<=12?`<text x="${(x+w/2).toFixed(1)}" y="${ly.toFixed(1)}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${(o.fy||fmtN)(it.v)}</text>`:''}
     <text x="${(x+w/2).toFixed(1)}" y="${H-6}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${it.l}</text>`;}).join('');
-  const goal=o.goal?`<line x1="${pl}" x2="${W-pr}" y1="${Y(o.goal)}" y2="${Y(o.goal)}" stroke-dasharray="4 4" style="stroke:var(--muted)" opacity=".7"/><text x="${W-pr}" y="${Y(o.goal)-4}" font-size="9.5" text-anchor="end" style="fill:var(--muted)">${o.goalLabel||''}</text>`:'';
+  const goal=gy!=null?`<line x1="${pl}" x2="${W-pr+2}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" stroke-dasharray="4 4" style="stroke:var(--muted)" opacity=".55"/>${gl?`<text x="${W-pr+6}" y="${(gy+3.3).toFixed(1)}" font-size="9.5" text-anchor="start" style="fill:var(--muted)">${esc(gl)}</text>`:''}`:'';
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Histogramme"><line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" style="stroke:var(--border)"/>${goal}${bars}</svg>`;
 }
 function stackBars(items,o={}){
@@ -1412,24 +1431,58 @@ async function parseHealthXml(file,onProg){
   return out;
 }
 function mergeSteps(o){S.steps=S.steps||{};if(Object.keys(o).length)S.stepsAt=Date.now();let n=0;Object.entries(o).forEach(([k,v])=>{if(v>0&&S.steps[k]!==v){S.steps[k]=v;n++;}});return n;}
+/* pas des courses : l'iPhone ne les compte pas quand il reste à la maison. Estimation : 1 km ≈ 1 250 pas (foulée ~0,8 m), sinon 165 pas/min */
+const RUN_SPK=1250,RUN_CAD=165;
+const runAdd=()=>S.runSteps!==false;
+function runSteps(k){if(!runAdd())return 0;return Math.round(sum(wOn(k).filter(w=>w.type==='course').map(w=>num(w.dist)>0?num(w.dist)*RUN_SPK:(num(w.min)>0?num(w.min)*RUN_CAD:0))));}
+/* total du jour : null si aucune donnée (une valeur vide n'est jamais un 0) */
+function daySteps(k){const h=(S.steps||{})[k],r=runSteps(k);if(!(h>0)&&!(r>0))return null;return (h>0?h:0)+r;}
+function stepStats(){
+  const td=todayK(),g=STEPGOAL(),d30=lastDays(30),vals=d30.map(k=>[k,daySteps(k)]).filter(x=>x[1]!=null);
+  const v7=lastDays(7).map(daySteps).filter(x=>x!=null),p7=lastDays(14).slice(0,7).map(daySteps).filter(x=>x!=null);
+  const a7=v7.length?avg(v7):null,ap7=p7.length?avg(p7):null,a30=vals.length?avg(vals.map(x=>x[1])):null;
+  const best=vals.length?vals.reduce((m,x)=>x[1]>m[1]?x:m):null,hit=vals.filter(x=>x[1]>=g).length;
+  let streak=0;for(let i=0;i<365;i++){const k=addD(td,-i),v=daySteps(k);if(v!=null&&v>=g)streak++;else if(i===0)continue;else break;}
+  const run30=sum(d30.map(runSteps)),km30=sum(vals.map(x=>x[1]))*0.75/1000;
+  const dw=[1,2,3,4,5,6,0].map(j=>{const xs=vals.filter(x=>new Date(x[0]+'T12:00').getDay()===j).map(x=>x[1]);return {l:'LMMJVSD'[(j+6)%7],v:xs.length?Math.round(avg(xs)):0};});
+  return {a7,ap7,a30,best,hit,n:vals.length,streak,run30,km30,dw,d30};
+}
 function stepsCard(){
   const st=S.steps||{},keys=Object.keys(st).sort();
-  if(!keys.length)return `<div class="section-head"><h2 class="section-title">Pas</h2></div>
+  if(!keys.length&&!lastDays(7).some(k=>runSteps(k)>0))return `<div class="section-head"><h2 class="section-title">Pas</h2></div>
     <div class="card"><p class="note" style="margin:0 0 10px">Relie tes pas de l'app Santé : un raccourci iPhone les copie, Rythme les colle.</p><button class="btn btn-ghost" style="width:100%" data-act="stepsguide">Configurer</button></div>`;
-  const td=todayK(),last=st[td]!=null?td:keys[keys.length-1],v=st[last]||0,g=STEPGOAL();
-  const days=lastDays(7),bars=days.map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:st[k]||0,c:k===last?'var(--accent)':'var(--surface-3)'}));
-  const avg7=Math.round(avg(days.map(k=>st[k]||0).filter(x=>x>0)))||0;
-  /* pas à actualiser : le bouton passe en principal, au bon endroit (plus de bandeau en haut de page) */
-  const age=Date.now()-(S.stepsAt||0),stale=!gistApi(S.stepsSync)&&!(st[td]!=null&&age<3*3600e3);
-  const ago=S.stepsAt?(age<3600e3?'il y a '+Math.max(1,Math.round(age/60000))+' min':age<864e5?'il y a '+Math.round(age/3600e3)+' h':'le '+dShort(dkey(new Date(S.stepsAt)))):'';
+  const td=todayK(),g=STEPGOAL(),hasT=daySteps(td)!=null,last=hasT?td:(keys[keys.length-1]||td),v=daySteps(last)||0,h=st[last]>0?st[last]:0,r=runSteps(last);
+  const days=lastDays(7),bars=days.map(k=>({l:new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'narrow'}),v:daySteps(k)||0,c:k===last?'var(--accent)':'var(--surface-3)'}));
+  const S7=stepStats(),gist=!!gistApi(S.stepsSync);
+  const age=Date.now()-(S.stepsSyncAt||S.stepsAt||0),stale=!gist&&!(st[td]!=null&&age<3*3600e3);
+  const ago=(S.stepsSyncAt||S.stepsAt)?(age<3600e3?'il y a '+Math.max(1,Math.round(age/60000))+' min':age<864e5?'il y a '+Math.round(age/3600e3)+' h':'le '+dShort(dkey(new Date(S.stepsSyncAt||S.stepsAt)))):'';
+  const big=fmtN(v),fs=big.length>6?15:big.length>5?16.5:19;
+  const trend=S7.a7!=null&&S7.ap7?Math.round((S7.a7-S7.ap7)/S7.ap7*100):null;
+  const open=!!ui.stx;
+  const stats=open?`<div class="stx">
+      <div class="stxg">
+        <div><small>Moyenne 7 j</small><b>${S7.a7!=null?fmtN(Math.round(S7.a7)):'–'}</b>${trend!=null?`<em class="${trend>=0?'up':'dn'}">${trend>=0?'+':''}${trend} % vs sem. préc.</em>`:''}</div>
+        <div><small>Moyenne 30 j</small><b>${S7.a30!=null?fmtN(Math.round(S7.a30)):'–'}</b><em>${S7.n} jours renseignés</em></div>
+        <div><small>Meilleur jour</small><b>${S7.best?fmtN(S7.best[1]):'–'}</b><em>${S7.best?esc(dShort(S7.best[0])):''}</em></div>
+        <div><small>Objectif atteint</small><b>${S7.hit} j</b><em>sur ${S7.n} · série ${S7.streak} j</em></div>
+        <div><small>Distance 30 j</small><b>${fmtN(S7.km30,0)} km</b><em>à 0,75 m le pas</em></div>
+        <div><small>Pas de course 30 j</small><b>${runAdd()?fmtN(S7.run30):'–'}</b><em>${runAdd()?'estimés':'désactivés'}</em></div>
+      </div>
+      <div class="sublabel" style="margin:14px 0 4px">30 derniers jours</div>
+      ${stackBars(S7.d30.map((k,i)=>({l:i%5===4||i===29?String(+k.slice(8)):'',parts:[{v:(st[k]>0?st[k]:0),c:'var(--accent)'},{v:runSteps(k),c:'color-mix(in srgb,var(--accent) 38%,transparent)'}]})),{h:110})}
+      <div class="stxl"><span><i style="background:var(--accent)"></i>App Santé</span><span><i style="background:color-mix(in srgb,var(--accent) 38%,transparent)"></i>Courses (estimé)</span></div>
+      <div class="sublabel" style="margin:14px 0 4px">Moyenne par jour de la semaine</div>
+      ${barChart(S7.dw,{h:100,goal:g,goalLabel:fmtN(g/1000,0)+' k',fy:x=>fmtN(x/1000,1)+'k'})}
+    </div>`:'';
   return `<div class="section-head"><h2 class="section-title">Pas</h2><span class="section-sub">${last===td?'aujourd\'hui':esc(dShort(last))}</span></div>
   <div class="card"><div style="display:flex;align-items:center;gap:16px">
-    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--accent)',96,10)}<div class="rc" style="flex-direction:column;font-size:19px;font-weight:700">${fmtN(v)}<small class="muted" style="font-size:11px;font-weight:600">pas</small></div></div>
+    <div class="rw" style="width:96px;height:96px;flex:none">${ring(g?v/g:0,'var(--accent)',96,10)}<div class="rc" style="flex-direction:column;font-size:${fs}px;font-weight:700;letter-spacing:-.02em">${big}<small class="muted" style="font-size:11px;font-weight:600;letter-spacing:0">pas</small></div></div>
     <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:15.5px">${v>=g?'Objectif atteint':'Encore '+fmtN(g-v)+' pas'}</div>
-      <div class="muted" style="font-size:13px;margin:3px 0 10px">Moyenne 7 jours : ${fmtN(avg7)} · objectif ${fmtN(g)}</div>
-      ${stale&&ago?`<div class="stale">${IC('clock',14)}Mis à jour ${ago}</div>`:''}
-      <button class="btn ${stale?'btn-primary':'btn-ghost'}" style="width:100%" data-act="stepspaste">Actualiser mes pas</button></div></div>
-    <div style="margin-top:12px">${barChart(bars,{h:80,goal:g})}</div></div>`;
+      <div class="muted" style="font-size:13px;margin:3px 0 8px">${r>0?fmtN(h)+' Santé + '+fmtN(r)+' course':'Moyenne 7 j : '+(S7.a7!=null?fmtN(Math.round(S7.a7)):'–')+' · objectif '+fmtN(g)}</div>
+      ${gist?`<button class="stsync" data-act="stepsync">${IC('clock',14)}<span>Synchro auto${ago?' · '+ago:''}</span></button>`:`${stale&&ago?`<div class="stale">${IC('clock',14)}Mis à jour ${ago}</div>`:''}<button class="btn ${stale?'btn-primary':'btn-ghost'}" style="width:100%" data-act="stepspaste">Actualiser mes pas</button>`}</div></div>
+    <div style="margin-top:12px">${barChart(bars,{h:100,goal:g,fy:x=>x>=1000?fmtN(x/1000,1)+'k':fmtN(x)})}</div>
+    ${stats}
+    <button class="stmore" data-act="stx" aria-expanded="${open}">${open?'Masquer les stats':'Voir mes stats de pas'}<span class="chev" style="transform:rotate(${open?-90:90}deg)">›</span></button></div>`;
 }
 function stepsGuide(){
   return `<div class="cfbox stepg" role="dialog" aria-modal="true"><h3>Relier l'app Santé</h3>
@@ -1479,7 +1532,7 @@ async function syncSteps(force){
 
 /* les pas comptent pour une part de l'objectif sport du jour */
 const stepPct=()=>S.stepPct==null?30:+S.stepPct;
-function stepMin(k){const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
+function stepMin(k){/* les courses comptent déjà en minutes de sport : seuls les pas Santé remplissent la part pas */const v=(S.steps||{})[k];if(!(v>0))return 0;return Math.round(Math.min(v/STEPGOAL(),1)*stepPct()/100*(S.goals.dayMin||45));}
 const moveMin=k=>sum(wOn(k).map(w=>w.min))+stepMin(k);
 
 /* fenêtre de pointage qui s'ouvre d'elle-même pendant les créneaux (une fois par étape et par jour) */
@@ -2519,7 +2572,8 @@ function sheetInner(){
     <div class="form-actions" style="margin-top:8px"><button class="btn btn-ghost" data-act="stepsynctest">Synchroniser maintenant</button></div>
     ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
     <div class="field" style="margin-top:10px"><label>Part des pas dans l'objectif sport (%)</label><input type="number" inputmode="numeric" value="${stepPct()}" data-steppct="1"></div><p class="note" style="margin:4px 0 0">Atteindre ton objectif de pas remplit ce pourcentage de tes ${S.goals.dayMin} min de sport du jour.</p>
-    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
+    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div>
+    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runsteps="1"><option value="1"${S.runSteps!==false?' selected':''}>Ajouter aux pas du jour</option><option value="0"${S.runSteps===false?' selected':''}>Déjà comptés par l'iPhone</option></select></div><p class="note" style="margin:4px 0 0">Estimation : 1 250 pas par km, ou 165 pas par minute sans distance. Choisis « déjà comptés » si tu cours avec ton iPhone.</p></div>
 
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
@@ -2750,6 +2804,8 @@ document.addEventListener('click',e=>{
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
   if(a==='stepsynctest'){if(!gistApi(S.stepsSync)){ui.msg='Colle d\'abord le lien de ton Gist.';renderSheet();return;}if(window.claude&&window.claude.use){ui.msg='La synchro marche depuis l\'app installée sur ton iPhone.';renderSheet();return;}ui.msg='Synchronisation…';renderSheet();syncSteps(true).then(k=>{ui.msg=k>0?k+' jours de pas synchronisés.':k===0?'Le Gist ne contient pas encore de pas : lance le raccourci une fois.':'Impossible de lire le Gist. Vérifie le lien.';renderSheet();render();});return;}
   if(a==='stepsguide'){showModal(stepsGuide());return;}
+  if(a==='stx'){ui.stx=!ui.stx;render();return;}
+  if(a==='stepsync'){toast('Synchronisation…');syncSteps(true).then(k=>{toast(k>0?'Pas à jour':k===0?'Le Gist est vide : lance le raccourci':'Gist injoignable');render();});return;}
   if(a==='stepspaste'){(async()=>{let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText();}catch(er){}
       const o=parseStepsText(t);if(Object.keys(o).length){importStepsText(t);}else showModal(stepsPasteBox(t?'Le presse-papiers ne contient pas de pas. Lance d\'abord le raccourci « Pas Rythme », ou colle le texte ici.':''));})();return;}
   if(a==='stepsok'){importStepsText(val('stp-t'));return;}
@@ -2928,6 +2984,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
   if(t.dataset.pe&&ui.ped){ui.ped[t.dataset.pe]=t.value;if(t.dataset.pe==='t')render();return;}
   if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
+  if(t.dataset.runsteps){S.runSteps=t.value==='1';save();render();return;}
   if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.padel){S.padel=S.padel||{};S.padel[t.dataset.padel]=t.value.replace(/\D/g,'');S.padel.date=todayK();saveSoon();clearTimeout(ui._pdt);ui._pdt=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.padel;render();if(sel){const n=document.querySelector('[data-padel="'+sel+'"]');if(n){n.focus();}}},700);return;}

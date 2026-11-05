@@ -15,7 +15,7 @@ Dans l'ordre, du plus urgent au moins urgent :
 3. **Boulot** : voir [Pointage](#pointage).
 4. **Planning** du jour, de demain et des 7 prochains jours.
 5. **Sport** du jour.
-6. **Pas** : nombre du jour, bouton « Actualiser mes pas » (principal si les pas datent de plus de 3 h).
+6. **Pas** : total du jour (Santé + courses), pastille « Synchro auto » si le Gist est relié, sinon bouton « Actualiser mes pas ». « Voir mes stats de pas » ouvre moyennes 7 et 30 jours, meilleur jour, jours à l'objectif et série, distance, pas de course, 30 jours empilés et moyenne par jour de la semaine.
 
 ## Pointage
 - 4 étapes : arrivée, départ déjeuner, retour, départ.
@@ -34,8 +34,10 @@ Dans l'ordre, du plus urgent au moins urgent :
 - Rappels optionnels dans le Calendrier iPhone via fichier `.ics` (voir [Contraintes iOS](../technique/contraintes-ios.md)).
 
 ## Pas
-Import via un raccourci iPhone (presse-papiers), un export `export.xml` de Santé, ou synchro automatique par Gist GitHub. Les pas valent 30 % de l'objectif sport par défaut.
+Import via un raccourci iPhone (presse-papiers), un export `export.xml` de Santé, ou synchro automatique par Gist GitHub. Les pas valent 30 % de l'objectif sport par défaut (pas Santé seulement : la course compte déjà en minutes).
 
-Related: [Planning](planning.md) · [Décision pointage](../decisions/2026-10-30-pointage-creneaux.md) · [Décision pas](../decisions/2026-10-30-pas-gist.md)
+Pas de course : chaque course ajoute 1 250 pas par km, ou 165 pas par minute sans distance. Réglages > Pas > « Déjà comptés par l'iPhone » pour les retirer. Un jour sans pas ni course reste vide.
+
+Related: [Planning](planning.md) · [Décision pointage](../decisions/2026-10-30-pointage-creneaux.md) · [Décision pas](../decisions/2026-10-30-pas-gist.md) · [Pas de course](../decisions/2026-11-05-pas-course.md)
 
 Up: [Modules](README.md)

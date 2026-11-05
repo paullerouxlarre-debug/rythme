@@ -143,14 +143,16 @@ function lineChart(pts,fy){
 }
 function barChart(items,o={}){
   if(!items.length)return '';
-  const W=340,H=o.h||150,pl=6,pr=6,pt=18,pb=22,n=items.length;
-  const mx=Math.max(o.max||0,...items.map(i=>i.v),1e-9),bw=(W-pl-pr)/n,w=Math.min(bw*.62,34);
-  const Y=v=>pt+(H-pt-pb)*(1-v/mx);
-  const bars=items.map((it,i)=>{const x=pl+bw*i+(bw-w)/2,y=Y(it.v),h=Math.max(H-pb-y,it.v>0?2:0);
-    return `<rect class="bar" style="animation-delay:${i*28}ms" x="${x.toFixed(1)}" y="${(H-pb-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
-    ${it.v>0&&n<=12?`<text x="${(x+w/2).toFixed(1)}" y="${(H-pb-h-5).toFixed(1)}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${(o.fy||fmtN)(it.v)}</text>`:''}
+  /* étiquette d'objectif dans une marge à droite, et valeurs écartées de la ligne pointillée pour ne jamais se chevaucher */
+  const gl=o.goal&&o.goalLabel?String(o.goalLabel):'',W=340,H=o.h||150,pl=6,pr=gl?Math.max(30,gl.length*5.6+10):6,pt=18,pb=22,n=items.length;
+  const mx=Math.max(o.max||0,o.goal||0,...items.map(i=>i.v),1e-9),bw=(W-pl-pr)/n,w=Math.min(bw*.62,34);
+  const Y=v=>pt+(H-pt-pb)*(1-v/mx),gy=o.goal?Y(o.goal):null;
+  const bars=items.map((it,i)=>{const x=pl+bw*i+(bw-w)/2,y=Y(it.v),h=Math.max(H-pb-y,it.v>0?2:0),top=H-pb-h;
+    let ly=top-5;if(gy!=null&&gy>ly-10&&gy<ly+3)ly=gy+10<=top-2?gy+10:gy-4;
+    return `<rect class="bar" style="animation-delay:${i*28}ms" x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${it.c||'var(--tc)'}"/>
+    ${it.v>0&&n<=12?`<text x="${(x+w/2).toFixed(1)}" y="${ly.toFixed(1)}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${(o.fy||fmtN)(it.v)}</text>`:''}
     <text x="${(x+w/2).toFixed(1)}" y="${H-6}" font-size="9.5" text-anchor="middle" style="fill:var(--muted)">${it.l}</text>`;}).join('');
-  const goal=o.goal?`<line x1="${pl}" x2="${W-pr}" y1="${Y(o.goal)}" y2="${Y(o.goal)}" stroke-dasharray="4 4" style="stroke:var(--muted)" opacity=".7"/><text x="${W-pr}" y="${Y(o.goal)-4}" font-size="9.5" text-anchor="end" style="fill:var(--muted)">${o.goalLabel||''}</text>`:'';
+  const goal=gy!=null?`<line x1="${pl}" x2="${W-pr+2}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" stroke-dasharray="4 4" style="stroke:var(--muted)" opacity=".55"/>${gl?`<text x="${W-pr+6}" y="${(gy+3.3).toFixed(1)}" font-size="9.5" text-anchor="start" style="fill:var(--muted)">${esc(gl)}</text>`:''}`:'';
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Histogramme"><line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" style="stroke:var(--border)"/>${goal}${bars}</svg>`;
 }
 function stackBars(items,o={}){

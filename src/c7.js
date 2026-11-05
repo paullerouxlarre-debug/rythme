@@ -39,7 +39,8 @@ function sheetInner(){
     <div class="form-actions" style="margin-top:8px"><button class="btn btn-ghost" data-act="stepsynctest">Synchroniser maintenant</button></div>
     ${S.stepsSyncAt?`<p class="note" style="margin:4px 0 0">Dernière synchro : ${new Date(S.stepsSyncAt).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>`:''}
     <div class="field" style="margin-top:10px"><label>Part des pas dans l'objectif sport (%)</label><input type="number" inputmode="numeric" value="${stepPct()}" data-steppct="1"></div><p class="note" style="margin:4px 0 0">Atteindre ton objectif de pas remplit ce pourcentage de tes ${S.goals.dayMin} min de sport du jour.</p>
-    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div></div>
+    <div class="field" style="margin-top:10px"><label>Objectif de pas par jour</label><input type="number" inputmode="numeric" value="${S.stepGoal||10000}" data-stepgoal="1"></div>
+    <div class="field" style="margin-top:10px"><label>Pas de mes courses</label><select data-runsteps="1"><option value="1"${S.runSteps!==false?' selected':''}>Ajouter aux pas du jour</option><option value="0"${S.runSteps===false?' selected':''}>Déjà comptés par l'iPhone</option></select></div><p class="note" style="margin:4px 0 0">Estimation : 1 250 pas par km, ou 165 pas par minute sans distance. Choisis « déjà comptés » si tu cours avec ton iPhone.</p></div>
 
   <div class="sublabel">Notifications</div>
   <div class="card"><p class="note" style="margin:0 0 10px">L'app étant 100 % locale, les notifications passent par le Calendrier de ton iPhone : ajoute les rappels une fois, il te prévient tout seul, même app fermée.</p>
@@ -270,6 +271,8 @@ document.addEventListener('click',e=>{
   if(a==='icspl'){openIcs('rythme-planning.ics',icsPlanning());return;}
   if(a==='stepsynctest'){if(!gistApi(S.stepsSync)){ui.msg='Colle d\'abord le lien de ton Gist.';renderSheet();return;}if(window.claude&&window.claude.use){ui.msg='La synchro marche depuis l\'app installée sur ton iPhone.';renderSheet();return;}ui.msg='Synchronisation…';renderSheet();syncSteps(true).then(k=>{ui.msg=k>0?k+' jours de pas synchronisés.':k===0?'Le Gist ne contient pas encore de pas : lance le raccourci une fois.':'Impossible de lire le Gist. Vérifie le lien.';renderSheet();render();});return;}
   if(a==='stepsguide'){showModal(stepsGuide());return;}
+  if(a==='stx'){ui.stx=!ui.stx;render();return;}
+  if(a==='stepsync'){toast('Synchronisation…');syncSteps(true).then(k=>{toast(k>0?'Pas à jour':k===0?'Le Gist est vide : lance le raccourci':'Gist injoignable');render();});return;}
   if(a==='stepspaste'){(async()=>{let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText();}catch(er){}
       const o=parseStepsText(t);if(Object.keys(o).length){importStepsText(t);}else showModal(stepsPasteBox(t?'Le presse-papiers ne contient pas de pas. Lance d\'abord le raccourci « Pas Rythme », ou colle le texte ici.':''));})();return;}
   if(a==='stepsok'){importStepsText(val('stp-t'));return;}
@@ -448,6 +451,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.stepsync){S.stepsSync=t.value.trim();saveSoon();return;}
   if(t.dataset.pe&&ui.ped){ui.ped[t.dataset.pe]=t.value;if(t.dataset.pe==='t')render();return;}
   if(t.dataset.q&&ui.qd){ui.qd[t.dataset.q]=t.value;return;}
+  if(t.dataset.runsteps){S.runSteps=t.value==='1';save();render();return;}
   if(t.dataset.steppct){const v=Math.round(num(t.value));if(v>=0&&v<=100){S.stepPct=v;saveSoon();}return;}
   if(t.dataset.stepgoal){const v=Math.round(num(t.value));if(v>0){S.stepGoal=v;saveSoon();}return;}
   if(t.dataset.padel){S.padel=S.padel||{};S.padel[t.dataset.padel]=t.value.replace(/\D/g,'');S.padel.date=todayK();saveSoon();clearTimeout(ui._pdt);ui._pdt=setTimeout(()=>{const a=document.activeElement,sel=a&&a.dataset&&a.dataset.padel;render();if(sel){const n=document.querySelector('[data-padel="'+sel+'"]');if(n){n.focus();}}},700);return;}

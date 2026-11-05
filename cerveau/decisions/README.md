@@ -8,6 +8,7 @@ tags: [rythme, decisions]
 
 Une note par choix structurant : ce qui a été décidé, et pourquoi. Nom de fichier : date + sujet.
 
+- [Pas des courses ajoutés aux pas du jour](2026-11-05-pas-course.md)
 - [100 % local, sans amis](2026-10-27-local-sans-amis.md) : 2026-10-27
 - [Palette inspirée de Claude](2026-10-29-palette-claude.md) : 2026-10-29
 - [Mises à jour network-first](2026-10-29-network-first.md) : 2026-10-29
