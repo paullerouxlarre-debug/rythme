@@ -10,6 +10,7 @@ Chaque mise en ligne sur GitHub, de la plus récente à la plus ancienne. Le cod
 
 | Date | Version | Changement |
 |---|---|---|
+| 2026-11-05 | [`3289fe1`](https://github.com/paullerouxlarre-debug/rythme/commit/3289fe1) | Pas : la course est isolée dans les pas Santé (iPhone porté en courant) ; seule la marche compte dans l'objectif sport ; graphique marche / course |
 | 2026-11-05 | [`33bc6fa`](https://github.com/paullerouxlarre-debug/rythme/commit/33bc6fa) | Pas : stats détaillées (moyennes, meilleur jour, série, distance), pas des courses ajoutés au total, synchro auto affichée ; graphiques sans chevauchement entre valeurs et ligne d'objectif, total lisible dans l'anneau |
 | 2026-11-05 | [`658db12`](https://github.com/paullerouxlarre-debug/rythme/commit/658db12) | Planning façon Outlook : appui long + glisser sur plusieurs jours, saisie rapide par puces, raccourcis, modifier/dupliquer un événement, balayage entre les mois |
 | 2026-11-03 | [`cddaf60`](https://github.com/paullerouxlarre-debug/rythme/commit/cddaf60) | 84 exercices de musculation (curl barre EZ, développé haltères, élévations latérales poulie…), liste rangée par groupe musculaire |
